@@ -1,0 +1,207 @@
+<aside class="w-64 bg-white p-6 shadow-md rounded-lg">
+    <h2 class="text-base font-bold text-stone-700 mb-6 tracking-wide">
+        Filters
+    </h2>
+
+    <div class="mb-8">
+        <label for="category" class="block text-base font-semibold text-stone-700 mb-3">
+            Category
+        </label>
+
+        <select id="category"
+            class="w-full px-3 py-2 rounded-lg border border-stone-400 bg-white text-sm text-stone-700">
+            <option value="" <%=category==="" ? 'selected' : '' %>>All</option>
+            <option value="men" <%=category==="men" ? 'selected' : '' %>>Men</option>
+            <option value="women" <%=category==="women" ? 'selected' : '' %>>Women</option>
+            <option value="kids" <%=category==="kids" ? 'selected' : '' %>>Kids</option>
+        </select>
+    </div>
+
+    <div class="mb-8">
+        <label for="subcategory" class="block text-base font-semibold text-stone-700 mb-3">
+            Styles
+        </label>
+        <select id="subcategory"
+            class="w-full px-3 py-2 rounded-lg border border-stone-400 bg-white text-sm text-stone-700">
+
+            <option value="">All</option>
+
+            <% subcategories.forEach(sc => { %>
+                <option 
+                    data-category="<%= (sc.category || '').toString().toLowerCase() %>" 
+                    value="<%= sc._id %>" 
+                    class="subcategory-option"
+                    <%= currentSubcategory === sc._id.toString() ? "selected" : "" %>
+                >
+                    <%= sc.subcategory %>
+                </option>
+            <% }) %>
+        </select>
+    </div>
+
+
+    <div class="mb-8">
+        <label class="block text-sm font-semibold text-stone-700 mb-3">
+            Size
+        </label>
+
+        <div class="grid grid-cols-3 gap-3">
+            <% sizes 
+                .filter(s => !isNaN(s) && Number(s) > 0 && Number(s) <= 20) 
+                .sort((a, b) => Number(a) - Number(b))
+                .forEach(s => { 
+                // Assuming 'selectedSize' holds the currently applied size parameter
+            %>
+                <button type="button" class="size-btn w-16 h-11 flex items-center justify-center rounded 
+                border border-[#C8A97E] text-sm transition-all duration-200
+                <%= selectedSize == s 
+                    ? 'bg-[#C8A97E] text-white' 
+                    : 'bg-white text-stone-700 hover:bg-[#C8A97E] hover:text-white' %>" data-size="<%= s %>">
+                    <%= s %>
+                </button>
+            <% }) %>
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <label class="block text-sm font-semibold text-stone-700 mb-3">
+            Price Range
+        </label>
+
+        <style>
+            /* Radio button color */
+            input[type="radio"] {
+                /* Using a custom dark brown accent color */
+                accent-color: #5D4037; 
+            }
+        </style>
+
+        <div class="space-y-3 text-sm text-stone-700">
+            <% 
+                // Define the price ranges and check if the 'price' variable matches
+                const priceRanges = [
+                    { value: "0-1000", label: "Under ₹1000" },
+                    { value: "1000-3000", label: "₹1000 - ₹3000" },
+                    { value: "3000-6000", label: "₹3000 - ₹6000" },
+                    { value: "6000+", label: "Over ₹6000" }
+                ];
+            %>
+            <% priceRanges.forEach(range => { %>
+                <label class="flex items-center gap-3">
+                    <input type="radio" name="price" value="<%= range.value %>" 
+                        <%=price===range.value ? "checked" : "" %> >
+                    <%= range.label %>
+                </label>
+            <% }) %>
+
+        </div>
+    </div>
+
+
+    <button id="applyFilters" class="w-full py-3 bg-[#C8A97E] text-white rounded-lg font-semibold 
+        hover:bg-[#b6916a] transition">
+        Apply Filters
+    </button>
+
+
+</aside>
+
+
+<script>
+    // ----------------------------------------------------------------------
+    // 1. DYNAMIC SUBCATEGORY FILTERING (Kept for visual hiding logic)
+    // ----------------------------------------------------------------------
+    function filterSubcategories() {
+        const selectedCategory = document.getElementById("category").value;
+        const subcategorySelect = document.getElementById("subcategory");
+        const subcategoryOptions = document.querySelectorAll(".subcategory-option");
+
+        let selectedOptionVisible = subcategorySelect.value === "";
+
+        subcategoryOptions.forEach(option => {
+            const optionCategory = option.dataset.category;
+            if (!optionCategory) return; 
+            
+            const isVisible = (selectedCategory === "" || optionCategory === selectedCategory);
+            option.style.display = isVisible ? '' : 'none';
+
+            if (isVisible && option.selected) {
+                selectedOptionVisible = true;
+            }
+        });
+
+        if (!selectedOptionVisible && subcategorySelect.value !== "") {
+            subcategorySelect.value = "";
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // 2. APPLY FILTER FUNCTIONS (Unified Redirection)
+    // ----------------------------------------------------------------------
+
+    function applyFiltersAndRedirect(changedFilterType = null, changedValue = null) {
+        const url = new URL(window.location.href);
+        
+        // Reset page number on any filter change
+        url.searchParams.delete('page');
+
+        // --- Category Filter ---
+        const category = document.getElementById("category").value;
+        if (category) url.searchParams.set("category", category);
+        else url.searchParams.delete("category");
+
+        // --- Subcategory Filter (Styles) ---
+        const subcategory = document.getElementById("subcategory").value;
+        if (subcategory) url.searchParams.set("subcategory", subcategory);
+        else url.searchParams.delete("subcategory");
+
+        // --- Price Filter ---
+        const price = document.querySelector("input[name='price']:checked");
+        if (price) url.searchParams.set("price", price.value);
+        else url.searchParams.delete("price");
+
+        if (changedFilterType === 'size') {
+            const currentSize = url.searchParams.get('size');
+            if (currentSize === changedValue) {
+                url.searchParams.delete('size');
+            } else {
+                url.searchParams.set('size', changedValue);
+            }
+        } else {
+        }
+
+        window.location.href = url.toString();
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Run once on load
+        filterSubcategories(); 
+
+        // 1. Category change: Filter subcategories, then apply all filters
+        document.getElementById("category").addEventListener("change", () => {
+             filterSubcategories(); // Update the visible options first
+             applyFiltersAndRedirect(); // Redirect with new filter state
+        });
+
+        // 2. Subcategory change: Apply all filters
+        document.getElementById("subcategory").addEventListener("change", applyFiltersAndRedirect);
+
+        // 3. Size button click: Pass the size value to the redirect function for toggling
+        document.querySelectorAll(".size-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const sizeValue = btn.dataset.size;
+                applyFiltersAndRedirect('size', sizeValue);
+            });
+        });
+
+        // 4. Price radio buttons change: Apply all filters
+        document.querySelectorAll("input[name='price']").forEach(radio => {
+             radio.addEventListener("change", applyFiltersAndRedirect);
+        });
+        
+        // 5. Apply Filters button (Acts as fallback for robustness)
+        document.getElementById("applyFilters").addEventListener("click", applyFiltersAndRedirect);
+    });
+</script>

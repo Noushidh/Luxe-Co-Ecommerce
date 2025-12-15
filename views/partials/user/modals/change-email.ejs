@@ -1,0 +1,53 @@
+<!-- Change Email Modal -->
+<div id="changeEmailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+
+        <h2 class="text-xl font-semibold mb-4">Change Email</h2>
+
+        <label class="text-sm font-medium">New Email Address</label>
+        <input id="emailInput" type="email" class="w-full mt-1 p-2 border rounded-lg" placeholder="Enter new email" />
+
+        <button onclick="sendVerificationLink()"
+            class="w-full mt-4 bg-[#C8A97E] hover:bg-[#b6916a] text-white py-2 rounded-lg transition">
+            Send Verification Link
+        </button>
+
+        <button onclick="closeEmailModal()" class="mt-4 text-sm text-gray-500 w-full">
+            Cancel
+        </button>
+
+    </div>
+</div>
+<script>
+    const modal = document.getElementById("changeEmailModal");
+    function openEmailModal() {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+    function closeEmailModal() {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    async function sendVerificationLink() {
+        const newEmail = document.getElementById("emailInput").value;
+        
+        if (!newEmail) {
+            notyf.error("Please enter an email address");
+            return;
+        }
+
+        try {
+            const response = await axios.patch("/user/change-email/send-link", { newEmail });
+
+            if (response.data.success) {
+                notyf.success(response.data.message);
+                closeEmailModal(); 
+            }
+        } catch (err) {
+            notyf.error(err.response?.data?.message || "Something went wrong");
+        }
+    }
+
+</script>

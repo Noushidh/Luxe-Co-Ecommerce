@@ -1,0 +1,80 @@
+<aside class="bg-white rounded-2xl shadow p-5 flex flex-col min-h-[108vh]">
+
+  <!-- MENU -->
+  <ul class="space-y-2">
+
+    <!-- PERSONAL INFO -->
+    <li class="relative bg-[#eee4d4] rounded-lg px-4 py-3 flex items-center gap-3">
+      <span>👤</span>
+      <span class="text-sm font-medium text-[#c8a97e]">
+        Personal Info
+      </span>
+      <span class="absolute left-0 top-2 bottom-2 w-1 bg-[#c8a97e] rounded-r"></span>
+    </li>
+
+    <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
+      📦 <span class="text-sm font-medium">My Orders</span>
+    </li>
+
+    <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
+      🏠 <span class="text-sm font-medium">Address</span>
+    </li>
+
+    <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
+      💳 <span class="text-sm font-medium">Wallet</span>
+    </li>
+
+    <!-- 🔐 SECURITY -->
+    <li onclick="toggleSecurity()"
+        class="px-4 py-3 flex items-center justify-between
+               hover:bg-stone-100 rounded-lg cursor-pointer">
+      <div class="flex items-center gap-3">
+        🔐 <span class="text-sm font-medium">Security</span>
+      </div>
+      <span id="securityArrow" class="text-xs">▾</span>
+    </li>
+
+    <!-- 🔽 SECURITY OPTIONS (HIDDEN) -->
+    <ul id="securityOptions" class="hidden ml-8 space-y-1">
+
+      <li onclick="openPasswordModal()"
+          class="px-3 py-2 text-sm rounded-md
+                 hover:bg-stone-100 cursor-pointer">
+        🔑 Change Password
+      </li>
+
+      <li onclick="openEmailModal()"
+          class="px-3 py-2 text-sm rounded-md
+                 hover:bg-stone-100 cursor-pointer">
+        📧 Change Email
+      </li>
+
+    </ul>
+
+  </ul>
+
+  <!-- LOGOUT -->
+  <div class="mt-auto pt-6">
+    <form action="/user/logout" method="get">
+      <button
+        class="w-full bg-[#c8a97e] text-white py-3 rounded-xl
+               flex items-center justify-center gap-2
+               font-medium hover:opacity-90 transition">
+        ⎋ Logout
+      </button>
+    </form>
+  </div>
+</aside>
+<%- include("./modals/change-password") %>
+<%- include("./modals/change-email") %>
+
+<script>
+  function toggleSecurity() {
+    const options = document.getElementById("securityOptions");
+    const arrow = document.getElementById("securityArrow");
+
+    options.classList.toggle("hidden");
+    arrow.textContent = options.classList.contains("hidden") ? "▾" : "▴";
+  }
+
+</script>
