@@ -1,5 +1,5 @@
 import ProductModel from "../../models/productmodel.js";
-import asyncHandler from "../../utils/asyncHandler.js"; 
+import asyncHandler from "../../utils/asynHandler.js"; 
 
 export const LandingOrHome_load = (req, res) => {
   res.render("user/layout", {

@@ -1,6 +1,6 @@
 import Admin from "../../models/adminmodel.js";
 import bcrypt from "bcryptjs";
-import asyncHandler from "../../utils/asyncHandler.js";
+import asyncHandler from "../../utils/asynHandler.js";
 
 export const loadlogin = (req, res) => {
   res.render("admin/login", {

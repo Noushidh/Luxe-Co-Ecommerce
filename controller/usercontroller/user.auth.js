@@ -2,7 +2,7 @@ import User from "../../models/usermodel.js";
 import bcrypt from "bcryptjs";
 import sendverificationEmail from "../../config/nodemailer.js";
 import { generateOtp } from "../../utils/otp.js";
-import asyncHandler from "../../utils/asyncHandler.js";
+import asyncHandler from "../../utils/asynHandler.js";
 const saltround = 10;
 
 export const loadlogin = (req, res) => {

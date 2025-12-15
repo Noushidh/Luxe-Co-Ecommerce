@@ -1,6 +1,6 @@
 
 import Usermodel from "../../models/usermodel.js";
-import asyncHandler from "../../utils/asyncHandler.js";
+import asyncHandler from "../../utils/asynHandler.js";
 
 export const load_customers = asyncHandler(async (req, res) => {
 
