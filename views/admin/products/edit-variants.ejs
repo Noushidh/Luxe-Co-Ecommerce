@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Variants</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    
+    <style>
+        #imageToCrop {
+            display: block;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="flex mb-4 p-6" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm">
+
+    <li class="inline-flex items-center">
+      <a href="/admin/products" 
+         class="text-gray-700 hover:text-indigo-600 font-medium underline hover:no-underline">
+        Products
+      </a>
+    </li>
+
+ 
+
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 mx-1 md:mx-2" 
+             fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" 
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 
+                  7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 
+                  010 1.414l-4 4a1 1 0 01-1.414 0z" 
+                clip-rule="evenodd"></path>
+        </svg>
+
+        <span class="text-gray-500 font-medium" aria-current="page">
+          Manage variants
+        </span>
+      </div>
+    </li>
+
+  </ol>
+</nav>
+
+
+<div class="w-full min-h-screen bg-[#F5E9DA] p-6">
+
+    <h1 class="text-2xl font-bold text-[#2c2c2c]">Manage Variants</h1>
+    <p class="text-sm text-gray-600 mt-1">Edit existing variants or add new ones.</p>
+
+    <div class="bg-white border border-[#C8A97E] rounded-2xl p-6 mb-8 shadow-md mt-4">
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">
+            <%= product.name %>
+        </h3>
+
+        <div class="grid grid-cols-2 gap-6 text-sm text-gray-700">
+            <p><strong>Variants:</strong> <%= product.variants.length %></p>
+            <p><strong>Total Stock:</strong> <%= product.variants.reduce((s,v)=>s+v.stock,0) %></p>
+            <p><strong>Price:</strong> ₹<%= product.price %></p>
+
+            <p><strong>Status:</strong>
+                <% if (!product.isBlocked) { %>
+                    <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs shadow">Active</span>
+                <% } else { %>
+                    <span class="px-3 py-1 bg-red-500 text-white rounded-full text-xs shadow">Blocked</span>
+                <% } %>
+            </p>
+        </div>
+    </div>
+
+    <div class="w-full flex justify-end mb-4">
+        <a href="/admin/products/<%= product._id %>/variants" title="Open Add Variant page for this product"
+            class="inline-flex items-center gap-3 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow hover:bg-green-700 transition">
+            <span class="font-medium">Add Variant</span>
+            <!-- Arrow icon placed after text for clearer affordance -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg>
+        </a>
+    </div>
+
+    <div class="space-y-8">
+        <% product.variants.forEach((v, i)=> { %>
+        
+        <form class="variantForm bg-[#FFF7EF] border border-[#C8A97E] rounded-xl p-6 shadow-md"
+              data-id="<%= v._id %>">
+
+            <% if (i===0) { %>
+                <div class="text-sm font-semibold text-green-700 mb-2">Main Variant</div>
+            <% } %>
+
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Variant <%= i+1 %></h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Size</label>
+                    <select name="size" class="variantsize w-full mt-1 px-3 py-2 border rounded-lg">
+                        <% for (let s=1; s <=11; s++) { %>
+                        <option value="<%= s %>" <%=Number(v.size)===s ? "selected" : "" %>><%= s %></option>
+                        <% } %>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Stock</label>
+                    <input type="number" name="stock" value="<%= v.stock %>" min="0"
+                           class="variantstock w-full mt-1 px-3 py-2 border rounded-lg">
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Color</label>
+                    <input type="text" name="color" value="<%= v.color %>"
+                           class="variantColor w-full mt-1 px-3 py-2 border rounded-lg">
+                </div>
+
+            </div>
+
+            <div class="mt-5">
+                <label class="text-sm font-medium text-gray-700">Variant Images</label>
+                <p class="text-xs text-red-500 mb-2">Minimum 3 images required</p>
+
+                <div class="border-2 border-dashed border-[#C8A97E] p-5 bg-white rounded-xl">
+
+                    <button type="button"
+                        class="selectImagesBtn px-4 py-2 bg-[#C8A97E] text-white rounded-lg shadow hover:bg-[#b6916a] mx-auto block">
+                        Select Images
+                    </button>
+
+                    <input type="file" class="variantImages hidden" multiple accept="image/*" />
+
+                    <div class="variantPreview flex flex-wrap gap-3 mt-4">
+                        <% v.images.forEach(img=> { %>
+                        <div class="imgWrapper oldImage relative" data-img="<%= img %>">
+                            <img src="<%= img %>" class="w-20 h-20 rounded object-cover border">
+                            <button type="button"
+                                class="removeImageBtn absolute -top-2 -right-2 w-6 h-6 text-xs flex items-center justify-center bg-red-600 text-white rounded-full">
+                                &times;
+                            </button>
+                        </div>
+                        <% }) %>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="flex justify-end items-center gap-3 mt-4">
+                <button type="button"
+                    onclick="confirmToggle('<%= v._id %>', <%= v.isBlocked ? true : false %>)"
+                    id="variantBtn-<%= v._id %>"
+                    class="px-5 py-2 text-white rounded-lg shadow transition 
+                        <%= (v.isBlocked) ? 'bg-green-500 hover:bg-green-600' 
+                                            : 'bg-red-500 hover:bg-red-600' %>">
+                    <%= (v.isBlocked) ? 'Unblock' : 'Block' %>
+                </button>
+
+                <button type="button"
+                    class="saveVariantBtn px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+                    Save Variant
+                </button>
+            </div>
+
+        </form>
+
+        <% }) %>
+    </div>
+
+    <div id="blockModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center z-40">
+        <div class="w-96 bg-orange-100 rounded-lg shadow-lg p-6 relative">
+
+            <h2 id="blockMessage" class="text-center text-stone-900 text-base font-semibold"></h2>
+
+            <div class="flex justify-center gap-4 mt-8">
+                <button onclick="closeBlockModal()"
+                        class="px-6 py-2 bg-green-500 text-white rounded-md text-sm font-medium">
+                    Cancel
+                </button>
+
+                <button id="confirmBlockBtn"
+                        class="px-6 py-2 bg-red-600 text-white rounded-md text-sm font-medium">
+                    Confirm
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-75 hidden justify-center items-center z-50">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-11/12 md:w-2/3 lg:w-1/2 max-h-[90vh] flex flex-col">
+            
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Crop Variant Image (<span id="cropIndex">1</span> of <span id="cropTotal">1</span>)</h2>
+            
+            <div class="flex-grow min-h-0 overflow-hidden relative">
+                <div class="w-full h-full">
+                    <img id="imageToCrop" src="" alt="Image to Crop">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-4">
+                <button type="button" onclick="cropAndNext()"
+                    class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">
+                    Crop & Next
+                </button>
+                <button type="button" onclick="cancelCrop()"
+                    class="px-5 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<script>
+    const notyf = new Notyf({ position: { x: "right", y: "top" } });
+
+    let cropperInstance = null;
+    let currentImageFiles = []; 
+    let currentCroppedBlobs = []; 
+    let currentVariantForm = null; 
+    let cropIndex = 0; 
+
+    function openCropModal() {
+        if (currentImageFiles.length === 0) return;
+
+        if (cropperInstance) {
+            cropperInstance.destroy();
+        }
+        
+        document.getElementById("cropModal").classList.remove("hidden");
+        document.getElementById("cropModal").classList.add("flex");
+
+        document.getElementById("cropIndex").innerText = cropIndex + 1;
+        document.getElementById("cropTotal").innerText = currentImageFiles.length;
+
+        const image = document.getElementById('imageToCrop');
+        image.src = URL.createObjectURL(currentImageFiles[cropIndex]);
+
+        setTimeout(() => {
+            cropperInstance = new Cropper(image, {
+                aspectRatio: 1, 
+                viewMode: 1, 
+                autoCropArea: 0.8,
+                responsive: true,
+                background: false,
+            });
+        }, 100);
+    }
+
+    
+    function closeCropModal() {
+        document.getElementById("cropModal").classList.add("hidden");
+        document.getElementById("cropModal").classList.remove("flex");
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+    }
+
+    window.cropAndNext = function () {
+        if (!cropperInstance || !currentVariantForm) return;
+
+        cropperInstance.getCroppedCanvas({
+            maxWidth: 1024, 
+            maxHeight: 1024,
+        }).toBlob((blob) => {
+            
+            currentCroppedBlobs.push(blob);
+            
+            const imageUrl = URL.createObjectURL(blob);
+            
+            const preview = currentVariantForm.querySelector(".variantPreview");
+            const wrapper = document.createElement("div");
+            wrapper.className = "imgWrapper newImage relative";
+            wrapper.dataset.blobIndex = currentCroppedBlobs.length - 1; 
+
+            wrapper.innerHTML = `
+                <img src="${imageUrl}" class="w-20 h-20 rounded object-cover border">
+                <button type="button"
+                    class="removeNewImageBtn absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white text-xs rounded-full flex items-center justify-center">&times;</button>
+            `;
+            
+            wrapper.querySelector(".removeNewImageBtn").onclick = function() {
+                
+                const blobIndex = parseInt(wrapper.dataset.blobIndex);
+                
+                currentCroppedBlobs[blobIndex] = null; 
+                
+                wrapper.remove(); 
+            };
+
+            preview.querySelectorAll('.newImagePlaceholder').forEach(p => p.remove());
+
+            preview.appendChild(wrapper);
+
+
+            cropIndex++;
+            if (cropIndex < currentImageFiles.length) {
+                openCropModal(); 
+            } else {
+                currentImageFiles = []; 
+                cropIndex = 0;
+                closeCropModal();
+                notyf.success("All new images have been cropped and added for preview.");
+            }
+
+        }, 'image/jpeg', 0.9); 
+    };
+
+    window.cancelCrop = function () {
+        currentImageFiles = [];
+        cropIndex = 0;
+        closeCropModal();
+        notyf.open({ type: "info", message: "Current image selection canceled." });
+    };
+
+    document.querySelectorAll(".selectImagesBtn").forEach(btn => {
+        btn.onclick = () => {
+            currentVariantForm = btn.closest(".variantForm");
+            currentImageFiles = [];
+            cropIndex = 0;
+            
+            const fileInput = currentVariantForm.querySelector(".variantImages");
+            fileInput.value = null; 
+            fileInput.click();
+        };
+    });
+
+    document.querySelectorAll(".variantImages").forEach(input => {
+        input.onchange = () => {
+            const files = Array.from(input.files);
+            
+            if (files.length > 0) {
+                currentVariantForm = input.closest(".variantForm");
+                currentImageFiles = files; 
+                cropIndex = 0;
+                
+                openCropModal();
+            }
+        };
+    });
+    
+    document.querySelectorAll(".variantPreview").forEach(preview => {
+        preview.addEventListener('click', (e) => {
+            const btn = e.target.closest(".removeImageBtn");
+            if (btn) {
+                const wrapper = btn.closest(".imgWrapper");
+                if (wrapper.classList.contains('oldImage')) {
+                    wrapper.remove();
+                } 
+                else if (wrapper.classList.contains('newImage')) {
+                    const blobIndex = parseInt(wrapper.dataset.blobIndex);
+                    currentCroppedBlobs[blobIndex] = null; 
+                    wrapper.remove();
+                }
+            }
+        });
+    });
+
+
+    document.querySelectorAll(".saveVariantBtn").forEach(btn => {
+        btn.onclick = async () => {
+
+            const form = btn.closest(".variantForm");
+            const variantId = form.dataset.id;
+            
+            const oldDisplayedImages = form.querySelectorAll(".imgWrapper.oldImage");
+            const newValidCroppedBlobs = currentCroppedBlobs.filter(blob => blob !== null);
+            const totalImages = oldDisplayedImages.length + newValidCroppedBlobs.length;
+            
+            if (totalImages < 3) {
+                return notyf.error(`Minimum 3 images required. You currently have ${totalImages}.`);
+            }
+
+            const fd = new FormData();
+            fd.append("size", form.querySelector("[name='size']").value);
+            fd.append("stock", form.querySelector("[name='stock']").value);
+            fd.append("color", form.querySelector("[name='color']").value);
+
+            let oldImages = Array.from(oldDisplayedImages)
+                .map(img => img.dataset.img);
+
+            oldImages.forEach(img => fd.append("oldImages", img));
+
+
+            newValidCroppedBlobs.forEach((blob, index) => {
+                const fileName = `variant-new-image-${Date.now()}-${index}.jpeg`;
+                fd.append("images", blob, fileName); 
+            });
+
+
+            try {
+                currentCroppedBlobs = [];
+                currentImageFiles = []; 
+                cropIndex = 0;
+                currentVariantForm = null;
+
+                const response = await axios.patch(`/admin/products/variants/update-one/${variantId}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+
+                if (response.data.success) {
+                    notyf.success(response.data.message);
+                    
+                    setTimeout(() => window.location.reload(), 500);
+
+                } else {
+                    notyf.error(response.data.message);
+                }
+
+            } catch (error) {
+                if (error.response && error.response.data && error.response.data.message) {
+                    notyf.error(error.response.data.message)
+                } else {
+                    notyf.error("Server error updating variant");
+                }
+            }
+        };
+    })
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const notyf = new Notyf({ position: { x: "right", y: "top" } });
+
+        let selectedVariantId = null;
+
+        window.confirmToggle = function (id, isBlocked) {
+            selectedVariantId = id;
+
+            document.getElementById("blockMessage").innerText =
+                isBlocked
+                    ? "Are you sure you want to unblock this Variant?"
+                    : "Are you sure you want to block this Variant?";
+
+            document.getElementById("blockModal").classList.remove("hidden");
+            document.getElementById("blockModal").classList.add("flex");
+        };
+
+        window.closeBlockModal = function () {
+            document.getElementById("blockModal").classList.add("hidden");
+            document.getElementById("blockModal").classList.remove("flex");
+        };
+
+        const confirmBtn = document.getElementById("confirmBlockBtn");
+        if (confirmBtn) {
+            confirmBtn.addEventListener("click", () => {
+                toggleVariantStatus(selectedVariantId);
+                window.closeBlockModal();
+            });
+        }
+
+        async function toggleVariantStatus(id) {
+            try {
+                const url = `/admin/products/variants/toggle-block/${id}`;
+                console.log("PATCH:", url);
+
+                const response = await axios.patch(url);
+
+                if (response.data.success) {
+                    const isBlocked = response.data.isBlocked;
+
+                    const btn = document.getElementById(`variantBtn-${id}`);
+                    if (btn) {
+                        btn.innerText = isBlocked ? "Unblock" : "Block";
+                        btn.className = `px-5 py-2 text-white rounded-lg shadow transition ` +
+                            (isBlocked ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600");
+                    }
+                    notyf.success(response.data.message);
+                }
+            } catch (err) {
+                console.error("BLOCK ERROR:", err);
+                notyf.error("Failed to update variant status");
+            }
+        }
+    });
+</script>
+</body>
+</html>

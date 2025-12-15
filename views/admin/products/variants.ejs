@@ -1,0 +1,356 @@
+<nav class="flex" aria-label="Breadcrumb">
+  <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm">
+
+    <!-- Products -->
+    <li class="inline-flex items-center">
+      <a href="/admin/products" 
+         class="text-gray-700 hover:text-indigo-600 font-medium underline hover:no-underline">
+        Products
+      </a>
+    </li>
+
+       <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 mx-1 md:mx-2" 
+             fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" 
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 
+                  7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 
+                  010 1.414l-4 4a1 1 0 01-1.414 0z" 
+                clip-rule="evenodd"></path>
+        </svg>
+
+        <a href="/admin/products/<%= product._id %>/variants/edit" 
+           class="text-gray-700 hover:text-indigo-600 font-medium underline hover:no-underline">
+          Manage variants
+        </a>
+      </div>
+    </li>
+
+    <!-- Add Variants -->
+    <li>
+      <div class="flex items-center">
+        <svg class="w-4 h-4 text-gray-400 mx-1 md:mx-2" 
+             fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" 
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 
+                   7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 
+                   010 1.414l-4 4a1 1 0 01-1.414 0z" 
+                clip-rule="evenodd"></path>
+        </svg>
+
+        <span class="text-gray-500 font-medium" aria-current="page">
+          Add variants
+        </span>
+      </div>
+    </li>
+
+  </ol>
+</nav>
+
+<br>
+<!-- ================= PRODUCT INFO CARD ================= -->
+<div id="productInfoCard" class="bg-white border border-[#C8A97E] rounded-2xl p-6 mb-8 shadow-md">
+
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">
+        <%= product.name %>
+    </h3>
+
+    <div class="grid grid-cols-2 gap-6 text-sm text-gray-700">
+
+        <p><strong class="text-gray-900">Variants:</strong>
+            <%= product.variants?.length || 0 %>
+        </p>
+
+        <p><strong class="text-gray-900">Total Stock:</strong>
+            <%= product.variants.reduce((s,v)=>s+v.stock,0) || 0 %>
+        </p>
+
+        <p><strong class="text-gray-900">Price:</strong> ₹<%= product.price %>
+        </p>
+
+        <p>
+            <strong class="text-gray-900">Status:</strong>
+            <% if (!product.isBlocked) { %>
+                <span class="ml-2 px-3 py-1 bg-green-500 text-white rounded-full text-xs shadow">Active</span>
+                <% } else { %>
+                    <span class="ml-2 px-3 py-1 bg-red-500 text-white rounded-full text-xs shadow">Blocked</span>
+                    <% } %>
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ================= ACTION BUTTONS (Right aligned Add Variant) ================= -->
+<div class="w-full flex justify-end items-center mb-4">
+    <button id="addVariantBtn"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow hover:bg-green-700 transition">
+        <span class="font-medium">Add Variant</span>
+        <span class="ml-2 text-lg font-bold">+</span>
+    </button>
+</div>
+
+
+<!-- ================= VARIANT SECTION WRAPPER ================= -->
+<div id="variantSection" class="space-y-8">
+
+    <!-- Where variant cards appear -->
+    <div id="variantContainer" class="space-y-6"></div>
+
+    <!-- Submit Button Always Below Last Card -->
+    <div id="submitVariantsBox" class="hidden pt-6 pb-4">
+        <button id="submitVariantsBtn" onclick="submitVariants()"
+            class="w-full py-3 bg-[#C8A97E] text-white rounded-xl font-semibold shadow-md hover:bg-[#b6916a] transition">
+            Save Variants
+        </button>
+    </div>
+
+</div>
+
+
+<!-- ================== HIDDEN TEMPLATE ================== -->
+<div id="variantCardTemplate" class="hidden">
+
+    <div class="variantCard bg-[#FFF7EF] border border-[#C8A97E] rounded-xl p-6 shadow-md relative">
+
+        <!-- MAIN VARIANT LABEL (JS will fill this for 1st card) -->
+        <div class="mainVariantLabel hidden text-sm font-semibold text-green-700 mb-3"></div>
+
+        <!-- MAIN VARIANT LABEL (will be shown only for first variant via JS) -->
+        <div class="mainVariantLabel hidden text-sm font-semibold text-green-700 mb-2"></div>
+
+        <div class="absolute top-4 right-4 flex gap-2">
+
+            <!-- EDIT button (hidden for new variants, shown for existing ones) -->
+            <button type="button" class="editVariantBtn hidden text-blue-600 font-semibold text-sm hover:text-blue-800">
+                Edit
+            </button>
+
+            <!-- REMOVE button (hidden for first card, shown for new variants) -->
+            <button type="button" class="removeVariantBtn text-red-600 font-semibold text-sm hover:text-red-800">
+                Remove
+            </button>
+
+        </div>
+
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Variant</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+<div>
+    <label class="text-sm font-medium text-gray-700">Size</label>
+
+    <select name="size"
+        class="variantsize w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg 
+               bg-white text-gray-700 cursor-pointer 
+               focus:ring-2 focus:ring-[#C8A97E] focus:border-[#C8A97E]">
+
+        <% for (let s = 1; s <= 11; s++) { %>
+            <option value="<%= s %>">
+                <%= s %>
+            </option>
+        <% } %>
+
+    </select>
+</div>
+
+
+
+            <div>
+                <label class="text-sm font-medium text-gray-700">Stock</label>
+                <input type="number" class="variantstock w-full mt-1 px-3 py-2 border rounded-lg" min="0">
+            </div>
+
+            <div>
+                <label class="text-sm font-medium text-gray-700">Color</label>
+                <input type="text" class="variantColor w-full mt-1 px-3 py-2 border rounded-lg">
+            </div>
+
+        </div>
+
+
+        <!-- IMAGE UPLOAD -->
+        <div class="mt-5">
+            <label class="text-sm font-medium text-gray-700">Variant Images</label>
+            <p class="text-xs text-red-500 mb-2">Minimum 3 images required</p>
+
+            <div class="border-2 border-dashed border-[#C8A97E] p-5 rounded-xl bg-white">
+
+                <button type="button"
+                    class="selectImagesBtn px-4 py-2 bg-[#C8A97E] text-white rounded-lg shadow hover:bg-[#b6916a]">
+                    Select Images
+                </button>
+
+                <input type="file" class="variantImages hidden" accept="image/*" multiple />
+
+                <div class="variantPreview flex flex-wrap gap-3 mt-4"></div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<script>
+
+    const addVariantBtn = document.getElementById("addVariantBtn");
+    const variantContainer = document.getElementById("variantContainer");
+    const variantTemplate = document.getElementById("variantCardTemplate").children[0];
+    const submitBox = document.getElementById("submitVariantsBox");
+
+    // 
+    // render image preview
+    function renderPreview(files, imgInput, preview) {
+        preview.innerHTML = "";
+
+        files.forEach((file, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "relative inline-block";
+
+            const img = document.createElement("img");
+            img.className = "w-20 h-20 rounded object-cover border";
+            img.src = URL.createObjectURL(file);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.innerHTML = "&times;";
+            removeBtn.className =
+                "absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow";
+
+            removeBtn.onclick = () => {
+                files.splice(index, 1);
+                const dt = new DataTransfer();
+                files.forEach(f => dt.items.add(f));
+                imgInput.files = dt.files;
+                renderPreview(files, imgInput, preview);
+            };
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(removeBtn);
+            preview.appendChild(wrapper);
+        });
+    }
+
+    // Add Variant Card
+    function addVariantCard() {
+        const card = variantTemplate.cloneNode(true);
+        let currentFiles = [];
+
+        const imgInput = card.querySelector(".variantImages");
+        const preview = card.querySelector(".variantPreview");
+        const selectBtn = card.querySelector(".selectImagesBtn");
+
+        // center the Select Images button
+        selectBtn.classList.add("mx-auto", "block");
+
+        const removeBtn = card.querySelector(".removeVariantBtn");
+        const editBtn = card.querySelector(".editVariantBtn");
+        const mainLabel = card.querySelector(".mainVariantLabel");
+
+        const isFirst = variantContainer.children.length === 0;
+
+        if (isFirst) {
+            mainLabel.innerText = "Main Variant";
+            mainLabel.classList.remove("hidden");
+
+            removeBtn.classList.add("hidden");
+            editBtn.classList.add("hidden");
+        } else {
+            editBtn.classList.add("hidden");
+        }
+
+        // Remove button action
+        removeBtn.onclick = () => {
+            card.remove();
+            moveSubmitBelow();
+
+            // always ensure 1 card still
+            if (variantContainer.children.length === 0) {
+                addVariantCard();
+            }
+        };
+
+        // Image selector
+        selectBtn.onclick = () => imgInput.click();
+
+        imgInput.addEventListener("change", () => {
+            const newFiles = Array.from(imgInput.files);
+            currentFiles = [...currentFiles, ...newFiles];
+
+            if (currentFiles.length < 3) {
+                new Notyf().error("Minimum 3 images required");
+                return;
+            }
+
+            const dt = new DataTransfer();
+            currentFiles.forEach(f => dt.items.add(f));
+            imgInput.files = dt.files;
+
+            renderPreview(currentFiles, imgInput, preview);
+        });
+
+        variantContainer.appendChild(card);
+        moveSubmitBelow();
+    }
+
+    function moveSubmitBelow() {
+        submitBox.classList.remove("hidden");
+        submitBox.remove();
+        document.getElementById("variantSection").appendChild(submitBox);
+    }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        addVariantCard();
+    });
+
+    addVariantBtn.addEventListener("click", addVariantCard);
+
+    //submit varia
+    async function submitVariants() {
+        const notyf = new Notyf({ position: { x: "right", y: "top" } });
+
+        const cards = document.querySelectorAll("#variantContainer .variantCard");
+        if (cards.length === 0) return notyf.error("Please add at least one variant.");
+
+        const formData = new FormData();
+        const variants = [];
+
+        formData.append("productId", "<%= product._id %>");
+
+        cards.forEach((card, i) => {
+            const size = card.querySelector(".variantsize").value.trim();
+            const stock = card.querySelector(".variantstock").value.trim();
+            const color = card.querySelector(".variantColor").value.trim();
+            const images = card.querySelector(".variantImages").files;
+
+            if (!size || !stock || !color) throw notyf.error(`Variant ${i + 1}: Fill all fields`);
+            if (images.length < 3) throw notyf.error(`Variant ${i + 1}: Upload at least 3 images`);
+
+            variants.push({ size, stock, color });
+
+            [...images].forEach(file => formData.append(`images_${i}`, file));
+        });
+
+        formData.append("variants", JSON.stringify(variants));
+
+        try {
+            const response = await axios.post("/admin/products/variants/save", formData);
+
+            if (response.data.success) {
+                notyf.success(response.data.message);
+                setTimeout(() => window.location.href = response.data.redirect, 800);
+            }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                notyf.error(error.response.data.message)
+            } else {
+                notyf.error("Failed to save variants");
+
+            }
+        }
+    }
+</script>

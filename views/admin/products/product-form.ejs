@@ -1,0 +1,211 @@
+<div class="w-full min-h-screen bg-[#F5E9DA] py-10 px-4 flex justify-center">
+
+    <div class="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-10">
+
+        <h1 class="text-3xl font-bold text-[#2c2c2c] mb-2">
+            <%= product ? "Edit Product" : "Add New Product" %>
+        </h1>
+
+        <p class="text-sm text-gray-600 mb-6">
+            <%= product ? "Update the product details below." : "Fill in the product details below." %>
+        </p>
+
+        <!-- INFO BANNER -->
+        <div class="mb-8 p-4 bg-[#FFF8E5] border border-[#E1C08B] rounded-lg shadow-sm">
+            <h2 class="text-base font-semibold text-gray-900">
+                <%= product ? "Edit Product Details" : "Add Product Details" %>
+            </h2>
+            <p class="text-sm text-gray-700 mt-1 leading-relaxed">
+                <%= product 
+                    ? "Modify any field and save the changes. Variants can be edited separately." 
+                    : "Enter all basic product information. After saving, you can add variants." 
+                %>
+            </p>
+        </div>
+
+        <!-- FORM START -->
+        <form onsubmit="handleProductSubmit(event, <%= product ? `'${product._id}'` : 'null' %>)" enctype="multipart/form-data">
+
+            <!-- ROW 1: NAME -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700">Product Name</label>
+                <input type="text" name="name"
+                    value="<%= product ? product.name : '' %>"
+                    class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]"
+                    required />
+            </div>
+
+            <!-- ROW 2: DESCRIPTION -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700">Description</label>
+                <textarea name="description"
+                    class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg h-32 focus:ring-2 focus:ring-[#C8A97E]"
+                    required><%= product ? product.description : '' %></textarea>
+            </div>
+
+            <!-- ROW 3: PRICE + DISCOUNT -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Price (₹)</label>
+                    <input type="number" name="price" min="0"
+                        value="<%= product ? product.price : '' %>"
+                        class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]"
+                        required />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Discount (%)</label>
+                    <input type="number" name="discount" min="0" max="90"
+                        value="<%= product ? product.discount : 0 %>"
+                        class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]" />
+                </div>
+            </div>
+
+            <!-- ROW 4: MAIN CATEGORY + SUBCATEGORY + MATERIAL -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Main Category</label>
+                    <select id="mainCategory" name="mainCategory"
+                        class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]">
+                        <option value="">-- Select Category --</option>
+                        <option value="men">Men</option>
+                        <option value="women">Women</option>
+                        <option value="kids">Kids</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Subcategory</label>
+                    <select id="subCategorySelect" name="subCategory_id"
+                        class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]"
+                        required>
+                        <option value="">-- Choose a Subcategory --</option>
+                        <% subcategories.forEach(sc => { %>
+                            <option data-category="<%= (sc.category || '').toString().toLowerCase() %>" value="<%= sc._id %>"
+                                <%= product && product.subCategory_id && sc._id.toString() === product.subCategory_id.toString() ? "selected" : "" %>>
+                                <%= sc.subcategory %>
+                            </option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Material</label>
+                    <input type="text" name="material"
+                        value="<%= product ? product.material : '' %>"
+                        class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]"
+                        required />
+                </div>
+            </div>
+
+            <!-- ROW 5: HIGHLIGHTS -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700">Highlights (comma separated)</label>
+                <input type="text" name="highlights"
+                    value="<%= product ? product.highlights.join(', ') : '' %>"
+                    class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C8A97E]" />
+            </div>
+
+            <!-- ROW 6: SPECIFICATIONS -->
+            <div class="mb-10">
+                <label class="block text-sm font-medium text-gray-700">Specifications</label>
+                <textarea name="specifications"
+                    class="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg h-28 focus:ring-2 focus:ring-[#C8A97E]"><%= product ? product.specifications : '' %></textarea>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="flex justify-end gap-4">
+                <a href="/admin/products"
+                    class="px-6 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 shadow">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                    class="px-6 py-3 bg-[#C8A97E] text-white rounded-lg hover:bg-[#b5916e] shadow">
+                    <%= product ? "Update Product" : "Add Product" %>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<script>
+async function handleProductSubmit(event, productId = null) {
+    const notyf = new Notyf({ position: { x: 'right', y: 'top' }, duration: 3000 });
+    event.preventDefault();
+
+    try {
+        const formData = new FormData(event.target);
+
+        let url = "/admin/product/add";
+        let method = "post";
+
+        if (productId) {
+            url = `/admin/product/edit/${productId}`;
+            method = "patch"; 
+        }
+
+        const response = await axios({method: method,url: url,data: formData});
+
+        if (response.data.success) {
+            notyf.success(response.data.message);
+            setTimeout(() => {
+                window.location.href = response.data.redirect;
+            }, 1000);
+        }
+    } catch (error) {
+        console.log(error);
+        notyf.error("Error saving product");
+    }
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainSelect = document.getElementById('mainCategory');
+    const subSelect = document.getElementById('subCategorySelect');
+
+    if (!mainSelect || !subSelect) return;
+
+    function filterSubcategories(category) {
+        const options = Array.from(subSelect.options);
+        options.forEach(opt => {
+            if (!opt.value) return; 
+            const optCategory = (opt.dataset.category || '').toLowerCase();
+            if (!category) {
+                opt.hidden = false;
+                opt.style.display = '';
+            } else if (optCategory === category.toLowerCase()) {
+                opt.hidden = false;
+                opt.style.display = '';
+            } else {
+                if (opt.selected) opt.selected = false;
+                opt.hidden = true;
+                opt.style.display = 'none';
+            }
+        });
+
+        if (category) {
+            const visibleOptions = options.filter(o => o.value && !o.hidden);
+            const hasSelected = visibleOptions.some(o => o.selected);
+            if (!hasSelected && visibleOptions.length) {
+                visibleOptions[0].selected = true;
+            }
+        }
+    }
+
+    mainSelect.addEventListener('change', function() {
+        filterSubcategories(this.value);
+    });
+
+    const initiallySelected = Array.from(subSelect.options).find(o => o.selected && o.value);
+    if (initiallySelected) {
+        const cat = (initiallySelected.dataset.category || '').toLowerCase();
+        if (cat) {
+            mainSelect.value = cat;
+            filterSubcategories(cat);
+        }
+    }
+});
+</script>

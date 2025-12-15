@@ -1,0 +1,571 @@
+<% 
+    let unblockedVariants = product.variants.filter(v => !v.isBlocked);
+    let initialVariant = unblockedVariants[0];
+    let initialImage = initialVariant?.images[0] || '/images/default.png';
+    let uniqueSizes = [...new Set(unblockedVariants.map(v => v.size))].sort();
+    let uniqueColors = [...new Set(unblockedVariants.map(v => v.color))];
+    let initialImages = initialVariant?.images || [];
+%>
+
+<style>
+    #zoomContainer {
+        position: relative;
+        cursor: crosshair;
+    }
+
+    #mainImage {
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity 0.3s;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    #visibleImage {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .active-size {
+        outline: 2px solid #5D4037 !important;
+        background-color: #5D4037 !important;
+        color: white !important;
+    }
+
+    .active-color {
+        outline: 3px solid #5D4037 !important;
+    }
+
+    .disabled-option {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+
+<div class="bg-[#F5E9DA] border-b border-stone-300">
+    <div class="max-w-7xl mx-auto px-6 py-3">
+        <nav class="text-sm text-stone-600">
+            <ol class="flex items-center gap-2">
+                <li><a href="/user/products" class="text-[#C8A97E] hover:text-[#b6916a] font-semibold">Product</a>
+                </li>
+                <li class="text-stone-400">/</li>
+                <li><a href="/user/products?category=<%= category %>"
+                        class="text-[#C8A97E] hover:text-[#b6916a] font-semibold">
+                        <%= category.charAt(0).toUpperCase() + category.slice(1) || 'All' %>
+                    </a></li>
+                <% if (subcategoryName) { %>
+                    <li class="text-stone-400">/</li>
+                    <li><span class="text-stone-700 font-semibold">
+                            <%= subcategoryName %>
+                        </span></li>
+                <% } %>
+                <li class="text-stone-400">/</li>
+                <li class="text-stone-700 font-semibold">
+                    <%= product.name %>
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="bg-[#F5E9DA] py-12">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+                <div id="zoomContainer"
+                    class="w-full h-96 bg-white rounded-lg shadow-md border border-stone-400 overflow-hidden relative mb-6"
+                    onmousemove="zoom(event)" onmouseout="hideZoom()">
+                    <% if (product.discount && product.discount > 0) { %>
+                        <div
+                            class="absolute top-4 right-4 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full z-20 shadow-lg">
+                            -<%= product.discount %>%</div>
+                    <% } %>
+                    <img id="visibleImage" src="<%= initialImage %>" alt="<%= product.name %>"
+                        class="w-full h-full object-cover">
+                    <div id="mainImage" class="w-full h-full object-cover transition-opacity duration-300">
+                    </div>
+                </div>
+
+                <div id="thumbnailGallery" class="flex flex-wrap gap-3">
+                    <% initialImages.forEach(img => { %>
+                        <div class="w-28 h-28 bg-white rounded-lg outline outline-1 outline-offset-[-1px] outline-stone-400 cursor-pointer hover:opacity-80 transition"
+                            onclick="changeMainImage(this.querySelector('img').src);">
+                            <img src="<%= img %>" class="w-full h-full object-cover rounded-lg thumbImg" alt="Thumbnail">
+                        </div>
+                    <% }) %>
+                </div>
+
+                <div class="mt-6">
+                    <span class="text-black text-base font-semibold">Colors:</span>
+                    <div class="flex gap-3 mt-3">
+                        <% uniqueColors.forEach(color => { %>
+                            <div class="color-option w-10 h-10 rounded-full cursor-pointer transition outline outline-1 outline-offset-[-1px] outline-stone-400 hover:outline-2 <%= color === initialVariant?.color ? 'active-color' : '' %>"
+                                data-color="<%= color %>" onclick="selectColor('<%= color %>')"
+                                style="background-color: <%= color.toLowerCase() === 'black' ? '#000000' : (color.toLowerCase() === 'brown' ? '#5D4037' : color) %>;"
+                                title="<%= color %>"></div>
+                        <% }) %>
+                    </div>
+                </div>
+                <input type="hidden" id="selectedColor" value="<%= initialVariant?.color || '' %>">
+            </div>
+
+            <div class="space-y-6">
+                <h1 class="text-4xl font-bold text-stone-700">
+                    <%= product.name %>
+                </h1>
+                <p class="text-neutral-900 text-base leading-7">
+                    <%= product.description %>
+                </p>
+
+                <div class="flex items-center gap-4 border-b border-stone-200 pb-6">
+                    <div class="text-3xl font-bold text-stone-700">
+                        <% const finalPrice = product.price * (1 - (product.discount / 100)); %>
+                        ₹<%= finalPrice.toFixed(2) %>
+                    </div>
+                    <% if (product.discount && product.discount > 0) { %>
+                        <del class="text-lg font-semibold text-stone-400">₹<%= product.price.toFixed(2) %></del>
+                    <% } %>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-yellow-500 text-lg">★★★★★</span>
+                    <span class="text-stone-700 text-sm">(<%= product.reviews || 0 %> reviews)</span>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold text-stone-700 mb-3">Select Size</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <% uniqueSizes.forEach(s => { %>
+                            <button data-size="<%= s %>"
+                                class="size-option flex items-center justify-center w-16 h-11 border-2 border-stone-400 rounded-full text-stone-700 font-medium text-sm hover:bg-stone-400 hover:text-white transition <%= s === initialVariant?.size ? 'active-size' : '' %>"
+                                onclick="selectSize('<%= s %>')">
+                                <%= s %>
+                            </button>
+                        <% }) %>
+                    </div>
+                    <input type="hidden" id="selectedSize" value="<%= initialVariant?.size || '' %>">
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold text-stone-700 mb-3">Quantity</h3>
+                    <div class="flex items-center gap-4">
+                        <button id="decrementBtn"
+                            class="w-10 h-10 border-2 border-stone-400 rounded-full flex items-center justify-center text-stone-700 font-bold hover:bg-stone-200 transition">−</button>
+                        <span id="quantityDisplay" class="text-lg font-semibold text-stone-700">1</span>
+                        <button id="incrementBtn"
+                            class="w-10 h-10 border-2 border-stone-400 rounded-full flex items-center justify-center text-stone-700 font-bold hover:bg-stone-200 transition">+</button>
+                    </div>
+                    <div id="stockMessage" class="mt-3 text-sm text-green-600 font-medium">In Stock: <%=
+                        initialVariant?.stock || 0 %> units</div>
+                </div>
+
+                <div class="space-y-3 pt-4">
+                    <button id="addToCartBtn"
+                        class="w-full h-14 bg-stone-400 hover:bg-stone-500 text-white font-semibold rounded-lg transition <%= initialVariant ? '' : 'disabled-option' %>">Add
+                        to Cart</button>
+                    <button id="buyNowBtn"
+                        class="w-full h-14 bg-stone-700 hover:bg-stone-800 text-stone-100 font-semibold rounded-lg transition <%= initialVariant ? '' : 'disabled-option' %>">Buy
+                        Now</button>
+                </div>
+
+                <div
+                    class="flex items-center gap-4 pt-6 border-t border-stone-300 mt-6 bg-[#F5E9DA] p-5 rounded-lg">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-[#C8A97E]" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M10 20a1 1 0 100-2 1 1 0 000 2zM18 20a1 1 0 100-2 1 1 0 000 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 18h7.5A2.5 2.5 0 0022 15.5V9a1 1 0 00-1-1h-6.236l-3.321-4.982A1 1 0 009.68 3H4a1 1 0 00-1 1v11a2 2 0 002 2h3.5" />
+                    </svg>
+
+                    <div>
+                        <p class="text-stone-800 font-semibold text-base">Free Worldwide Shipping</p>
+                        <p class="text-stone-600 text-sm">On all orders above ₹500</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white border-t-2 border-stone-400 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-stone-700 mb-8">Product Details</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+                <h3 class="text-lg font-semibold text-stone-700 mb-4">Description</h3>
+                <p class="text-neutral-900 text-sm leading-7 mb-6">
+                    <%= product.description %>
+                </p>
+
+                <% if (product.highlights && product.highlights.length) { %>
+                    <h3 class="text-lg font-semibold text-stone-700 mb-4">Highlights</h3>
+                    <ul class="space-y-2">
+                        <% product.highlights.forEach(h => { %>
+                            <li class="flex items-start gap-3 text-stone-700 text-sm">
+                                <span class="text-[#C8A97E] font-bold mt-0.5">•</span>
+                                <%= h %>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+            </div>
+
+            <div>
+                <% if (product.material) { %>
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-stone-700 mb-3">Material</h3>
+                        <p class="text-neutral-900 text-sm">
+                            <%= product.material %>
+                        </p>
+                    </div>
+                <% } %>
+
+                <% if (product.specifications && Object.keys(product.specifications).length) { %>
+                    <div>
+                        <h3 class="text-lg font-semibold text-stone-700 mb-4">Specifications</h3>
+                        <table class="w-full text-sm">
+                            <tbody>
+                                <% 
+                                    const specObj = product.specifications; 
+                                    const specKeys = Object.keys(specObj || {}); 
+                                    const isNumericSequence = specKeys.length > 0 && specKeys.every(k => /^\d+$/.test(k));
+                                    
+                                    if (isNumericSequence) {
+                                        const ordered = specKeys
+                                            .map(k => ({ idx: Number(k), val: specObj[k] }))
+                                            .sort((a,b) => a.idx - b.idx)
+                                            .map(x => x.val);
+                                        const combined = ordered.join('');
+                                %>
+                                <tr class="border-b border-stone-200 last:border-b-0">
+                                    <td class="py-3 font-semibold text-stone-700 w-1/3">Details</td>
+                                    <td class="py-3 text-neutral-900">
+                                        <%= combined %>
+                                    </td>
+                                </tr>
+                                <% } else { %>
+                                    <% Object.entries(specObj).forEach(([key, value]) => { %>  
+                                        <tr class="border-b border-stone-200 last:border-b-0">
+                                            <td class="py-3 font-semibold text-stone-700 w-1/3">
+                                                <%= key %>
+                                            </td>
+                                            <td class="py-3 text-neutral-900">
+                                                <%= value %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-[#F5E9DA] py-16">
+    <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-stone-800 mb-8">Customer Reviews</h2>
+
+        <div class="space-y-4 mb-8">
+            <div class="bg-white rounded-lg p-6 shadow-sm border border-stone-200">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-semibold text-stone-700">Michael Thompson</h4>
+                    <span class="text-yellow-500 text-sm">★★★★★</span>
+                </div>
+                <p class="text-neutral-900 text-sm">Absolutely stunning craftsmanship. These shoes are worth every
+                    penny. The leather quality is exceptional and they are incredibly comfortable.</p>
+            </div>
+
+            <div class="bg-white rounded-lg p-6 shadow-sm border border-stone-200">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-semibold text-stone-700">James Richardson</h4>
+                    <span class="text-yellow-500 text-sm">★★★★★</span>
+                </div>
+                <p class="text-neutral-900 text-sm">Best dress shoes I have ever owned. The attention to detail is
+                    remarkable and they look even better in person.</p>
+            </div>
+
+            <div class="bg-white rounded-lg p-6 shadow-sm border border-stone-200">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-semibold text-stone-700">David Chen</h4>
+                    <span class="text-yellow-500 text-sm">★★★★</span>
+                </div>
+                <p class="text-neutral-900 text-sm">Beautiful shoes with excellent quality. Took a few days to break
+                    in but now they fit perfectly. Highly recommend!</p>
+            </div>
+        </div>
+
+        <button
+            class="px-8 py-3 bg-stone-400 hover:bg-stone-500 text-white font-semibold rounded-lg transition">Write a
+            Review</button>
+    </div>
+</div>
+
+<div class="bg-[#F5E9DA] py-16">
+    <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl font-bold text-stone-800 mb-8">You May Also Like</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <% relProds.forEach(prod => { %>
+
+                <a href="/user/productDetails/<%= prod._id %>" class="block 
+                    bg-white 
+                    rounded-lg 
+                    shadow-md 
+                    overflow-hidden 
+                    hover:shadow-xl 
+                    transform 
+                    hover:scale-[1.03]  transition 
+                    duration-300 
+                    ease-in-out 
+                    cursor-pointer">
+
+                    <div class="w-full h-56 bg-[#F5E9DA] flex items-center justify-center">
+                        <img src="<%= prod.image %>" alt="<%= prod.name %>" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="p-4 bg-white">
+                        <h3 class="font-semibold text-stone-700 text-sm mb-1 truncate">
+                            <%= prod.name %>
+                        </h3>
+                        <p class="text-stone-600 text-lg font-bold">
+                            ₹<%= prod.price %>
+                        </p>
+                    </div>
+                </a>
+            <% }) %>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Ensure productData is initialized correctly by the server controller
+    // If not set globally, you must set it here, assuming 'product' is available.
+    window.productData = <%- JSON.stringify(product) %>;
+</script>
+
+<script>
+    const productData = window.productData || {};
+    const hasVariants = Array.isArray(productData.variants) && productData.variants.length > 0;
+    let selectedColor = document.getElementById('selectedColor') ? document.getElementById('selectedColor').value : '';
+    let selectedSize = document.getElementById('selectedSize') ? document.getElementById('selectedSize').value : '';
+
+    function findCurrentVariant() {
+        return productData.variants.find(v => v.color === selectedColor && v.size === selectedSize && !v.isBlocked);
+    }
+
+    function updateGallery(images) {
+        const thumbnailGallery = document.getElementById('thumbnailGallery');
+        // Clear old thumbnails
+        thumbnailGallery.innerHTML = ''; 
+
+        if (!images || images.length === 0) {
+            thumbnailGallery.innerHTML = '<p class="text-sm text-red-500">No images available.</p>';
+            document.getElementById('visibleImage').src = '/images/default.png';
+            return;
+        }
+
+        // Add new thumbnails
+        images.forEach(img => {
+            const div = document.createElement('div');
+            div.className = "w-28 h-28 bg-white rounded-lg outline outline-1 outline-offset-[-1px] outline-stone-400 cursor-pointer hover:opacity-80 transition";
+            div.onclick = () => changeMainImage(img);
+            
+            const imgEl = document.createElement('img');
+            imgEl.src = img;
+            imgEl.className = "w-full h-full object-cover rounded-lg thumbImg";
+            imgEl.alt = "Thumbnail";
+            
+            div.appendChild(imgEl);
+            thumbnailGallery.appendChild(div);
+        });
+
+        // Set main image to the first image of the new gallery
+        const first = images[0];
+        document.getElementById('visibleImage').src = first;
+        document.getElementById('mainImage').style.backgroundImage = `url('${first}')`;
+
+    }
+
+    function updateStock(variant) {
+        const stockMessage = document.getElementById('stockMessage');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const buyNowBtn = document.getElementById('buyNowBtn');
+        
+        if (!variant) {
+            stockMessage.textContent = 'Variant unavailable';
+            stockMessage.className = 'mt-3 text-sm text-red-600 font-medium';
+            addToCartBtn.classList.add('disabled-option');
+            buyNowBtn.classList.add('disabled-option');
+        } else if (variant.stock > 0) {
+            stockMessage.textContent = `In Stock: ${variant.stock} units`;
+            stockMessage.className = 'mt-3 text-sm text-green-600 font-medium';
+            addToCartBtn.classList.remove('disabled-option');
+            buyNowBtn.classList.remove('disabled-option');
+        } else {
+            stockMessage.textContent = 'Out of Stock';
+            stockMessage.className = 'mt-3 text-sm text-red-600 font-medium';
+            addToCartBtn.classList.add('disabled-option');
+            buyNowBtn.classList.add('disabled-option');
+        }
+    }
+
+    window.selectColor = function (color) {
+        selectedColor = color;
+        document.getElementById('selectedColor').value = color;
+        
+        // Update color active state
+        document.querySelectorAll('.color-option').forEach(c => c.classList.remove('active-color'));
+        document.querySelector(`.color-option[data-color="${color}"]`)?.classList.add('active-color');
+
+        const colorVariants = productData.variants.filter(v => v.color === color && !v.isBlocked);
+        
+        // Manage size button visibility and selection
+        let newSelectedSize = selectedSize;
+        let foundMatch = false;
+        
+        document.querySelectorAll('.size-option').forEach(btn => {
+            const size = btn.dataset.size;
+            const sizeAvailable = colorVariants.some(v => v.size === size);
+
+            btn.classList.remove('active-size');
+            btn.classList.remove('hidden'); // Clear hidden/disabled state first
+
+            if (sizeAvailable) {
+                btn.classList.remove('disabled-option');
+                if (size === selectedSize) {
+                    foundMatch = true;
+                }
+            } else {
+                btn.classList.add('disabled-option');
+                if (size === selectedSize) {
+                    // If the previously selected size is no longer available, clear selection.
+                    newSelectedSize = null; 
+                }
+            }
+        });
+
+        // Logic to automatically select the first available size for the new color
+        if (!foundMatch || !newSelectedSize) {
+            const firstAvailableSize = colorVariants[0]?.size;
+            newSelectedSize = firstAvailableSize || null;
+        }
+
+        selectedSize = newSelectedSize;
+        document.getElementById('selectedSize').value = selectedSize || '';
+
+
+        // Update UI based on final selection
+        if (selectedSize) {
+            document.querySelector(`.size-option[data-size="${selectedSize}"]`)?.classList.add('active-size');
+        }
+
+        const currentVariant = findCurrentVariant();
+        if (currentVariant) {
+            updateGallery(currentVariant.images);
+            updateStock(currentVariant);
+        } else {
+            updateGallery([]); // Clear gallery if no variant is selected/available
+            updateStock(null);
+        }
+    };
+
+    window.selectSize = function (size) {
+        selectedSize = size;
+        document.getElementById('selectedSize').value = size;
+        
+        // Update size active state
+        document.querySelectorAll('.size-option').forEach(s => s.classList.remove('active-size'));
+        document.querySelector(`.size-option[data-size="${size}"]`)?.classList.add('active-size');
+
+        const currentVariant = findCurrentVariant();
+        if (currentVariant) {
+            updateGallery(currentVariant.images);
+        }
+        updateStock(currentVariant);
+    };
+
+    window.changeMainImage = function (src) {
+        document.getElementById('visibleImage').src = src;
+        document.getElementById('mainImage').style.backgroundImage = `url('${src}')`;
+    };
+
+window.zoom = function (e) {
+    const mainImage = document.getElementById('mainImage');
+    const zoomContainer = document.getElementById('zoomContainer');
+    const rect = zoomContainer.getBoundingClientRect();
+
+    const zoomLevel = 2.5; 
+
+    if (mainImage.style.backgroundImage) {
+        mainImage.style.opacity = '1';
+    } else {
+        mainImage.style.opacity = '0';
+        return; 
+    }
+
+   
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+  
+    mainImage.style.backgroundSize = `${rect.width * zoomLevel}px ${rect.height * zoomLevel}px`;
+
+
+    const positionX = -x * rect.width * (zoomLevel - 1);
+    const positionY = -y * rect.height * (zoomLevel - 1);
+
+
+    const maxX = rect.width * (zoomLevel - 1);
+    const maxY = rect.height * (zoomLevel - 1);
+    
+    mainImage.style.backgroundPosition = 
+        `${Math.max(-maxX, Math.min(0, positionX))}px ${Math.max(-maxY, Math.min(0, positionY))}px`;
+};
+    window.hideZoom = function () {
+        document.getElementById('mainImage').style.opacity = '0';
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialImgSrc = document.getElementById('visibleImage').src;
+        document.getElementById('mainImage').style.backgroundImage = `url('${initialImgSrc}')`;
+
+
+        if (!hasVariants) {
+            updateStock(null); 
+            return;
+        }
+
+        let quantity = 1;
+        const quantityDisplay = document.getElementById('quantityDisplay');
+        const incrementBtn = document.getElementById('incrementBtn');
+        const decrementBtn = document.getElementById('decrementBtn');
+
+        function updateQuantity(newQty) {
+            const variant = findCurrentVariant();
+            const maxStock = variant ? variant.stock : 1;
+            
+            quantity = Math.max(1, Math.min(newQty, maxStock));
+            
+            quantityDisplay.textContent = quantity;
+        }
+
+        incrementBtn.addEventListener('click', () => updateQuantity(quantity + 1));
+        decrementBtn.addEventListener('click', () => updateQuantity(quantity - 1));
+        
+        updateStock(findCurrentVariant());
+    });
+</script>
