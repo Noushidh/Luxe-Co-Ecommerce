@@ -1,0 +1,209 @@
+<style>
+    /* CSS Animation Definitions for Smooth Load */
+    @keyframes smoothFadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Base class to hide content and apply animation. */
+    .slow-load {
+        opacity: 0;
+        animation: smoothFadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+</style>
+
+<div class="bg-white">
+
+    <section class="relative h-[420px] md:h-[500px] w-full">
+        <img
+            class="absolute inset-0 w-full h-full object-cover"
+            src="https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1600&q=80"
+            alt="Classic leather dress shoes on a wet street"
+        />
+
+        <div class="absolute inset-0 bg-black/55 flex flex-col items-center justify-center text-center px-4 slow-load"
+             style="animation-delay: 0.4s;">
+            <h1 class="text-white text-3xl sm:text-4xl md:text-5xl font-semibold mb-4">
+                We're Here to Help
+            </h1>
+            <p class="text-gray-200 text-sm sm:text-base md:text-lg max-w-2xl">
+                Whether you need sizing guidance, order support, or partnership inquiries — Luxe &amp; Co is always within reach.
+            </p>
+        </div>
+    </section>
+
+    <section class="py-16 px-4 sm:px-6 lg:px-8 bg-neutral-50">
+        <div class="max-w-6xl mx-auto grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
+
+            <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 slow-load" style="animation-delay: 0.8s;">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+                    Send Us a Message
+                </h2>
+
+                <form class="space-y-5">
+                    <div>
+                        <label for="fullName" class="block text-xs font-medium text-gray-700 mb-1">
+                            Full Name
+                        </label>
+                        <input
+                            id="fullName"
+                            name="fullName"
+                            type="text"
+                            placeholder="John Doe"
+                            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A97E] focus:border-[#C8A97E]"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-xs font-medium text-gray-700 mb-1">
+                            Email Address
+                        </label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="you@example.com"
+                            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A97E] focus:border-[#C8A97E]"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label for="subject" class="block text-xs font-medium text-gray-700 mb-1">
+                            Subject
+                        </label>
+                        <input
+                            id="subject"
+                            name="subject"
+                            type="text"
+                            placeholder="Sizing question, order issue, partnership..."
+                            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C8A97E] focus:border-[#C8A97E]"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-xs font-medium text-gray-700 mb-1">
+                            Message
+                        </label>
+                        <textarea
+                            id="message"
+                            name="message"
+                            rows="5"
+                            placeholder="Tell us how we can help you..."
+                            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#C8A97E] focus:border-[#C8A97E]"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="mt-2 inline-flex items-center justify-center w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-medium text-white"
+                        style="background-color: #C8A97E;"
+                    >
+                        Send Message
+                    </button>
+                </form>
+            </div>
+
+            <div class="space-y-6">
+
+                <div class="bg-white rounded-xl shadow-md p-6 sm:p-8 slow-load" style="animation-delay: 1.2s;">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center lg:text-left">
+                        Get in Touch
+                    </h2>
+
+                    <div class="space-y-6">
+
+                        <div class="flex items-start gap-4">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-full" style="background-color:#C8A97E;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 10.5 12 18 7.5M5.25 6h13.5A1.25 1.25 0 0 1 20 7.25v9.5A1.25 1.25 0 0 1 18.75 18H5.25A1.25 1.25 0 0 1 4 16.75v-9.5A1.25 1.25 0 0 1 5.25 6Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">Email</p>
+                                <p class="text-sm text-gray-600">support@luxeandco.com</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-full" style="background-color:#C8A97E;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 5.25c0 9.11 7.39 16.5 16.5 16.5.98 0 1.8-.7 1.97-1.66l.47-2.5a1.5 1.5 0 0 0-.86-1.62l-3.07-1.3a1.5 1.5 0 0 0-1.8.46l-.9 1.2a1 1 0 0 1-1.06.37 10.6 10.6 0 0 1-6.29-6.29 1 1 0 0 1 .37-1.06l1.2-.9a1.5 1.5 0 0 0 .46-1.8l-1.3-3.07a1.5 1.5 0 0 0-1.62-.86l-2.5.47A1.9 1.9 0 0 0 2.25 5.25Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">Phone</p>
+                                <p class="text-sm text-gray-600">+1 (800) 555-LUXE</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="flex items-center justify-center w-11 h-11 rounded-full" style="background-color:#C8A97E;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21.75S4.5 16.36 4.5 10.5A7.5 7.5 0 0 1 12 3a7.5 7.5 0 0 1 7.5 7.5c0 5.86-7.5 11.25-7.5 11.25Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">Address</p>
+                                <p class="text-sm text-gray-600">125 Artisan Lane</p>
+                                <p class="text-sm text-gray-600">New York, NY 10001</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-neutral-100 rounded-xl p-6 sm:p-7 text-center lg:text-left slow-load" style="animation-delay: 1.6s;">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                        Follow the Luxe &amp; Co Journey
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-5">
+                        Join us on social media to discover new collections and stories of craftsmanship.
+                    </p>
+
+                    <div class="flex justify-center lg:justify-start gap-4">
+                        <a href="#" class="flex items-center justify-center w-11 h-11 rounded-full bg-[#C8A97E] hover:bg-[#b08d64] transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M7 2C4.24 2 2 4.24 2 7v10c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5H7zm10.5 3a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z" />
+                            </svg>
+                        </a>
+
+                        <a href="#" class="flex items-center justify-center w-11 h-11 rounded-full bg-[#C8A97E] hover:bg-[#b08d64] transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22 12a10 10 0 1 0-11.5 9.9v-7h-2v-3h2V9.6c0-2 1.2-3.1 3-3.1.9 0 1.8.1 2 .1v2.3h-1.1c-1 0-1.3.6-1.3 1.2V12h2.6l-.4 3h-2.2v7A10 10 0 0 0 22 12z" />
+                            </svg>
+                        </a>
+
+                        <a href="#" class="flex items-center justify-center w-11 h-11 rounded-full bg-[#C8A97E] hover:bg-[#b08d64] transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.46 6c-.77.35-1.6.57-2.46.68a4.24 4.24 0 0 0 1.88-2.34 8.4 8.4 0 0 1-2.68 1.03A4.2 4.2 0 0 0 16.1 4c-2.3 0-4.17 1.93-4.17 4.3 0 .34.03.67.09 1A12 12 0 0 1 3.1 5.1a4.37 4.37 0 0 0-.57 2.17c0 1.47.72 2.76 1.83 3.52a4.1 4.1 0 0 1-1.9-.56v.05c0 2.05 1.41 3.76 3.28 4.15-.34.1-.7.17-1.07.17-.26 0-.52-.03-.77-.08.52 1.7 2.04 2.94 3.84 2.98A8.44 8.44 0 0 1 2 19.54 11.87 11.87 0 0 0 8.29 21c7.55 0 11.68-6.46 11.68-12.05v-.55A8.7 8.7 0 0 0 22.46 6z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-neutral-100 py-16 px-4 sm:px-6 lg:px-8 slow-load" style="animation-delay: 2.0s;">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">
+                Looking for Something Special?
+            </h2>
+            <p class="text-base text-gray-600 mb-8">
+                Explore our latest handcrafted leather shoes, made with passion and precision.
+            </p>
+            <a
+                href="/user/products"
+                class="inline-flex items-center justify-center px-8 py-3 rounded-lg text-sm font-medium text-white"
+                style="background-color:#C8A97E;"
+            >
+                Shop Now
+            </a>
+        </div>
+    </section>
+
+</div>

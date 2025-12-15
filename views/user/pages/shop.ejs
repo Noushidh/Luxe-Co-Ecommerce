@@ -1,0 +1,187 @@
+<style>
+    /* CSS Animation Definitions for Smooth Load */
+    @keyframes smoothFadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Base class to hide content and apply animation. */
+    .slow-load {
+        opacity: 0;
+        animation: smoothFadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    /* Specific rule for the Hero image to fade in smoothly without moving */
+    @keyframes smoothFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .hero-image-load {
+        opacity: 0;
+        animation: smoothFadeIn 1.5s ease forwards;
+        animation-delay: 0.2s; /* Start slightly earlier */
+    }
+</style>
+
+<div class="bg-stone-50 min-h-screen font-['Inter'] text-stone-900">
+
+  <section class="relative w-full h-[550px] bg-stone-100">
+<img src="https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=1200"
+     alt="Classic Leather Shoe"
+     class="w-full h-full object-cover absolute inset-0 hero-image-load">
+
+
+
+
+    <div class="absolute inset-0 bg-black/30 flex flex-col justify-center items-center text-center px-4">
+        
+        <h1 class="text-white text-5xl md:text-6xl font-normal leading-tight mb-6 slow-load"
+            style="animation-delay: 0.6s;">
+            Explore Our Signature <br /> Collections
+        </h1>
+        
+        <p class="text-white text-base md:text-lg font-light mb-10 max-w-2xl slow-load"
+            style="animation-delay: 1.0s;">
+            Discover handcrafted leather shoes that define timeless sophistication
+        </p>
+        
+   <a href="/user/products"
+   class="bg-stone-900 text-white px-8 py-4 flex items-center gap-3 hover:bg-black transition-colors group slow-load"
+   style="animation-delay: 1.4s;">
+    
+    <span class="text-sm font-normal tracking-wide uppercase">Shop Now</span>
+
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
+         stroke-width="1.5" stroke="currentColor" 
+         class="w-5 h-5 group-hover:translate-x-1 transition-transform">
+        <path stroke-linecap="round" stroke-linejoin="round" 
+              d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+    </svg>
+
+</a>
+
+    </div>
+</section>
+
+
+    <section class="max-w-7xl mx-auto px-6 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <div class="relative group h-96 overflow-hidden border border-stone-200 shadow-sm slow-load" style="animation-delay: 1.8s;">
+                <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/470x400" alt="Men's Classics" />
+                <div class="absolute bottom-8 left-8">
+                    <h3 class="text-white text-2xl mb-2 drop-shadow-md">Men's Classics</h3>
+                    <p class="text-stone-200 text-xs max-w-[80%] drop-shadow-md">Elegant Oxford and Derby shoes crafted in full-grain leather</p>
+                </div>
+            </div>
+
+            <div class="relative group h-96 overflow-hidden border border-stone-200 shadow-sm slow-load" style="animation-delay: 2.1s;">
+                <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/470x400" alt="Women's Elegance" />
+                <div class="absolute bottom-8 left-8">
+                    <h3 class="text-white text-2xl mb-2 drop-shadow-md">Women's Elegance</h3>
+                    <p class="text-stone-200 text-xs max-w-[80%] drop-shadow-md">Refined loafers, heels, and timeless flats</p>
+                </div>
+            </div>
+
+            <div class="relative group h-96 overflow-hidden border border-stone-200 shadow-sm slow-load" style="animation-delay: 2.4s;">
+                <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/470x400" alt="Limited Editions" />
+                <div class="absolute bottom-8 left-8">
+                    <h3 class="text-white text-2xl mb-2 drop-shadow-md">Limited Editions</h3>
+                    <p class="text-stone-200 text-xs max-w-[80%] drop-shadow-md">Exclusive hand-finished designs in small batches</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+   <section class="w-full bg-[#F5F5F5] py-16">
+    <div class="max-w-7xl mx-auto px-6">
+        
+        <div class="text-center mb-12 slow-load" style="animation-delay: 2.8s;">
+            <h2 class="text-4xl text-stone-900 mb-4">Our Collection</h2>
+            <p class="text-stone-600">Each piece is a testament to traditional craftsmanship and modern design</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+            
+            <% 
+            // Assuming you pass an array of products named 'products' from your controller
+            let delay = 3.0;
+            if (typeof products !== 'undefined' && products.length > 0) {
+                products.forEach((product, index) => { 
+            %>
+                <div class="flex flex-col group slow-load" style="animation-delay: <%= (delay + (index * 0.2)).toFixed(1) %>s;">
+                    <div class="h-64 bg-white overflow-hidden mb-4 shadow-sm">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                             src="<%= product.image %>" 
+                             alt="<%= product.name %>" />
+                    </div>
+                    
+                    <h3 class="text-lg text-stone-900 text-center"><%= product.name %></h3>
+                    <p class="text-xs text-stone-500 text-center mb-2"><%= product.description %></p>
+                    <p class="text-sm font-medium text-stone-900 text-center mb-4">₹<%= product.price.toFixed(2) %></p>
+                    
+                    <a href="/user/productDetails/<%= product._id %>" 
+                       class="border border-stone-900 text-black text-xs py-2 px-6 mx-auto block hover:bg-stone-900 hover:text-white transition-colors text-center">
+                        View Details
+                    </a>
+                </div>
+                
+            <% 
+                });
+            } else { 
+            %>
+                <div class="col-span-full text-center py-10 text-stone-500">
+                    No products found in this collection.
+                </div>
+            <% } %>
+
+        </div>
+        </div>
+</section>
+
+    <section class="w-full bg-stone-700 text-stone-300 py-16">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
+            
+            <div class="flex-1 slow-load" style="animation-delay: 4.8s;">
+                <h2 class="text-white text-4xl mb-6">The Art of the Step</h2>
+                <p class="text-base leading-7 mb-2">
+                    Crafted to last. Designed to inspire. Every stitch tells a story of dedication, every cut reveals mastery honed over generations.
+                </p>
+            </div>
+            
+            <div class="flex-1 w-full h-96 slow-load" style="animation-delay: 5.1s;">
+                <img class="w-full h-full object-cover shadow-lg" src="https://images.pexels.com/photos/298864/pexels-photo-298864.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Artisan working" />
+            </div>
+        </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 py-20">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            
+            <div class="flex flex-col items-center slow-load" style="animation-delay: 5.5s;">
+                <div class="text-4xl mb-6">🧵</div>
+                <h3 class="text-xl text-stone-900 mb-4">Handcrafted Precision</h3>
+                <p class="text-stone-600 text-sm max-w-xs">Every pair is meticulously crafted by skilled artisans</p>
+            </div>
+
+            <div class="flex flex-col items-center slow-load" style="animation-delay: 5.7s;">
+                <div class="text-4xl mb-6">🪶</div>
+                <h3 class="text-xl text-stone-900 mb-4">Premium Full-Grain Leather</h3>
+                <p class="text-stone-600 text-sm max-w-xs">Only the finest materials from trusted tanneries</p>
+            </div>
+
+            <div class="flex flex-col items-center slow-load" style="animation-delay: 5.9s;">
+                <div class="text-4xl mb-6">💼</div>
+                <h3 class="text-xl text-stone-900 mb-4">Designed for Everyday Luxury</h3>
+                <p class="text-stone-600 text-sm max-w-xs">Comfort and elegance in every step</p>
+            </div>
+
+        </div>
+        
+        <div class="mt-16 text-center border-t border-stone-200 pt-8 slow-load" style="animation-delay: 6.2s;">
+            <p class="text-stone-700 italic">Each pair of Luxe & Co shoes is a story of skill, passion, and heritage</p>
+        </div>
+    </section>
+
+</div>
