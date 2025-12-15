@@ -1,0 +1,197 @@
+<div class="px-4 sm:px-6 py-4">
+
+    <!-- SEARCH + ADD BUTTON ROW -->
+    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 mb-6 flex justify-between items-center">
+
+        <!-- LEFT SIDE: Search Bar -->
+        <form method="GET" id="searchForm" class="relative w-[28rem]">
+
+            <!-- Search -->
+            <form method="GET" id="searchForm" class="flex items-center justify-between mt-6">
+                <input type="text" name="search" value="<%= search || '' %>"
+                    placeholder="Search category or subcategory..."
+                    class="w-80 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm" oninput="autoSearch()" />
+            </form>
+
+            <!-- RIGHT SIDE: Add Subcategory Button -->
+            <button onclick="openCategoryModal()"
+                class="px-5 py-2 bg-[#C19A6B] text-white rounded-lg shadow hover:opacity-90 transition">
+                + Add Subcategory
+            </button>
+    </div>
+
+
+    <!-- TABLE SECTION -->
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow-xl border border-gray-100">
+
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Subcategory List</h3>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Category</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Subcategory</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody class="bg-white divide-y divide-gray-200">
+
+                    <% subcategories.forEach(sc=> { %>
+                        <tr class="hover:bg-gray-50 transition">
+
+                            <td class="px-6 py-4">
+                                <%= sc.category %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <%= sc.subcategory %>
+                            </td>
+
+                            <td id="status-<%= sc._id %>" class="px-6 py-4">
+                                <% if (!sc.isBlocked) { %>
+                                    <span class="px-3 py-1 text-xs bg-green-500 text-white rounded-full">Active</span>
+                                    <% } else { %>
+                                        <span
+                                            class="px-3 py-1 text-xs bg-red-500 text-white rounded-full">Blocked</span>
+                                        <% } %>
+                            </td>
+
+                            <td class="px-6 py-4 flex space-x-4 text-sm">
+                                <button id="edit-<%= sc._id %>"
+                                    class="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                                    onclick="openEditModal('<%= sc._id %>', '<%= sc.category %>', '<%= sc.subcategory %>')">
+                                    Edit
+                                </button>
+
+                                <!-- BLOCK/UNBLOCK BUTTON -->
+                                <button id="btn-<%= sc._id %>"
+                                    onclick="confirmToggle('<%= sc._id %>', <%= sc.isBlocked %>)" class="px-3 py-1 text-white text-xs rounded 
+                                   <%= sc.isBlocked ? 'bg-green-500' : 'bg-red-500' %>">
+                                    <%= sc.isBlocked ? 'Unblock' : 'Block' %>
+                                </button>
+
+                            </td>
+
+                        </tr>
+                        <% }) %>
+
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+    <!-- PAGINATION -->
+    <div class="mt-4">
+        <%- include("../partials/admin/pagination", { currentPage, totalPages, search }) %>
+    </div>
+
+</div>
+
+
+<!-- ADD SUBCATEGORY MODAL -->
+<div id="categoryModal" class="fixed inset-0 bg-black/50 hidden justify-center items-center">
+    <div class="bg-white w-96 p-6 rounded-lg shadow-lg">
+
+        <h3 class="text-xl font-semibold mb-4">Add Subcategory</h3>
+
+        <form>
+
+            <label class="text-sm font-medium">Select Category</label>
+            <div class="relative mb-3">
+                <select id="categoryId"
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-[#C19A6B] focus:outline-none pr-10"
+                    required>
+                    <option value="">-- Select Category --</option>
+
+                    <% categories.forEach(c=> { %>
+                        <option value="<%= c %>">
+                            <%= c %>
+                        </option>
+                        <% }) %>
+                </select>
+
+                <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+
+            <label class="text-sm font-medium">Subcategory Name</label>
+            <input id="subCategoryName" class="w-full px-3 py-2 border rounded mb-4" required>
+
+            <div class="flex justify-end gap-3 mt-3">
+                <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 bg-gray-200 rounded">
+                    Cancel
+                </button>
+
+                <button type="button" onclick="addSubcategory()" class="px-4 py-2 bg-[#C19A6B] text-white rounded">
+                    Add
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- EDIT SUBCATEGORY MODAL -->
+<div id="editModal" class="fixed inset-0 bg-black/50 hidden justify-center items-center">
+    <div class="bg-white w-96 p-6 rounded-lg shadow-lg">
+
+        <h3 class="text-xl font-semibold mb-4">Edit Subcategory</h3>
+
+        <form>
+
+            <!-- LOCKED CATEGORY (Read Only) -->
+            <label class="text-sm font-medium">Category</label>
+            <input id="editCategory" class="w-full px-3 py-2 border rounded bg-gray-100 mb-4" disabled>
+
+            <!-- EDITABLE SUBCATEGORY NAME -->
+            <label class="text-sm font-medium">Subcategory Name</label>
+            <input id="editSubCategoryName" class="w-full px-3 py-2 border rounded mb-4" required>
+
+            <div class="flex justify-end gap-3 mt-3">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 rounded">
+                    Cancel
+                </button>
+
+                <button type="button" onclick="updateSubcategory()" class="px-4 py-2 bg-blue-600 text-white rounded">
+                    Update
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- Block Confirmation Modal -->
+<div id="blockModal" class="fixed inset-0 bg-black bg-opacity-40 hidden justify-center items-center">
+    <div class="w-96 bg-orange-100 rounded-lg shadow-lg p-6 relative">
+
+        <!-- Dynamic message -->
+        <h2 id="blockMessage" class="text-center text-stone-900 text-base font-semibold">
+            <!-- JS will insert text here -->
+        </h2>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-4 mt-8">
+            <button onclick="closeBlockModal()"
+                class="px-6 py-2 bg-green-500 text-white rounded-md text-sm font-medium">
+                Cancel
+            </button>
+
+            <button id="confirmBlockBtn" class="px-6 py-2 bg-red-600 text-white rounded-md text-sm font-medium">
+                Confirm
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script type="module" src="/script/adminjs/category.js"></script>
