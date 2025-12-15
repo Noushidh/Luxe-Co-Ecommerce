@@ -1,0 +1,1 @@
+export const FIXED_CATEGORIES = ["Men", "Women", "Kids"];
