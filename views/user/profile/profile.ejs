@@ -1,0 +1,134 @@
+<!-- PROFILE PAGE BACKGROUND -->
+<div class="min-h-screen bg-[#F5E9DA]">
+
+    <!-- PAGE WRAPPER -->
+    <div class="w-full px-6 py-10">
+
+        <!-- LAYOUT -->
+        <div class="flex items-start gap-12">
+
+            <!-- ================= SIDEBAR ================= -->
+            <aside class="w-[230px] shrink-0">
+                <%- include("../../partials/user/sidebar") %>
+            </aside>
+
+            <!-- ================= MAIN CONTENT ================= -->
+            <section class="w-[1000px] mx-auto bg-white rounded-2xl shadow p-8 relative">
+
+                <!-- EDIT BUTTON -->
+                <a href="/user/profile/edit" class="absolute top-6 right-6 bg-[#C8A97E] text-white
+                  px-6 py-2 rounded-lg text-sm flex items-center gap-2
+                  hover:opacity-90 transition">
+                    ✏️ Edit
+                </a>
+
+                <!-- TITLE -->
+                <h2 class="text-2xl font-bold text-stone-800 mb-10">
+                    Personal Information
+                </h2>
+
+                <!-- AVATAR -->
+                <div class="flex justify-center mb-10">
+                    <div class="w-32 h-32 rounded-full border-4 border-stone-400
+            flex items-center justify-center bg-stone-50 overflow-hidden">
+
+                        <% if (userData.profilePic) { %>
+                            <img src="<%= userData.profilePic %>?v=<%= Date.now() %>"
+                                class="w-full h-full object-cover rounded-full" />
+                            <% } else { %>
+                                <span class="text-3xl">👤</span>
+                                <% } %>
+
+                    </div>
+                </div>
+
+                <!-- DETAILS -->
+                <div class="space-y-8">
+
+                    <!-- FULL NAME -->
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-2">
+                            Full Name
+                        </label>
+                        <p class="px-4 py-3 border border-stone-300 rounded-lg bg-stone-50">
+                            <%= userData.fullname %>
+                        </p>
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-2">
+                            Email
+                        </label>
+                        <p class="px-4 py-3 border border-stone-300 rounded-lg bg-stone-50">
+                            <%= userData.email %>
+                        </p>
+                    </div>
+
+                    <!-- PHONE -->
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-2">
+                            Phone
+                        </label>
+
+                        <% if (userData.phone) { %>
+                            <p class="px-4 py-3 border border-stone-300 rounded-lg bg-stone-50">
+                                <%= userData.phone %>
+                            </p>
+                            <% } else { %>
+                                <p class="px-4 py-3 border border-dashed border-stone-300 rounded-lg text-stone-400">
+                                    Not added
+                                </p>
+                                <a href="/user/profile/edit" class="text-sm text-[#C8A97E] mt-2 inline-block">
+                                    + Add phone number
+                                </a>
+                                <% } %>
+                    </div>
+
+                    <!-- REFERRAL -->
+                    <div class="pt-8 border-t border-stone-200">
+
+                        <label class="block text-sm font-medium text-stone-700 mb-3">
+                            Referral Code
+                        </label>
+
+                        <div class="bg-stone-200 rounded-xl px-6 py-4
+                        flex justify-between items-center">
+
+                            <span id="referralCode" class="text-lg font-semibold tracking-wide text-stone-800">
+                                <%= userData.referralCode %>
+                            </span>
+
+                            <button type="button" onclick="copyReferralCode()"
+                                class="text-sm font-medium hover:underline">
+                                Copy
+                            </button>
+                        </div>
+
+                        <p class="text-center text-sm text-stone-600 mt-4">
+                            Share your code and both of you will get
+                            <strong>₹1000</strong> in wallet
+                        </p>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const notyf = new Notyf({
+        duration: 2500,
+        position: { x: 'right', y: 'top' }
+    });
+
+    function copyReferralCode() {
+        const code = document.getElementById("referralCode").innerText;
+        navigator.clipboard.writeText(code)
+            .then(() => notyf.success("Referral code copied!"))
+            .catch(() => notyf.error("Failed to copy"));
+    }
+</script>

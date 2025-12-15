@@ -1,0 +1,196 @@
+<!-- EDIT PROFILE PAGE BACKGROUND -->
+<div class="min-h-screen bg-[#F5E9DA]">
+
+  <!-- PAGE WRAPPER -->
+  <div class="w-full px-6 py-10">
+
+    <!-- LAYOUT -->
+    <div class="flex items-start gap-12">
+
+      <!-- ================= SIDEBAR ================= -->
+      <aside class="w-[230px] shrink-0">
+        <%- include("../../partials/user/sidebar") %>
+      </aside>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <section class="w-[1000px] mx-auto bg-white rounded-2xl shadow p-8 relative">
+
+        <!-- TITLE -->
+        <h2 class="text-2xl font-bold text-stone-800 mb-10">
+          Edit Profile
+        </h2>
+
+        <!-- ================= AVATAR ================= -->
+        <div class="flex flex-col items-center mb-12">
+
+          <div class="relative w-32 h-32 rounded-full border-4 border-[#C8A97E]">
+
+            <!-- Avatar Preview -->
+            <div id="avatarPreview" class="w-full h-full rounded-full overflow-hidden
+                     bg-stone-100 flex items-center justify-center
+                     text-4xl text-stone-400">
+              <% if (userData.profilePic) { %>
+                <img src="<%= userData.profilePic %>?v=<%= Date.now() %>"
+                  class="w-full h-full object-cover rounded-full" />
+                <% } else { %>
+                  👤
+                  <% } %>
+            </div>
+
+            <!-- Camera Button -->
+            <button type="button" onclick="document.getElementById('avatarInput').click()" class="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4
+                     w-10 h-10 rounded-full bg-[#C8A97E] text-white
+                     flex items-center justify-center shadow-lg
+                     ring-4 ring-white hover:opacity-90 transition">
+              📷
+            </button>
+
+          </div>
+
+          <!-- Hidden File Input -->
+          <input id="avatarInput" type="file" name="avatar" accept="image/*" class="hidden"
+            onchange="previewAvatar(event)" />
+
+          <p class="mt-4 text-sm text-[#C8A97E] font-medium">
+            Upload / Change Avatar
+          </p>
+
+        </div>
+
+        <!-- ================= FORM ================= -->
+        <form id="editProfileForm" class="space-y-8">
+
+          <!-- FULL NAME -->
+          <div>
+            <label class="block text-sm font-medium text-stone-700 mb-2">
+              Full Name
+            </label>
+            <input id="name" type="text" value="<%= userData.fullname %>" required
+              oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')" class="w-full px-4 py-3 border border-stone-400 rounded-lg
+                     outline-none focus:ring-2 focus:ring-[#C8A97E]" />
+          </div>
+
+          <!-- EMAIL (READ ONLY) -->
+          <div>
+            <label class="block text-sm font-medium text-stone-700 mb-2">
+              Email
+            </label>
+            <input type="email" value="<%= userData.email %>" readonly class="w-full px-4 py-3 border border-stone-300 rounded-lg
+                     bg-stone-100 cursor-not-allowed" />
+            <p class="text-xs text-stone-500 mt-1">
+              Email cannot be changed directly
+            </p>
+          </div>
+
+          <!-- PHONE (OPTIONAL) -->
+          <div>
+            <label class="block text-sm font-medium text-stone-700 mb-2">
+              Phone
+            </label>
+            <input id="phone" type="tel" value="<%= userData.phone || '' %>"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)" placeholder="Enter phone number"
+              class="w-full px-4 py-3 border border-stone-400 rounded-lg
+                     outline-none focus:ring-2 focus:ring-[#C8A97E]" />
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="pt-10 border-t border-stone-200 flex justify-end gap-4">
+
+            <a href="/user/profile" class="px-6 py-3 rounded-lg border border-stone-400
+                      text-stone-700 font-medium hover:bg-stone-100 transition">
+              Cancel
+            </a>
+
+            <button id="saveBtn" type="button" onclick="submitEditProfile()" class="px-8 py-3 rounded-lg bg-[#C8A97E] text-white
+         font-medium hover:opacity-90 transition">
+              Save Changes
+            </button>
+
+          </div>
+
+        </form>
+
+      </section>
+    </div>
+  </div>
+
+  </div>
+
+
+
+</div>
+
+
+
+
+<script>
+  let selectedAvatarFile = null;
+  let isSubmitting = false;
+
+  function previewAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    selectedAvatarFile = file;
+
+    const preview = document.getElementById("avatarPreview");
+    preview.innerHTML = "";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.className = "w-full h-full object-cover";
+
+    preview.appendChild(img);
+  }
+
+  async function submitEditProfile() {
+
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const notyf = new Notyf({
+      duration: 2500,
+      position: { x: 'right', y: 'top' }
+    });
+
+    const saveBtn = document.getElementById("saveBtn");
+
+    saveBtn.disabled = true;
+    saveBtn.innerText = "Saving...";
+    saveBtn.classList.add("opacity-60", "cursor-not-allowed");
+
+    try {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("phone", phone);
+
+      if (selectedAvatarFile) {
+        formData.append("avatar", selectedAvatarFile);
+      }
+
+      const response = await axios.patch("/user/profile/edit", formData);
+
+      if (response.data.success) {
+        notyf.success(response.data.message);
+
+        setTimeout(() => {
+          window.location.href = response.data.redirect;
+        }, 800);
+      } else {
+        throw new Error(response.data.message);
+      }
+
+    } catch (err) {
+      notyf.error(err.response?.data?.message || "Profile update failed");
+
+      saveBtn.disabled = false;
+      saveBtn.innerText = "Save Changes";
+      saveBtn.classList.remove("opacity-60", "cursor-not-allowed");
+
+      isSubmitting = false;
+    }
+  }
+</script>
