@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/css/usercss/otp.css" />
+    <title>Luxe & Co - OTP Verification</title>
+    <!-- Notyf -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+    let backendExpireTime = Number("<%= otpExpires %>");
+    </script>
+    <style>
+        .disabled-resend {
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .enabled-resend {
+            pointer-events: auto;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <%- include("../../partials/user/notyf", { success: success || [], error: error || [] }) %>
+            <div class="otp-verification">
+                <div class="container">
+                    <div class="div">
+                        <div class="container-2">
+                            <div class="heading">
+                                <div class="luxe-co">Luxe &amp; Co</div>
+                            </div>
+                            <div class="container-3">
+                                <!-- Login Button -->
+                                <a href="/user/login" style="text-decoration: none;">
+                                    <div class="div-wrapper">
+                                        <div class="text-wrapper">Login</div>
+                                    </div>
+                                </a>
+
+                                <!-- Sign Up Button -->
+                                <a href="/user/register" style="text-decoration: none;">
+                                    <div class="container-4">
+                                        <div class="text-wrapper-2">Sign Up</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="container main-content-row">
+                            <div class="container-5"></div>
+
+                            <div class="container-wrapper">
+                                <div class="container-6">
+
+                                    <div class="heading-2">
+                                        <div class="text-wrapper-3">Verify Your Account</div>
+                                    </div>
+
+                                    <div class="paragraph">
+                                        <p class="instruction">We've sent 6-digit code to your email.</p>
+                                        <p class="email-address">Please enter it below to verify yout account</p>
+                                    </div>
+
+                                    <!-- TIMER -->
+                                    <p class="timer">
+                                        OTP expires in <span id="countdown">60</span> seconds
+                                    </p><br>
+
+                                    <form class="form" onsubmit="return verifyOTP(event)">
+                                        <div class="otp-input-group">
+                                            <input type="text" class="otp-input" maxlength="1" id="otp-1" required>
+                                            <input type="text" class="otp-input" maxlength="1" id="otp-2" required>
+                                            <input type="text" class="otp-input" maxlength="1" id="otp-3" required>
+                                            <input type="text" class="otp-input" maxlength="1" id="otp-4" required>
+                                            <input type="text" class="otp-input" maxlength="1" id="otp-5" required>
+                                            <input type="text" class="otp-input" maxlength="1" id="otp-6" required>
+                                        </div>
+
+                                        <button type="submit" class="button">
+                                            <div class="text-wrapper-6">Verify Code</div>
+                                        </button>
+                                    </form>
+
+                                    <div class="container-8"></div>
+
+                                    <div class="paragraph-2">
+                                        <div class="text-wrapper-7">Didn't receive the code?</div>
+                                        <div class="container-9 disabled-resend" id="resendBtn">
+                                            <div class="text-wrapper-8">Resend Code</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    <script src="/script/userjs/otp.js"></script>
+</body>
+</html>

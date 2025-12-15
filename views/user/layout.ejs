@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title><%= title %></title>
+    <!-- Axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Notyf -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- HEADER -->
+    <%- include("../partials/user/header") %>
+
+<main class="flex-grow">
+    <%- include('../' + body) %>
+</main>
+
+
+    <!-- FOOTER -->
+    <%- include("../partials/user/footer") %>
+
+</body>
+</html>

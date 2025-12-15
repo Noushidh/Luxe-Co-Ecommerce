@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Luxe & Co | Admin Login</title>
+  <link rel="stylesheet" href="/css/admincss/login.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  </style>
+</head>
+
+<body>
+  <div class="login-bg">
+    <div class="login-card">
+      <div class="heading">
+        <span class="luxe-co">Luxe & Co</span>
+      </div>
+      <div class="admin-header">
+        <h2 class="text-wrapper">Admin Login</h2>
+        <p class="sign-in-to-access">Sign in to access the Luxe & Co Admin Dashboard.</p>
+      </div>
+      <% if (error && error.length> 0) { %>
+        <script>
+          const notyf = new Notyf({
+            position: { x: 'center', y: 'top' },
+            duration: 2500
+          });
+          notyf.error("<%= error[0] %>");
+        </script>
+        <% } %>
+
+          <form id="loginForm" class="loginForm" method="post" action="/admin/login" autocomplete="off">
+            <div class="form-group">
+              <label for="email" class="label">Email Address</label>
+              <input id="email" name="email" type="email" value="admin@gmail.com" placeholder="your.email@example.com" class="input">
+            </div>
+            <div class="form-group password-group">
+              <label for="password" class="label">Password</label>
+              <div class="password-wrapper">
+                <input id="password" name="password" value="admin@123" type="password" placeholder="••••••••" class="input">
+                <button type="button" class="toggle-password" onclick="togglePassword()">
+                  <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5ZM12 17.5C9.24 17.5 7 15.26 7 12.5C7 9.74 9.24 7.5 12 7.5C14.76 7.5 17 9.74 17 12.5C17 15.26 14.76 17.5 12 17.5ZM12 9.5C10.34 9.5 9 10.84 9 12.5C9 14.16 10.34 15.5 12 15.5C13.66 15.5 15 14.16 15 12.5C15 10.84 13.66 9.5 12 9.5Z"
+                      fill="#4b3621" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="button">Login</button>
+          </form>
+    </div>
+  </div>
+  <script type="module" src="/script/adminjs/login.js"></script>
+</body>
+
+</html>

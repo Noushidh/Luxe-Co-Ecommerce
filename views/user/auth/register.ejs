@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <title>Create Account | Luxe & Co</title>
+    <link rel="stylesheet" href="/css/usercss/register.css">
+    <!-- Notyf -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+</head>
+
+<body>
+    <!-- 1. FIXED HEADER -->
+    <header class="header">
+        <div class="logo">Luxe &amp; Co</div>
+        <button class="login-btn-header" type="button" onclick="window.location.href='/user/login'">Login</button>
+    </header>
+    <div class="login-container">
+        <%- include("../../partials/user/notyf", { success: success || [], error: error || [] }) %>
+            <!-- 2. MAIN CONTENT (BELOW HEADER) -->
+            <div class="main-content">
+
+                <!-- LEFT PANEL: Image -->
+                <div class="image-section">
+                    <!-- Optional overlay for darkening/lightening the image -->
+                    <div class="image-overlay"></div>
+                </div>
+
+                <!-- RIGHT PANEL: Form -->
+                <div class="form-section">
+                    <div class="login-card">
+
+                        <!-- Card Title & Subtitle -->
+                        <h1 class="login-title">Create Your Account</h1>
+                        <p class="login-subtitle">Join Luxe &amp; Co and step into a world of premium leather
+                            craftsmanship.</p>
+
+                        <!-- Form Fields -->
+                        <form id="RegisterForm" method="post" action="/user/register">
+
+                            <!-- Full Name -->
+                            <div class="form-group">
+                                <label class="form-label" for="full-name">Full Name</label>
+                                <input type="text" id="name" class="form-input" name="name"
+                                    placeholder="John Doe" />
+                            </div>
+
+                            <!-- Email Address -->
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email Address</label>
+                                <input type="email" id="email" class="form-input" name="email"
+                                    placeholder="you@example.com" />
+                            </div>
+
+                            <!-- Password  -->
+                            <div class="form-group">
+                                <label class="form-label" for="password">Password</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="password" class="form-input" name="password"
+                                        placeholder="••••••••">
+                                    <button type="button" class="toggle-password" data-target="password"
+                                        onclick="togglePassword(this)">
+                                        <!-- Eye Icon (Visible state) -->
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5ZM12 17.5C9.24 17.5 7 15.26 7 12.5C7 9.74 9.24 7.5 12 7.5C14.76 7.5 17 9.74 17 12.5C17 15.26 14.76 17.5 12 17.5ZM12 9.5C10.34 9.5 9 10.84 9 12.5C9 14.16 10.34 15.5 12 15.5C13.66 15.5 15 14.16 15 12.5C15 10.84 13.66 9.5 12 9.5Z"
+                                                fill="#4b3621" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password (with toggle) -->
+                            <div class="form-group">
+                                <label class="form-label" for="confirm-password">Confirm password</label>
+                                <div class="password-wrapper">
+                                    <input type="password" id="confirm-password" class="form-input"
+                                        name="confirmPassword" placeholder="••••••••">
+                                    <button type="button" class="toggle-password" data-target="confirm-password"
+                                        onclick="togglePassword(this)">
+                                        <!-- Eye Icon (Visible state) -->
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5ZM12 17.5C9.24 17.5 7 15.26 7 12.5C7 9.74 9.24 7.5 12 7.5C14.76 7.5 17 9.74 17 12.5C17 15.26 14.76 17.5 12 17.5ZM12 9.5C10.34 9.5 9 10.84 9 12.5C9 14.16 10.34 15.5 12 15.5C13.66 15.5 15 14.16 15 12.5C15 10.84 13.66 9.5 12 9.5Z"
+                                                fill="#4b3621" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Referral Code Button -->
+                            <button class="secondary-button-alt" type="button">Apply Referral Code (optional)</button>
+
+                            <!-- Sign Up Button -->
+                            <button class="login-btn" type="submit">Sign Up</button>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="divider"><span>or</span></div>
+
+                        <!-- Google Login -->
+                        <button class="google-btn" type="button" onclick="handleGoogleLogin()">
+                            <img src="https://c.animaapp.com/mhz05t1j6ITCkA/img/group.png" alt="Google">
+                            <span>Continue with Google</span>
+                        </button>
+
+                        <!-- Bottom Links -->
+                        <div class="signup-link">
+                            Already have an account?
+                            <a href="/user/login">Login Here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script type="module" src="/script/userjs/register.js"></script>
+            <script>function handleGoogleLogin() {window.location.href = "/user/google";}
+</script>
+</body>
+
+</html>
