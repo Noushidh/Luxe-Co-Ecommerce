@@ -1,0 +1,43 @@
+<%
+    // Build query string dynamically from available variables
+    let params = [];
+
+    if (typeof search !== "undefined") params.push(`search=${search}`);
+    if (typeof status !== "undefined") params.push(`status=${status}`);
+    if (typeof stock !== "undefined") params.push(`stock=${stock}`);
+    if (typeof category !== "undefined") params.push(`category=${category}`);
+    if (typeof sort !== "undefined") params.push(`sort=${sort}`);
+    if (typeof min !== "undefined") params.push(`min=${min}`);
+    if (typeof max !== "undefined") params.push(`max=${max}`);
+
+    const qs = params.join("&");
+%>
+
+<div class="flex justify-center items-center gap-3 mt-8">
+
+    <!-- Previous -->
+    <% if (currentPage > 1) { %>
+        <a href="?<%= qs %>&page=<%= currentPage - 1 %>"
+           class="w-8 h-8 flex items-center justify-center rounded-full bg-[#E7D7C3]">
+            «
+        </a>
+    <% } %>
+
+    <!-- Page Numbers -->
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="?<%= qs %>&page=<%= i %>"
+           class="w-8 h-8 flex items-center justify-center rounded-full
+                <%= i === currentPage ? 'bg-[#C8A97E] text-white' : 'bg-[#E7D7C3]' %>">
+            <%= i %>
+        </a>
+    <% } %>
+
+    <!-- Next -->
+    <% if (currentPage < totalPages) { %>
+        <a href="?<%= qs %>&page=<%= currentPage + 1 %>"
+           class="w-8 h-8 flex items-center justify-center rounded-full bg-[#E7D7C3]">
+            »
+        </a>
+    <% } %>
+
+</div>
