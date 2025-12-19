@@ -1,4 +1,5 @@
 import UserModel from "../models/usermodel.js";
+import CartModel from "../models/cartmodel.js"
 
 export const isAuthenticated = (req, res, next) => {
   if (req.session?.user) {
@@ -33,3 +34,21 @@ export const isBlocked = async (req, res, next) => {
     next();
   }
 };
+
+
+//cart count in header
+export const cartCountMiddleware = async (req, res, next) => {
+  try {
+    if (req.session.user?._id) {
+      const cart = await CartModel.findOne({ user: req.session.user._id },{ items: 1 }).lean();
+
+      res.locals.cartItemsCount = cart?.items.length || 0;
+    } else {
+      res.locals.cartItemsCount = 0;
+    }
+  } catch (err) {
+    console.error("Cart count middleware error:", err);
+    res.locals.cartItemsCount = 0;
+  }
+  next();
+}

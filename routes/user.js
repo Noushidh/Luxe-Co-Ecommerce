@@ -7,6 +7,8 @@ import * as usercontroller from "../controller/usercontroller/user.auth.js";
 import * as PageController from "../controller/usercontroller/pages.controller.js";
 import * as Collections  from "../controller/usercontroller/collections.js"
 import * as Profile from "../controller/usercontroller/profile.js"
+import * as Cart from "../controller/usercontroller/cart.js"
+
 import { upload } from "../config/multer.js";
 
 router
@@ -63,5 +65,11 @@ router.patch('/profile/edit',userAuth.isAuthenticated,upload.single("avatar"),Pr
 router.patch('/profile/change-password',userAuth.isAuthenticated,userAuth.isBlocked,Profile.changePassword)
 router.patch('/change-email/send-link',userAuth.isAuthenticated,Profile.sendChangeEmailLink)
 router.get('/change-email/verify',userAuth.isAuthenticated,Profile.verifyChangeEmail)
+
+//cart
+router.get('/cart',Cart.load_cart)
+router.post('/cart/product/add',Cart.addtocart)
+router.patch('/cart/update-quantity',userAuth.isAuthenticated,Cart.updateCartquantity)
+router.delete('/cart/remove-item/:variantId',userAuth.isAuthenticated,Cart.deletCart)
 
 export default router;
