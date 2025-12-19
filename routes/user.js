@@ -7,6 +7,8 @@ import * as usercontroller from "../controller/usercontroller/user.auth.js";
 import * as PageController from "../controller/usercontroller/pages.controller.js";
 import * as Collections  from "../controller/usercontroller/collections.js"
 import * as Profile from "../controller/usercontroller/profile.js"
+import * as Address from "../controller/usercontroller/address.js"
+
 import { upload } from "../config/multer.js";
 
 router
@@ -55,7 +57,6 @@ router.get('/contact',PageController.ContactPage_load)
 router.get('/page-404',PageController.page_404)
 
 
-router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 
 router.get('/profile',userAuth.isAuthenticated,userAuth.isBlocked,Profile.load_profile)
 router.get('/profile/edit',userAuth.isAuthenticated,userAuth.isBlocked,Profile.load_editProfile)
@@ -63,5 +64,15 @@ router.patch('/profile/edit',userAuth.isAuthenticated,upload.single("avatar"),Pr
 router.patch('/profile/change-password',userAuth.isAuthenticated,userAuth.isBlocked,Profile.changePassword)
 router.patch('/change-email/send-link',userAuth.isAuthenticated,Profile.sendChangeEmailLink)
 router.get('/change-email/verify',userAuth.isAuthenticated,Profile.verifyChangeEmail)
+
+//address
+router.get('/address',userAuth.isAuthenticated,Address.load_address)
+router.post('/address/add',userAuth.isAuthenticated,Address.addAddress)
+router.patch('/address/edit/:id',userAuth.isAuthenticated,Address.editAddress)
+router.patch('/address/default/:addressId',userAuth.isAuthenticated,Address.setDefaultAddress)
+router.delete('/address/delete/:id',userAuth.isAuthenticated,Address.deleteAddress)
+
+
+router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 
 export default router;

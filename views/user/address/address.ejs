@@ -1,0 +1,262 @@
+<div class="flex gap-6 px-6 py-6 bg-[#F5E9DA] min-h-screen">
+    <aside class="w-[230px] shrink-0">
+        <%- include("../../partials/user/sidebar") %>
+    </aside>
+
+    <main class="flex-1 p-8">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-2xl font-bold text-stone-700 mb-1">My Addresses</h2>
+            <p class="text-sm text-neutral-700 mb-8">
+                Manage your saved delivery addresses.
+            </p>
+
+            <% if (!addresses || addresses.length===0) { %>
+                <div class="bg-white rounded-xl p-12 text-center shadow">
+                    <div class="text-5xl mb-4">📍</div>
+                    <h3 class="text-xl font-semibold mb-2">No Address Found</h3>
+                    <p class="text-sm text-neutral-600 mb-6">
+                        Add a delivery address to place orders faster.
+                    </p>
+                    <button onclick="openAddressModal()"
+                        class="bg-[#C8A97E] text-white px-6 py-3 rounded-lg hover:bg-[#b3916a] transition-colors">
+                        + Add New Address
+                    </button>
+                </div>
+                <% } else { %>
+                    <div class="flex justify-end mb-6">
+                        <button onclick="openAddressModal()"
+                            class="bg-[#C8A97E] text-white px-6 py-3 rounded-lg hover:bg-[#b3916a] transition-colors">
+                            + Add New Address
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <% addresses.forEach(address=> { %>
+                            <div class="bg-white rounded-xl p-6 shadow border-2 transition
+              <%= address.isDefault ? 'border-[#C8A97E]' : 'border-transparent hover:border-stone-300' %>">
+
+                                <div class="flex justify-between items-center mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <input type="radio" name="defaultAddress" class="cursor-pointer"
+                                            <%=address.isDefault ? "checked" : "" %>
+                                        onclick="setDefaultOnce('<%= address._id %>')"
+                                            />
+                                            <span class="text-xs font-medium text-stone-600">Set as default</span>
+                                    </div>
+                                    <% if (address.isDefault) { %>
+                                        <span
+                                            class="bg-[#C8A97E] text-white text-xs px-3 py-1 rounded-full">Default</span>
+                                        <% } %>
+                                </div>
+
+                                <h3 class="font-bold">
+                                    <%= address.name %>
+                                </h3>
+                                <p class="text-xs mb-1">
+                                    <%= address.phone %>
+                                </p>
+                                <% if (address.type) { %>
+                                    <p class="text-xs font-semibold mb-2 text-stone-600">
+                                        <%= address.type.toUpperCase() %> Address
+                                    </p>
+                                    <% } %>
+                                        <p class="text-xs">
+                                            <%= address.street %>
+                                        </p>
+                                        <% if (address.street2) { %>
+                                            <p class="text-xs">
+                                                <%= address.street2 %>
+                                            </p>
+                                            <% } %>
+                                                <p class="text-xs">
+                                                    <%= address.city %>, <%= address.state %> - <%= address.pincode %>
+                                                </p>
+
+                                                <div class="flex justify-end gap-3 mt-4">
+                                                    <button type="button"
+                                                        onclick='openEditAddressModal(<%- JSON.stringify(address) %>)'
+                                                        class="border px-4 py-2 rounded text-xs hover:bg-stone-100">
+                                                        Edit
+                                                    </button>
+
+                                                    <button type="button" onclick="deleteAddress('<%= address._id %>')"
+                                                        class="bg-red-500 text-white px-4 py-2 rounded text-xs hover:bg-red-600">
+                                                        Delete
+                                                    </button>
+                                                </div>
+                            </div>
+                            <% }) %>
+                    </div>
+                    <% } %>
+        </div>
+    </main>
+</div>
+
+<div id="addressModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl w-full max-w-lg p-6">
+        <h3 id="modalTitle" class="text-lg font-semibold mb-4 text-stone-700">Add New Address</h3>
+
+        <form id="addressForm" class="space-y-4" onsubmit="SubmitAddressModal(event)">
+            <input type="hidden" id="addressId" name="addressId">
+            <input type="hidden" id="formMode" value="add">
+            <input type="hidden" name="from" value="<%= typeof from !== 'undefined' ? from : '' %>">
+
+            <div class="flex space-x-4 mb-4" id="typeSelector">
+                <label class="address-type-label border rounded-full px-4 py-2 cursor-pointer transition-colors">
+                    <input type="radio" name="type" value="home" class="hidden" checked>
+                    <span class="text-sm">Home</span>
+                </label>
+                <label class="address-type-label border rounded-full px-4 py-2 cursor-pointer transition-colors">
+                    <input type="radio" name="type" value="work" class="hidden">
+                    <span class="text-sm">Work</span>
+                </label>
+                <label class="address-type-label border rounded-full px-4 py-2 cursor-pointer transition-colors">
+                    <input type="radio" name="type" value="other" class="hidden">
+                    <span class="text-sm">Other</span>
+                </label>
+            </div>
+
+            <input name="name" placeholder="Full Name"
+                class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]" required>
+            <input name="phone" placeholder="Phone"
+                class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]" required>
+            <input name="street" placeholder="Address Line 1"
+                class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]" required>
+            <input name="street2" placeholder="Address Line 2"
+                class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]">
+
+            <div class="grid grid-cols-2 gap-4">
+                <input name="city" placeholder="City"
+                    class="border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]" required>
+                <input name="pincode" placeholder="Pincode"
+                    class="border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]" required>
+            </div>
+
+            <input name="state" placeholder="State"
+                class="w-full border px-4 py-2 rounded focus:outline-none focus:ring-1 focus:ring-[#C8A97E]" required>
+
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" onclick="closeAddressModal()"
+                    class="border px-6 py-2 rounded hover:bg-stone-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="submitBtn"
+                    class="bg-[#C8A97E] text-white px-6 py-2 rounded hover:bg-[#b3916a] transition-colors">
+                    Save Address
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .address-type-label:has(input[type="radio"]:checked) {
+        background-color: #C8A97E;
+        color: white;
+        border-color: #C8A97E;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+    async function setDefaultOnce(addressId) {
+        try {
+            const res = await axios.patch(`/user/address/default/${addressId}`);
+            if (res.data.success) window.location.reload();
+        } catch (err) {
+            console.error("Default address error:", err);
+        }
+    }
+
+    function openAddressModal() {
+        const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+        const form = document.getElementById("addressForm");
+        form.reset();
+
+        document.getElementById("formMode").value = "add";
+        document.getElementById("addressId").value = "";
+        document.getElementById("modalTitle").innerText = "Add New Address";
+        document.getElementById("submitBtn").innerText = "Save Address";
+
+        const modal = document.getElementById("addressModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function openEditAddressModal(address) {
+        document.getElementById("formMode").value = "edit";
+        document.getElementById("addressId").value = address._id;
+        document.getElementById("modalTitle").innerText = "Edit Address";
+        document.getElementById("submitBtn").innerText = "Update Address";
+
+        const form = document.getElementById("addressForm");
+        form.name.value = address.name;
+        form.phone.value = address.phone;
+        form.street.value = address.street;
+        form.street2.value = address.street2 || "";
+        form.city.value = address.city;
+        form.state.value = address.state;
+        form.pincode.value = address.pincode;
+
+        const radio = form.querySelector(`input[name="type"][value="${address.type}"]`);
+        if (radio) radio.checked = true;
+
+        const modal = document.getElementById("addressModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeAddressModal() {
+        const modal = document.getElementById("addressModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    async function SubmitAddressModal(e) {
+        const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+        e.preventDefault();
+
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        const mode = document.getElementById("formMode").value;
+        const id = document.getElementById("addressId").value;
+
+        try {
+            let res;
+
+            if (mode === "edit") {
+                res = await axios.patch(`/user/address/edit/${id}`, data);
+            } else {
+                res = await axios.post("/user/address/add", data);
+            }
+
+            if (res.data.success) {
+                notyf.success(res.data.message);
+
+                setTimeout(() => {
+                    if (res.data.redirectTo) {
+                        window.location.href = res.data.redirectTo;
+                    } else {
+                        window.location.reload();
+                    }
+                }, 800);
+            }
+
+        } catch (err) {
+            console.error("Save address error:", err);
+            alert(err.response?.data?.message || "Something went wrong while saving address");
+        }
+    }
+
+
+    async function deleteAddress(id) {
+        if (!confirm("Delete this address?")) return;
+        try {
+            await axios.delete(`/user/address/delete/${id}`);
+            window.location.reload();
+        } catch (err) {
+            console.error("Delete address error:", err);
+            alert("Failed to delete address");
+        }
+    }
+</script>
