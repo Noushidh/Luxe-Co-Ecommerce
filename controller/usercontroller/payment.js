@@ -3,6 +3,7 @@ import addressModel from "../../models/addressmodel.js";
 import CartModel from "../../models/cartmodel.js";
 import OrderModel from "../../models/ordermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import mongoose from "mongoose";
 
 export const load_payment = asyncHandler(async (req, res) => {
     const { addressId } = req.query;
@@ -108,18 +109,25 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
 });
 
 
+
 export const load_orderConfirmed = asyncHandler(async (req, res) => {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.redirect('/user/home'); 
+    }
+
     const order = await OrderModel.findById(id);
 
-    const cart = await CartModel.findOne(req.session.user._id);
-
-    if (!cart || cart.items.length === 0) {
-        return res.redirect('/user/cart');
+    if (!order) {
+        return res.render("user/layout", {
+            title: "Order Not Found",
+            body: "user/pages/page-404",
+            message: "Order details not found"
+        });
     }
 
     const items = order.items || [];
-    const subTotal = items.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
 
     res.render("user/layout", {
         title: "Order Confirmed",
@@ -127,10 +135,34 @@ export const load_orderConfirmed = asyncHandler(async (req, res) => {
         order,
         items,
         total: order.total || 0,
-        subTotal: subTotal,
+        subTotal: order.total || 0, 
         shipping: order.shipping || 0,
     });
 });
+
+// export const load_orderConfirmed = asyncHandler(async (req, res) => {
+//     const { id } = req.params;
+//     const order = await OrderModel.findById(id);
+
+//     const cart = await CartModel.findOne(req.session.user._id);
+
+//     if(!cart||cart.items.length===0){
+//         return res.redirect('/user/cart');
+//     }
+
+//     const items = order.items || [];
+//     const subTotal = items.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
+
+//     res.render("user/layout", {
+//         title: "Order Confirmed",
+//         body: "user/payment/order-confirmed",
+//         order,
+//         items,
+//         total: order.total || 0,
+//         subTotal:subTotal,
+//         shipping: order.shipping || 0,
+//     });
+// });
 
 
 
