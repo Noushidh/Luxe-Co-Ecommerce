@@ -54,6 +54,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(cartCountMiddleware);
 
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;
@@ -74,9 +75,6 @@ app.use((req, res, next) => {
   res.locals.error = req.flash("error");
   next();
 });
-
-app.use(cartCountMiddleware);
-
 
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);

@@ -1,0 +1,125 @@
+<% 
+    // Define the helper directly in EJS
+    const formatPrice = (amount) => {
+        return `₹${Number(amount || 0).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}`;
+    };
+%>
+<div class="min-h-screen bg-[#E9DCC8] py-10 px-4">
+
+    <!-- ===== CONTAINER ===== -->
+    <div class="max-w-5xl mx-auto space-y-10">
+
+        <!-- ===== SUCCESS HEADER ===== -->
+        <div class="bg-white rounded-2xl shadow-md p-8 text-center">
+            <div class="mx-auto mb-4 w-16 h-16 flex items-center justify-center rounded-full border border-stone-400">
+                ✔
+            </div>
+
+            <h1 class="text-2xl md:text-3xl font-bold text-stone-800 mb-2">
+                Thank you! Your order has been confirmed.
+            </h1>
+
+            <p class="text-stone-600">
+                We're preparing your order and will notify you once it ships.
+            </p>
+
+            <a href="/user/products" class="inline-block mt-6 px-6 py-3 bg-[#C8A97E] hover:bg-[#b8946a]
+         hover:shadow-lg hover:-translate-y-0.5
+         text-white rounded-lg font-semibold transition">
+                Continue Shopping
+            </a>
+
+        </div>
+
+        <!-- ===== ORDER SUMMARY ===== -->
+        <div class="bg-white rounded-2xl shadow-md p-6 space-y-6">
+
+            <!-- HEADER -->
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                <h2 class="text-xl font-bold text-stone-700">Order Summary</h2>
+                <div class="text-sm text-stone-600">
+                    <p>
+                        Order #
+                        <span class="font-semibold">
+                            <%= order._id%>
+                        </span>
+                    </p>
+                    <p>
+                    <p class="text-sm text-gray-500">
+                        <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric' , month: 'short' ,
+                            year: 'numeric' }) %>
+                    </p>
+                    </p>
+                </div>
+            </div>
+
+            <!-- ITEMS -->
+            <div class="space-y-4">
+                <% items.forEach(item=> { %>
+                    <div class="flex gap-4 items-center border rounded-xl p-4">
+                        <img src="<%= item.image %>" class="w-20 h-20 rounded-lg object-cover border"
+                            alt="<%= item.productName %>" onerror="this.src='/images/placeholder.png'">
+
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-stone-700">
+                                <%= item.productName %>
+                            </h3>
+                            <p class="text-xs text-stone-500">
+                                Size: <%= item.size %>
+                            </p>
+                            <p class="text-xs text-stone-500">
+                                Qty: <%= item.quantity %>
+                            </p>
+                        </div>
+
+                        <p class="font-semibold text-stone-700">
+                            <%= formatPrice(item.price * item.quantity) %>
+                        </p>
+                    </div>
+                    <% }) %>
+            </div>
+
+            <!-- PRICE SUMMARY -->
+            <div class="border-t pt-4 space-y-2 text-sm text-stone-700">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>
+                        <%= formatPrice(subTotal) %>
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span>Shipping</span>
+                    <span>
+                        <%= shipping===0 ? "FREE" : formatPrice(shipping) %>
+                    </span>
+                </div>
+
+                <div class="flex justify-between font-bold text-base border-t pt-3">
+                    <span>Total</span>
+                    <span>
+                        <%= formatPrice(total) %>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===== ACTION BUTTONS ===== -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="/user/orders"
+                class="px-6 py-3 bg-stone-700 text-white rounded-lg font-semibold hover:bg-stone-800 transition">
+                Track Your Order
+            </a>
+
+            <button onclick="window.print()"
+                class="px-6 py-3 bg-white border border-stone-400 text-stone-700 rounded-lg font-semibold hover:bg-stone-100 transition">
+                Print Receipt
+            </button>
+        </div>
+
+    </div>
+</div>

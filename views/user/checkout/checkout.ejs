@@ -1,0 +1,232 @@
+<% // ---------------- HELPERS ---------------- const
+  primaryBtnClass="w-full h-12 bg-[#4B3621] hover:bg-stone-700 text-white font-semibold rounded-lg transition duration-200 uppercase tracking-wider"
+  ; const formatter=new Intl.NumberFormat("en-IN", { style: "currency" , currency: "INR" }); const
+  formatPrice=(amount)=> formatter.format(amount || 0);
+  // -----------------------------------------
+  %>
+
+  <div class="w-full min-h-screen bg-[#F5E9DA] pb-12">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+      <h1 class="text-4xl font-extrabold text-gray-800 mb-8">Checkout</h1>
+
+      <% if (checkoutitemcount===0) { %>
+        <!-- EMPTY -->
+        <div class="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-xl shadow-lg p-10">
+          <h2 class="text-2xl font-semibold text-gray-700 mb-2">
+            Your Checkout is empty
+          </h2>
+          <a href="/user/products"
+            class="<%= primaryBtnClass %> bg-[#C8A97E] flex items-center justify-center w-52 h-10 mt-4">
+            Start Shopping
+          </a>
+        </div>
+
+        <% } else { %>
+
+          <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- LEFT -->
+            <div class="flex-grow lg:w-3/5 space-y-6">
+
+              <!-- REVIEW ITEMS -->
+              <div class="space-y-4">
+                <h2 class="text-xl font-bold text-gray-800">Review Items</h2>
+
+                <% checkout.forEach(item=> { %>
+                  <div class="flex p-4 bg-white rounded-xl shadow-sm border items-center">
+                    <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg mr-4 border" />
+
+                    <div class="flex-grow">
+                      <h3 class="font-semibold text-gray-800">
+                        <%= item.productId.name %>
+                      </h3>
+                      <p class="text-xs text-gray-500">
+                        Size: <%= item.size %> | Color: <%= item.color %>
+                      </p>
+                      <p class="text-sm font-medium mt-1">
+                        Qty: <%= item.quantity %>
+                      </p>
+                    </div>
+
+                    <div class="text-right">
+                      <p class="font-bold text-lg">
+                        <%= formatPrice(item.price * item.quantity) %>
+                      </p>
+                    </div>
+                  </div>
+                  <% }) %>
+              </div>
+
+              <!-- DELIVERY ADDRESS -->
+              <div class="bg-white rounded-xl shadow-md p-6 border">
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-xl font-bold text-gray-800">Delivery Address</h2>
+
+                  <a href="/user/address?from=checkout"
+                    class="inline-block text-sm font-semibold text-[#4B3621] hover:underline">
+                    + Add New Address & Edit address
+                  </a>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+
+                  <% if (addresses && addresses.length> 0) { %>
+
+                    <% const hasDefault=addresses.some(a=> a.isDefault); %>
+
+                      <% addresses.forEach((addr, index)=> { %>
+                        <label class="relative border rounded-lg p-4 flex cursor-pointer hover:bg-stone-50 transition">
+
+                          <input type="radio" name="selectedAddress" value="<%= addr._id %>" class="mt-1 mr-3"
+                            <%=addr.isDefault || (!hasDefault && index===0) ? "checked" : "" %>
+                          />
+
+                          <div class="text-sm">
+                            <p class="font-bold flex items-center gap-2">
+                              <%= addr.name %>
+
+                                <% if (addr.isDefault) { %>
+                                  <span class="text-xs bg-[#C8A97E] text-white px-2 py-0.5 rounded">
+                                    Default
+                                  </span>
+                                  <% } %>
+
+                                    <% if (addr.type) { %>
+                                      <span class="text-xs bg-gray-200 px-2 py-0.5 rounded">
+                                        <%= addr.type.toUpperCase() %>
+                                      </span>
+                                      <% } %>
+                            </p>
+
+                            <p>
+                              <%= addr.street %>
+                                <% if (addr.street2) { %>, <%= addr.street2 %>
+                                    <% } %>
+                            </p>
+
+                            <p>
+                              <%= addr.city %>, <%= addr.state %> - <%= addr.pincode %>
+                            </p>
+
+                            <p class="text-gray-500 mt-1">
+                              Phone: <%= addr.phone %>
+                            </p>
+                          </div>
+                        </label>
+                        <% }) %>
+
+                          <% } else { %>
+                            <p class="text-red-500 text-sm">
+                              No addresses found. Please add one to continue.
+                            </p>
+                            <% } %>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="lg:w-2/5 space-y-6">
+              <div class="bg-white rounded-xl shadow-lg p-6 border h-fit sticky top-6">
+
+                <h2 class="text-2xl font-semibold mb-6">Order Summary</h2>
+
+                <!-- COUPON -->
+                <div class="mb-6 pb-6 border-b">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Have a Coupon?
+                  </label>
+
+                  <div class="flex gap-2">
+                    <input type="text" placeholder="Enter code" class="flex-grow border rounded-lg px-3 py-2 text-sm" />
+                    <button class="bg-[#C8A97E] text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                      Apply
+                    </button>
+                  </div>
+                </div>
+
+                <!-- SUMMARY -->
+                <div class="space-y-3 text-gray-700">
+                  <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>
+                      <%= formatPrice(subTotal) %>
+                    </span>
+                  </div>
+
+                  <% if (discount> 0) { %>
+                    <div class="flex justify-between text-green-600 font-medium">
+                      <span>Discount Applied</span>
+                      <span>- <%= formatPrice(discount) %></span>
+                    </div>
+                    <% } %>
+
+                      <div class="flex justify-between">
+                        <span>Shipping</span>
+                        <span>
+                          <%= shipping===0 ? "FREE" : formatPrice(shipping) %>
+                        </span>
+                      </div>
+
+                      <div class="border-t mt-4 pt-4 flex justify-between font-bold text-xl">
+                        <span>Total</span>
+                        <span>
+                          <%= formatPrice(total) %>
+                        </span>
+                      </div>
+                </div>
+
+                <button onclick="processPayment()" class="<%= primaryBtnClass %> mt-8 bg-[#C8A97E] shadow-lg">
+                  Continue to Payment
+                </button>
+
+                <p class="text-[10px] text-center text-gray-400 mt-4">
+                  By clicking, you agree to our Terms & Conditions
+                </p>
+
+              </div>
+            </div>
+          </div>
+
+          <% } %>
+    </div>
+  </div>
+
+
+  <script>
+    const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
+
+ async function processPayment() {
+    const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
+
+    try {
+        const selected = document.querySelector('input[name="selectedAddress"]:checked');
+        if (!selected) {
+            return notyf.error("Please select an address");
+        }
+
+        const addressId = selected.value;
+
+        const response = await fetch(`/user/payment?addressId=${addressId}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        const contentType = response.headers.get("content-type");
+
+        if (!response.ok) {
+            if (contentType && contentType.includes("application/json")) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Invalid request. Please check your address.");
+            }
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
+        window.location.href = `/user/payment?addressId=${addressId}`;
+
+    } catch (error) {
+        console.error("Payment Error:", error);
+        notyf.error(error.message);
+    }
+}
+  </script>

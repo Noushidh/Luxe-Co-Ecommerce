@@ -39,13 +39,19 @@ export const isBlocked = async (req, res, next) => {
 //cart count in header
 export const cartCountMiddleware = async (req, res, next) => {
   try {
-    if (req.session.user?._id) {
-      const cart = await CartModel.findOne({ user: req.session.user._id },{ items: 1 }).lean();
+    res.locals.cartItemsCount = 0;
 
-      res.locals.cartItemsCount = cart?.items.length || 0;
-    } else {
-      res.locals.cartItemsCount = 0;
+    if (req.session.user?._id) {
+      const cart = await CartModel.findOne({ user: req.session.user._id }, { items: 1 }).lean();
+
+      // res.locals.cartItemsCount = cart?.items.length || 0;
+      if (cart && cart.items) {
+        res.locals.cartItemsCount = cart.items.length;
+      }
     }
+    //  else {
+    //   res.locals.cartItemsCount = 0;
+    // }
   } catch (err) {
     console.error("Cart count middleware error:", err);
     res.locals.cartItemsCount = 0;

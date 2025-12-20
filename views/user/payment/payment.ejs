@@ -1,0 +1,177 @@
+<div class="min-h-screen bg-[#F5E9DA] py-10">
+    <div class="max-w-7xl mx-auto px-6">
+
+        <h1 class="text-3xl font-bold text-stone-800 mb-8">Payment</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LEFT COLUMN: Payment Options -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- DELIVERY ADDRESS PREVIEW -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-lg font-semibold text-stone-700 mb-4">Delivery Address</h2>
+                    <% if (address) { %>
+                        <div class="p-4 border rounded-lg bg-stone-50">
+                            <p class="font-medium text-stone-800">
+                                <%= address.name %>
+                            </p>
+                            <p class="text-stone-600 text-sm mt-1">
+                                <%= address.street %>, <%= address.city %>
+                            </p>
+                            <p class="text-stone-600 text-sm">
+                                <%= address.state %> - <%= address.pincode %>
+                            </p>
+                            <p class="text-stone-600 text-sm mt-1">Phone: <%= address.phone %>
+                            </p>
+                        </div>
+                        <% } else { %>
+                            <p class="text-red-500">No address selected.</p>
+                            <% } %>
+                </div>
+
+                <!-- PAYMENT METHODS -->
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-lg font-semibold text-stone-700 mb-4">Payment Method</h2>
+
+                    <div class="space-y-4">
+
+                        <!-- COD -->
+                        <label
+                            class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-stone-50 transition">
+                            <input type="radio" name="paymentMethod" value="COD" class="w-5 h-5 text-[#C8A97E]" checked>
+                            <span class="font-medium text-stone-700">Cash on Delivery (COD)</span>
+                        </label>
+
+                        <!-- Wallet -->
+                        <label
+                            class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-stone-50 transition">
+                            <input type="radio" name="paymentMethod" value="Wallet" class="w-5 h-5 text-[#C8A97E]">
+                            <div class="flex flex-col">
+                                <span class="font-medium text-stone-700">Wallet</span>
+                                <span class="text-xs text-stone-500">Pay using your wallet balance</span>
+                            </div>
+                        </label>
+
+                        <!-- Razorpay -->
+                        <label
+                            class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-stone-50 transition">
+                            <input type="radio" name="paymentMethod" value="Razorpay" class="w-5 h-5 text-[#C8A97E]">
+                            <span class="font-medium text-stone-700">Razorpay / Online Payment</span>
+                        </label>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow p-6 sticky top-6">
+                    <h2 class="text-xl font-semibold text-stone-800 mb-6">Order Summary</h2>
+
+                    <div class="space-y-3 text-stone-600 border-b border-stone-200 pb-4">
+                        <div class="flex justify-between">
+                            <span>Subtotal</span>
+                            <span>₹<%= subTotal.toFixed(2) %></span>
+                        </div>
+                        <div class="flex justify-between text-green-600">
+                            <span>Discount</span>
+                            <span>- ₹<%= discount.toFixed(2) %></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Shipping</span>
+                            <span>
+                                <%= shipping===0 ? 'Free' : '₹' + shipping %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-4 mb-8">
+                        <span class="text-lg font-bold text-stone-800">Total</span>
+                        <span class="text-xl font-bold text-[#C8A97E]">₹<%= total.toFixed(2) %></span>
+                    </div>
+
+                    <button id="placeOrderBtn" onclick="handlePlaceOrder()"
+                        class="w-full bg-[#4B3621] hover:bg-stone-700 text-white font-bold py-3 rounded-lg transition">
+                        Place Order
+                    </button>
+
+                    <p class="text-xs text-center text-stone-500 mt-4">
+                        By placing this order, you agree to our Terms and Conditions.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+async function handlePlaceOrder() {
+    const notyf = new Notyf({ 
+        duration: 3000, 
+        position: { x: 'right', y: 'top' } 
+    });
+    
+    const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
+    if (!paymentMethodElement) {
+        return notyf.error("Please select a payment method");
+    }
+    
+    const paymentMethod = paymentMethodElement.value;
+    
+    const addressDetails = {
+        id: "<%= address._id %>",
+        name: "<%= address.name %>",
+        addressLine: "<%= address.addressLine || address.street %>",
+        city: "<%= address.city %>",
+        state: "<%= address.state %>",
+        pincode: "<%= address.pincode %>",
+        phone: "<%= address.phone %>"
+    };
+
+    try {
+        let res;
+
+        if (paymentMethod === "COD") {
+            res = await axios.post("/user/order/cashOnDelivery", { address: addressDetails });
+        } else if (paymentMethod === "Wallet") {
+            res = await axios.post("/user/order/wallet", { address: addressDetails });
+        } else if (paymentMethod === "Razorpay") {
+            res = await axios.post("/user/order/razorpay", { address: addressDetails });
+        } else {
+            throw new Error("Invalid payment method selected");
+        }
+
+        if (res.data.success) {
+            if (paymentMethod === "Razorpay") {
+                openRazorpay(res.data.order);
+            } else {
+                notyf.success(res.data.message || "Order placed successfully!");
+                
+                const orderId = res.data.orderId;
+                if (!orderId) {
+                    console.error("Critical Error: No orderId returned from server");
+                    return notyf.error("Order processed but ID missing. Please check My Orders.");
+                }
+
+                setTimeout(() => {
+                    window.location.href = `/user/order-confirmed/${orderId}`;
+                }, 800);
+            }
+        }
+
+    } catch (err) {
+        console.error("Order Placement Error:", err);
+        const errorMessage = err.response?.data?.message || "Order placement failed. Please try again.";
+        notyf.error(errorMessage);
+        
+        if (err.response?.data?.redirect) {
+            setTimeout(() => {
+                window.location.href = err.response.data.redirect;
+            }, 2000);
+        }
+    }
+}
+</script>
