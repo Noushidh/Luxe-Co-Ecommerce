@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const orderSchema = new mongoose.Schema({
     orderId: {
         type: String,
-        unique: true 
+        unique: true
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -37,9 +37,17 @@ const orderSchema = new mongoose.Schema({
         enum: ["Pending", "Paid", "Failed", "Refunded"],
         default: "Pending"
     },
+    shipping: {
+        type: Number,
+        default: 0
+    },
     address: {
-        type: String, 
-        required: true
+        name: { type: String, required: true },
+        phone: { type: String, required: true },
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        pincode: { type: String, required: true }
     },
     couponId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,8 +57,8 @@ const orderSchema = new mongoose.Schema({
     deliveryDate: {
         type: Date
     }
-}, { 
-    timestamps: true 
+}, {
+    timestamps: true
 });
 
 const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);

@@ -94,7 +94,7 @@ router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderCon
 
 //Orders
 router.get('/orders',Orders.load_orders);
-router.get('/order-details/:id',Orders.load_orders_deliveredDetails)
+router.get('/order-details/:orderId',Orders.load_orders_Details)
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

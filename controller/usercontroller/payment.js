@@ -63,9 +63,6 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "Please select a shipping address" });
     }
 
-    const streetInfo = address.street || address.addressLine || "";
-    const formattedAddress = `${address.name}, ${streetInfo}, ${address.city}, ${address.state}, ${address.pincode}. Phone: ${address.phone}`;
-
     const currentYear = new Date().getFullYear();
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     const uniqueOrderId = `LUX-${currentYear}-${randomNumber}`;
@@ -89,9 +86,16 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
         status: "Confirmed",
         paymentMethod: "cashOnDelivery",
         paymentStatus: "Pending",
-        address: formattedAddress,
+        address: {
+            name:address.name,
+            street:address.street||address.addressLine,
+            city:address.city,
+            state: address.state,
+            pincode: address.pincode,
+            phone: address.phone  
+        },
     });
-
+    console.log(address)
     const saveOrder = await newOrder.save();
 
     for (const item of cart.items) {

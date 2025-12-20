@@ -16,12 +16,19 @@ export const load_orders = asyncHandler(async (req, res) => {
     })
 })
 
-export const load_orders_deliveredDetails = asyncHandler(async (req, res) => {
-
-    res.render("user/layout", {
+export const load_orders_Details = asyncHandler(async (req, res) => {
+    const { orderId } = req.params;
+    
+    const order = await orderModel.findById(orderId).populate('items.productId');
+    if (!order) {
+        return res.redirect('/user/orders')
+    }
+       const shipping = order.shipping !== undefined ? order.shipping : (order.total > 500 ? 0 : 50);    res.render("user/layout", {
         title: "Order Details",
         body: "user/orders/my-order-details",
+        order,
         userData: req.session.user,
-        currentPath: '/user/orders'
-    })
+        currentPath: '/user/orders',
+        shipping
+    });
 })
