@@ -92,6 +92,8 @@ router.get('/payment',userAuth.isAuthenticated,Payment.load_payment)
 router.post('/order/cashOnDelivery',userAuth.isAuthenticated,Payment.cashOnDeliveryChecking)
 router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderConfirmed)
 
+router.patch('/order-cancelled/:id',Payment.orderCancel)
+
 //Orders
 router.get('/orders',Orders.load_orders);
 router.get('/order-details/:orderId',Orders.load_orders_Details)

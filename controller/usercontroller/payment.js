@@ -95,7 +95,7 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
             phone: address.phone  
         },
     });
-    console.log(address)
+    console.log("address:===",address)
     const saveOrder = await newOrder.save();
 
     for (const item of cart.items) {
@@ -144,29 +144,43 @@ export const load_orderConfirmed = asyncHandler(async (req, res) => {
     });
 });
 
-// export const load_orderConfirmed = asyncHandler(async (req, res) => {
-//     const { id } = req.params;
-//     const order = await OrderModel.findById(id);
+export const orderCancel = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const userId = req.session.user._id;
 
-//     const cart = await CartModel.findOne(req.session.user._id);
+    const order = await OrderModel.findOne({ _id: id, userId });
+    
+    if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+    }
 
-//     if(!cart||cart.items.length===0){
-//         return res.redirect('/user/cart');
-//     }
+    if (["Shipped", "Delivered", "Cancelled"].includes(order.status)) {
+        return res.status(400).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
+    }
 
-//     const items = order.items || [];
-//     const subTotal = items.reduce((acc, item) => acc + ((item.price || 0) * (item.quantity || 1)), 0);
+    // Loop through items to restore stock
+    for (const item of order.items) {
+        // 1. First, find the actual product from the database
+        const product = await productModel.findById(item.productId);
+        
+        if (product) {
+            // 2. Find the correct variant inside the product
+            const variant = product.variants.find(v => v.size === item.size && v.color === item.color);
 
-//     res.render("user/layout", {
-//         title: "Order Confirmed",
-//         body: "user/payment/order-confirmed",
-//         order,
-//         items,
-//         total: order.total || 0,
-//         subTotal:subTotal,
-//         shipping: order.shipping || 0,
-//     });
-// });
+            if (variant) {
+                // 3. Increment the stock for that specific variant
+                await productModel.updateOne(
+                    { _id: item.productId, "variants._id": variant._id },
+                    { $inc: { "variants.$.stock": item.quantity } }
+                );
+            }
+        }
+    }
 
+    order.status = "Cancelled";
+    await order.save();
+
+    res.status(200).json({ success: true, message: "Order cancelled and stock restored!" });
+});
 
 

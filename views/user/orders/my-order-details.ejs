@@ -16,9 +16,12 @@ const formatPrice = (amount) => {
     <main class="flex-grow max-w-5xl space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-stone-700">Order Details</h1>
-            <span class="px-4 py-1 bg-white border border-stone-300 rounded-full text-xs font-bold text-stone-600 uppercase tracking-widest">
-                <%= order.status %>
-            </span>
+          <span class="px-4 py-1 border rounded-full text-xs font-bold uppercase tracking-widest
+    <%= order.status === 'Cancelled' ? 'bg-red-50 border-red-200 text-red-600' : 
+        order.status === 'Confirmed' ? 'bg-green-50 border-green-200 text-green-600' : 
+        'bg-white border-stone-300 text-stone-600' %>">
+    <%= order.status %>
+</span>
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
@@ -134,3 +137,20 @@ const formatPrice = (amount) => {
         </div>
     </main>
 </div>
+<script>
+   async function confirmCancel(id){
+ const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+      try{
+      const response = await axios.patch(`/user/order-cancelled/${id}`);
+      if(response.data.success){
+        notyf.success(response.data.message);
+        setTimeout(() => {location.reload()}, 1000);
+      }else{
+        notyf.error(response.data.message);
+      }
+      }catch(error){
+       const errorMsg = error.response?.data?.message || "Error cancelling order";
+        notyf.error(errorMsg);
+      }
+    }
+</script>
