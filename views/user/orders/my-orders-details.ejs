@@ -1,0 +1,127 @@
+<div class="min-h-screen flex flex-col md:flex-row p-4 md:p-8" style="background-color: #F5E9DA;">
+    <aside class="w-full md:w-[260px] shrink-0 mb-8 md:mb-0 md:mr-8">
+        <%- include("../../partials/user/sidebar") %>
+    </aside>
+
+    <main class="flex-grow max-w-5xl space-y-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-stone-700">Order Details</h1>
+            <span class="px-4 py-1 bg-white border border-stone-300 rounded-full text-xs font-bold text-stone-600 uppercase tracking-widest">
+                <%= order.status %>
+            </span>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="font-semibold text-stone-700">Delivery Progress</h3>
+                <p class="text-xs text-stone-500">Expected Delivery: Dec 28, 2024</p>
+            </div>
+            
+            <div class="relative flex items-center justify-between">
+                <div class="absolute left-0 top-5 w-full h-1 bg-stone-100 -z-0"></div>
+                <div class="absolute left-0 top-5 h-1 bg-stone-700 -z-0 transition-all duration-500" 
+                     style="width: <%= order.status === 'Delivered' ? '100%' : (order.status === 'Shipped' ? '50%' : '25%') %>;"></div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-stone-700 flex items-center justify-center text-white mb-2">✓</div>
+                    <span class="text-[10px] font-medium text-stone-600">Order Placed</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full <%= ['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-stone-700 text-white' : 'bg-white border-2 border-stone-200 text-stone-300' %> flex items-center justify-center mb-2">
+                        <%= ['Shipped', 'Out for Delivery', 'Delivered'].includes(order.status) ? '✓' : '2' %>
+                    </div>
+                    <span class="text-[10px] font-medium text-stone-600">Shipped</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full <%= ['Out for Delivery', 'Delivered'].includes(order.status) ? 'bg-stone-700 text-white' : 'bg-white border-2 border-stone-200 text-stone-300' %> flex items-center justify-center mb-2">
+                        <%= ['Out for Delivery', 'Delivered'].includes(order.status) ? '✓' : '3' %>
+                    </div>
+                    <span class="text-[10px] font-medium text-stone-600">Out for Delivery</span>
+                </div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full <%= order.status === 'Delivered' ? 'bg-stone-700 text-white' : 'bg-white border-2 border-stone-200 text-stone-300' %> flex items-center justify-center mb-2">
+                        <%= order.status === 'Delivered' ? '✓' : '4' %>
+                    </div>
+                    <span class="text-[10px] font-medium text-stone-600">Delivered</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 space-y-6">
+                <div>
+                    <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Order Information</h3>
+                    <div class="text-sm space-y-2">
+                        <p><span class="font-semibold">Order ID:</span> #<%= order.orderId %></p>
+                        <p><span class="font-semibold">Order Date:</span> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Product Details</h3>
+                    <% order.items.forEach(item => { %>
+                    <div class="flex gap-4 mb-4">
+                        <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border">
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-stone-800"><%= item.productName %></h4>
+                            <p class="text-xs text-stone-500">Quantity: <%= item.quantity %></p>
+                            <p class="text-sm font-bold text-[#C8A97E] mt-1"><%= formatPrice(item.price) %></p>
+                        </div>
+                        <% if(order.status === 'Delivered') { %>
+                            <button class="text-[10px] h-fit px-3 py-1 bg-stone-100 border border-stone-300 rounded font-bold hover:bg-stone-200">WRITE REVIEW</button>
+                        <% } %>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="bg-white p-2 rounded-xl shadow-sm border border-stone-200 hidden lg:block">
+                <img src="<%= order.items[0].image %>" class="w-full h-full object-cover rounded-lg">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl border border-stone-200">
+                <h3 class="font-semibold text-stone-700 mb-4">Delivery Address</h3>
+                <div class="text-sm text-stone-600 space-y-1">
+                    <p class="font-bold text-stone-800"><%= order.address.name %></p>
+                    <p><%= order.address.street %></p>
+                    <p><%= order.address.city %>, <%= order.address.state %> <%= order.address.zip %></p>
+                    <p class="pt-2"><span class="font-bold">Phone:</span> <%= order.address.phone %></p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-stone-200">
+                <h3 class="font-semibold text-stone-700 mb-4">Price Summary</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between"><span>Subtotal</span><span><%= formatPrice(order.total - 15) %></span></div>
+                    <div class="flex justify-between"><span>Shipping</span><span><%= formatPrice(15) %></span></div>
+                    <div class="flex justify-between font-bold text-lg border-t pt-2 text-stone-800">
+                        <span>Total</span><span><%= formatPrice(order.total) %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+            <button class="px-8 py-3 bg-stone-800 text-white rounded-lg text-sm font-bold shadow-md hover:bg-black transition-all">
+                DOWNLOAD INVOICE
+            </button>
+
+            <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned') { %>
+                <button onclick="confirmCancel('<%= order._id %>')" 
+                        class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
+                    CANCEL ORDER
+                </button>
+            <% } else if (order.status === 'Delivered') { %>
+                <button onclick="confirmReturn('<%= order._id %>')" 
+                        class="px-8 py-3 bg-white text-stone-700 border border-stone-400 rounded-lg text-sm font-bold hover:bg-stone-50 transition-all">
+                    RETURN ORDER
+                </button>
+            <% } %>
+        </div>
+    </main>
+</div>
