@@ -1,118 +1,119 @@
-<aside class="bg-white rounded-2xl shadow p-5 flex flex-col min-h-[108vh]">
+<% const currentPath=locals.currentPath || '' %>
+  <aside class="bg-white rounded-2xl shadow p-5 flex flex-col min-h-[108vh]">
 
-  <!-- MENU -->
-  <ul class="space-y-2">
+    <!-- MENU -->
+    <ul class="space-y-2">
 
-    <a href="/user/profile">
-      <li class="relative px-4 py-3 flex items-center gap-3 rounded-lg cursor-pointer
+      <a href="/user/profile">
+        <li class="relative px-4 py-3 flex items-center gap-3 rounded-lg cursor-pointer
     <%= currentPath === '/user/profile'
       ? 'bg-[#eee4d4] text-[#c8a97e]'
       : 'hover:bg-stone-100' %>">
 
-        👤 <span class="text-sm font-medium">Personal Info</span>
+          👤 <span class="text-sm font-medium">Personal Info</span>
 
-        <% if (currentPath==='/user/profile' ) { %>
-          <span class="absolute left-0 top-2 bottom-2 w-1 bg-[#c8a97e] rounded-r"></span>
-          <% } %>
+          <% if (currentPath==='/user/profile' ) { %>
+            <span class="absolute left-0 top-2 bottom-2 w-1 bg-[#c8a97e] rounded-r"></span>
+            <% } %>
 
+        </li>
+      </a>
+
+
+      <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
+        📦 <span class="text-sm font-medium">My Orders</span>
       </li>
-    </a>
 
-
-    <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
-      📦 <span class="text-sm font-medium">My Orders</span>
-    </li>
-
-    <a href="/user/address">
-      <li class="relative px-4 py-3 flex items-center gap-3 rounded-lg cursor-pointer
+      <a href="/user/address">
+        <li class="relative px-4 py-3 flex items-center gap-3 rounded-lg cursor-pointer
     <%= currentPath === '/user/address'
       ? 'bg-[#eee4d4] text-[#c8a97e]'
       : 'hover:bg-stone-100' %>">
-        🏠 <span class="text-sm font-medium">Address</span>
+          🏠 <span class="text-sm font-medium">Address</span>
+        </li>
+      </a>
+
+
+
+      <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
+        💳 <span class="text-sm font-medium">Wallet</span>
       </li>
-    </a>
 
-
-
-    <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
-      💳 <span class="text-sm font-medium">Wallet</span>
-    </li>
-
-    <!-- 🔐 SECURITY -->
-    <li onclick="toggleSecurity()" class="px-4 py-3 flex items-center justify-between
+      <!-- 🔐 SECURITY -->
+      <li onclick="toggleSecurity()" class="px-4 py-3 flex items-center justify-between
                hover:bg-stone-100 rounded-lg cursor-pointer">
-      <div class="flex items-center gap-3">
-        🔐 <span class="text-sm font-medium">Security</span>
-      </div>
-      <span id="securityArrow" class="text-xs">▾</span>
-    </li>
+        <div class="flex items-center gap-3">
+          🔐 <span class="text-sm font-medium">Security</span>
+        </div>
+        <span id="securityArrow" class="text-xs">▾</span>
+      </li>
 
-    <!-- 🔽 SECURITY OPTIONS -->
-    <ul id="securityOptions" class="hidden ml-8 space-y-1">
+      <!-- 🔽 SECURITY OPTIONS -->
+      <ul id="securityOptions" class="hidden ml-8 space-y-1">
 
-      <% if (userData && !userData.googleId) { %>
+        <% if (userData && !userData.googleId) { %>
 
-        <li onclick="openPasswordModal()" class="px-3 py-2 text-sm rounded-md hover:bg-stone-100 cursor-pointer">
-          🔑 Change Password
-        </li>
-
-        <li onclick="openEmailModal()" class="px-3 py-2 text-sm rounded-md hover:bg-stone-100 cursor-pointer">
-          📧 Change Email
-        </li>
-
-        <% } else { %>
-
-          <li class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
-            🔑 Change Password (Google Account)
+          <li onclick="openPasswordModal()" class="px-3 py-2 text-sm rounded-md hover:bg-stone-100 cursor-pointer">
+            🔑 Change Password
           </li>
 
-          <li class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
-            📧 Change Email (Google Account)
+          <li onclick="openEmailModal()" class="px-3 py-2 text-sm rounded-md hover:bg-stone-100 cursor-pointer">
+            📧 Change Email
           </li>
 
-          <% } %>
+          <% } else { %>
+
+            <li class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
+              🔑 Change Password (Google Account)
+            </li>
+
+            <li class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed">
+              📧 Change Email (Google Account)
+            </li>
+
+            <% } %>
+
+      </ul>
 
     </ul>
 
-  </ul>
-
-  <!-- LOGOUT -->
-  <div class="mt-auto pt-6">
-    <button onclick="handleLogout()" class="w-full bg-[#c8a97e] text-white py-3 rounded-xl
+    <!-- LOGOUT -->
+    <div class="mt-auto pt-6">
+      <button onclick="handleLogout()" class="w-full bg-[#c8a97e] text-white py-3 rounded-xl
            flex items-center justify-center gap-2
            font-medium hover:opacity-90 transition">
-      ⎋ Logout
-    </button>
-  </div>
+        ⎋ Logout
+      </button>
+    </div>
 
-</aside>
+  </aside>
 
-<%- include("./modals/change-password") %>
-  <%- include("./modals/change-email") %>
+  <%- include("./modals/change-password") %>
+    <%- include("./modals/change-email") %>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-      function toggleSecurity() {
-        const options = document.getElementById("securityOptions");
-        const arrow = document.getElementById("securityArrow");
+      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+      <script>
+        function toggleSecurity() {
+          const options = document.getElementById("securityOptions");
+          const arrow = document.getElementById("securityArrow");
 
-        options.classList.toggle("hidden");
-        arrow.textContent = options.classList.contains("hidden") ? "▾" : "▴";
-      }
-
-      async function handleLogout() {
-        try {
-          const res = await axios.get("/user/logout");
-
-          if (res.data.success) {
-            notyf.success(res.data.message || "Logged out successfully");
-            setTimeout(() => {
-              window.location.href = "/user/login";
-            }, 800);
-          }
-        } catch (error) {
-          console.error("Logout failed:", error);
-          notyf.error("Something went wrong while logging out.");
+          options.classList.toggle("hidden");
+          arrow.textContent = options.classList.contains("hidden") ? "▾" : "▴";
         }
-      }
-    </script>
+
+        async function handleLogout() {
+          try {
+            const res = await axios.get("/user/logout");
+
+            if (res.data.success) {
+              notyf.success(res.data.message || "Logged out successfully");
+              setTimeout(() => {
+                window.location.href = "/user/login";
+              }, 800);
+            }
+          } catch (error) {
+            console.error("Logout failed:", error);
+            notyf.error("Something went wrong while logging out.");
+          }
+        }
+      </script>

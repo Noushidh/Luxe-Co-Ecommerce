@@ -7,7 +7,12 @@ import * as usercontroller from "../controller/usercontroller/user.auth.js";
 import * as PageController from "../controller/usercontroller/pages.controller.js";
 import * as Collections  from "../controller/usercontroller/collections.js"
 import * as Profile from "../controller/usercontroller/profile.js"
+import * as Address from "../controller/usercontroller/address.js"
+import * as Cart from "../controller/usercontroller/cart.js"
+import * as Checkout from "../controller/usercontroller/checkout.js"
+import * as Payment from "../controller/usercontroller/payment.js"
 import { upload } from "../config/multer.js";
+
 
 router
 .route('/login')
@@ -54,13 +59,39 @@ router.get('/contact',PageController.ContactPage_load)
 
 router.get('/page-404',PageController.page_404)
 
-
-
 router.get('/profile',userAuth.isAuthenticated,userAuth.isBlocked,Profile.load_profile)
 router.get('/profile/edit',userAuth.isAuthenticated,userAuth.isBlocked,Profile.load_editProfile)
 router.patch('/profile/edit',userAuth.isAuthenticated,upload.single("avatar"),Profile.editProfile)
 router.patch('/profile/change-password',userAuth.isAuthenticated,userAuth.isBlocked,Profile.changePassword)
 router.patch('/change-email/send-link',userAuth.isAuthenticated,Profile.sendChangeEmailLink)
 router.get('/change-email/verify',userAuth.isAuthenticated,Profile.verifyChangeEmail)
+
+//address
+router.get('/address',userAuth.isAuthenticated,Address.load_address)
+router.post('/address/add',userAuth.isAuthenticated,Address.addAddress)
+router.patch('/address/edit/:id',userAuth.isAuthenticated,Address.editAddress)
+router.patch('/address/default/:addressId',userAuth.isAuthenticated,Address.setDefaultAddress)
+router.delete('/address/delete/:id',userAuth.isAuthenticated,Address.deleteAddress)
+
+
+//cart
+router.get('/cart',Cart.load_cart)
+router.post('/cart/product/add',Cart.addtocart)
+router.patch('/cart/update-quantity',userAuth.isAuthenticated,Cart.updateCartquantity)
+router.delete('/cart/remove-item/:variantId',userAuth.isAuthenticated,Cart.deletCart)
+
+
+//checkout
+router.get('/cart/check-stock',userAuth.isAuthenticated,Checkout.checkStockBeforeCheckout)
+router.get('/checkout',userAuth.isAuthenticated,Checkout.load_checkout)
+
+
+//payment
+router.get('/payment',userAuth.isAuthenticated,Payment.load_payment)
+router.post('/order/cashOnDelivery',userAuth.isAuthenticated,Payment.cashOnDeliveryChecking)
+router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderConfirmed)
+
+router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
+
 
 export default router;

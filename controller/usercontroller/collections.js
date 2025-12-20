@@ -24,14 +24,11 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
     const fixedCategory = mapCategory(category);
     const allSubcategories = await SubCategory.find({ isBlocked: false }).lean(); 
     
-    // --- CATEGORY / SUBCATEGORY FILTERING (Working) ---
 
     if (subcategory) {
-        // 1. Specific subcategory filter (highest priority)
         filter.subCategory_id = subcategory; 
         
     } else if (fixedCategory) {
-        // 2. Main category filter
         
         const filteredSubCats = allSubcategories.filter(sc => mapCategory(sc.category) === fixedCategory);
         const allowedCatIds = filteredSubCats.map(sc => sc._id);
@@ -43,7 +40,6 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         }
     } 
     
-    // --- SIZE FILTERING (Working) ---
     const selectedSize = size || '';
     if (selectedSize) {
         filter.variants = {
@@ -54,7 +50,6 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         };
     }
 
-    // --- PRICE FILTERING (CRITICAL FIX APPLIED HERE) ---
     const priceFilter = price || '';
     if (priceFilter) {
         let min = null, max = null;
@@ -72,14 +67,12 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         if (!isNaN(min)) priceQuery.$gte = min;
         if (!isNaN(max) && max !== Infinity) priceQuery.$lte = max;
         
-        // This ensures the MongoDB query object for price is correctly formed 
-        // as { price: { $gte: min, $lte: max } }
+      
         if (Object.keys(priceQuery).length > 0) {
              filter.price = priceQuery;
         }
     }
     
-    // --- SORTING CRITERIA ---
     let sortCriteria = {};
     if (sort === "price_asc") {
         sortCriteria.price = 1;
@@ -89,7 +82,6 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         sortCriteria.createdAt = -1;
     }
 
-    // 4. Execution and Pagination Calculation
     const totalDocuments = await ProductModel.countDocuments(filter);
     const totalPages = Math.ceil(totalDocuments / limit); 
 
