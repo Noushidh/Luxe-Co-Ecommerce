@@ -13,7 +13,7 @@ export const load_payment = asyncHandler(async (req, res) => {
     }
     const cart = await CartModel.findOne({ user: userId }).populate("items.productId")
 
-    if(!cart||cart.items.length===0){
+    if (!cart || cart.items.length === 0) {
         return res.redirect('/user/cart');
     }
 
@@ -45,8 +45,8 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
     for (const item of cart.items) {
         const product = item.productId;
 
-        if(product.isBlocked){
-           return res.status(400).json({success:false,message:`${product.name} is Unavailable`})
+        if (product.isBlocked) {
+            return res.status(400).json({ success: false, message: `${product.name} is Unavailable` })
         }
 
         const variant = product.variants.find(v => v.size === item.size && v.color === item.color);
@@ -64,7 +64,10 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
 
     const streetInfo = address.street || address.addressLine || "";
     const formattedAddress = `${address.name}, ${streetInfo}, ${address.city}, ${address.state}, ${address.pincode}. Phone: ${address.phone}`;
-    const uniqueOrderId = `ORD-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const currentYear = new Date().getFullYear();
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    const uniqueOrderId = `LUX-${currentYear}-${randomNumber}`;
 
     const newOrder = new OrderModel({
         orderId: uniqueOrderId,
@@ -111,7 +114,7 @@ export const load_orderConfirmed = asyncHandler(async (req, res) => {
 
     const cart = await CartModel.findOne(req.session.user._id);
 
-    if(!cart||cart.items.length===0){
+    if (!cart || cart.items.length === 0) {
         return res.redirect('/user/cart');
     }
 
@@ -124,7 +127,7 @@ export const load_orderConfirmed = asyncHandler(async (req, res) => {
         order,
         items,
         total: order.total || 0,
-        subTotal:subTotal,
+        subTotal: subTotal,
         shipping: order.shipping || 0,
     });
 });
