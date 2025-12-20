@@ -11,6 +11,7 @@ import * as Address from "../controller/usercontroller/address.js"
 import * as Cart from "../controller/usercontroller/cart.js"
 import * as Checkout from "../controller/usercontroller/checkout.js"
 import * as Payment from "../controller/usercontroller/payment.js"
+import * as Orders from "../controller/usercontroller/orders.js";
 import { upload } from "../config/multer.js";
 
 
@@ -90,6 +91,9 @@ router.get('/checkout',userAuth.isAuthenticated,Checkout.load_checkout)
 router.get('/payment',userAuth.isAuthenticated,Payment.load_payment)
 router.post('/order/cashOnDelivery',userAuth.isAuthenticated,Payment.cashOnDeliveryChecking)
 router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderConfirmed)
+
+//Orders
+router.get('/orders',Orders.load_orders);
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

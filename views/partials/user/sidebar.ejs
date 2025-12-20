@@ -19,10 +19,16 @@
         </li>
       </a>
 
-
-      <li class="px-4 py-3 flex items-center gap-3 hover:bg-stone-100 rounded-lg cursor-pointer">
-        📦 <span class="text-sm font-medium">My Orders</span>
-      </li>
+<a href="/user/orders" class="block">
+  <li class="px-4 py-3 flex items-center gap-3 rounded-lg cursor-pointer transition-all
+    <%= currentPath === '/user/orders' 
+      ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm' 
+      : 'hover:bg-stone-100 text-stone-600' %>">
+    
+    <span class="text-lg">📦</span>
+    <span class="text-sm font-medium">My Orders</span>
+  </li>
+</a>
 
       <a href="/user/address">
         <li class="relative px-4 py-3 flex items-center gap-3 rounded-lg cursor-pointer
