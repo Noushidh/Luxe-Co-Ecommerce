@@ -17,7 +17,12 @@ const orderSchema = new mongoose.Schema({
         price: Number,
         quantity: Number,
         size: String,
-        color: String
+        color: String,
+        status: { 
+            type: String, 
+            enum: ["Placed", "Delivered", "Cancelled", "Return Requested", "Returned"],
+            default: "Placed"
+        }
     }],
     total: {
         type: Number,
@@ -25,7 +30,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"],
+        enum: ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled","Return Requested"],
         default: "Pending"
     },
     paymentMethod: {

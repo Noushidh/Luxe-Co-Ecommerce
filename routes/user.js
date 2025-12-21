@@ -13,6 +13,7 @@ import * as Checkout from "../controller/usercontroller/checkout.js"
 import * as Payment from "../controller/usercontroller/payment.js"
 import * as Orders from "../controller/usercontroller/orders.js";
 import { upload } from "../config/multer.js";
+import Order from "../models/ordermodel.js";
 
 
 router
@@ -97,6 +98,8 @@ router.patch('/order-cancelled/:id',Payment.orderCancel)
 //Orders
 router.get('/orders',Orders.load_orders);
 router.get('/order-details/:orderId',Orders.load_orders_Details)
+router.get('/order-return/:id',Orders.load_returnOrder)
+router.post('/order/return',Orders.returnOrder_details);
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

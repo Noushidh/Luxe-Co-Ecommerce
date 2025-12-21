@@ -1,6 +1,5 @@
-<% 
-// Define formatPrice locally at the top of the file
-const formatPrice = (amount) => {
+<% // Define formatPrice locally at the top of the file 
+const formatPrice=(amount)=> {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
@@ -8,6 +7,7 @@ const formatPrice = (amount) => {
     }).format(amount || 0);
 };
 %>
+
 <div class="min-h-screen flex flex-col md:flex-row p-4 md:p-8" style="background-color: #F5E9DA;">
     <aside class="w-full md:w-[260px] shrink-0 mb-8 md:mb-0 md:mr-8">
         <%- include("../../partials/user/sidebar") %>
@@ -16,23 +16,22 @@ const formatPrice = (amount) => {
     <main class="flex-grow max-w-5xl space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-stone-700">Order Details</h1>
-        <span
-  class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest
-         border border-l-4
-         <%= order.status === 'Cancelled'
-           ? 'bg-red-50 border-red-200 border-l-red-500 text-red-600'
-           : order.status === 'Confirmed'
-           ? 'bg-green-50 border-green-200 border-l-green-500 text-green-600'
-           : order.status === 'Processing'
-           ? 'bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'
-           : order.status === 'Shipped'
-           ? 'bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'
-           : order.status === 'Delivered'
-           ? 'bg-emerald-100 border-emerald-300 border-l-emerald-600 text-emerald-700'
-           : 'bg-white border-stone-300 border-l-stone-400 text-stone-600' %>">
-  <%= order.status %>
-</span>
-
+            
+            <% 
+            let mainBadgeStyle=''; 
+            switch (order.status) { 
+                case 'Cancelled': mainBadgeStyle='bg-red-50 border-red-200 border-l-red-500 text-red-600'; break;
+                case 'Confirmed': mainBadgeStyle='bg-green-50 border-green-200 border-l-green-500 text-green-600'; break;
+                case 'Processing': mainBadgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+                case 'Shipped': mainBadgeStyle='bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'; break;
+                case 'Delivered': mainBadgeStyle='bg-emerald-100 border-emerald-300 border-l-emerald-600 text-emerald-700'; break;
+                case 'Return Requested': mainBadgeStyle='bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600'; break;
+                default: mainBadgeStyle='bg-white border-stone-300 border-l-stone-400 text-stone-600';
+            } 
+            %>
+            <span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-l-4 <%= mainBadgeStyle %>">
+                <%= order.status %>
+            </span>
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
@@ -40,11 +39,12 @@ const formatPrice = (amount) => {
                 <h3 class="font-semibold text-stone-700">Delivery Progress</h3>
                 <p class="text-xs text-stone-500">Expected Delivery: Dec 28, 2024</p>
             </div>
-            
+
             <div class="relative flex items-center justify-between">
                 <div class="absolute left-0 top-5 w-full h-1 bg-stone-100 -z-0"></div>
-                <div class="absolute left-0 top-5 h-1 bg-stone-700 -z-0 transition-all duration-500" 
-                     style="width: <%= order.status === 'Delivered' ? '100%' : (order.status === 'Shipped' ? '50%' : '25%') %>;"></div>
+                <div class="absolute left-0 top-5 h-1 bg-stone-700 -z-0 transition-all duration-500"
+                    style="width: <%= order.status === 'Delivered' ? '100%' : (order.status === 'Shipped' ? '50%' : '25%') %>;">
+                </div>
 
                 <div class="relative z-10 flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full bg-stone-700 flex items-center justify-center text-white mb-2">✓</div>
@@ -67,7 +67,7 @@ const formatPrice = (amount) => {
 
                 <div class="relative z-10 flex flex-col items-center">
                     <div class="w-10 h-10 rounded-full <%= order.status === 'Delivered' ? 'bg-stone-700 text-white' : 'bg-white border-2 border-stone-200 text-stone-300' %> flex items-center justify-center mb-2">
-                        <%= order.status === 'Delivered' ? '✓' : '4' %>
+                        <%= order.status==='Delivered' ? '✓' : '4' %>
                     </div>
                     <span class="text-[10px] font-medium text-stone-600">Delivered</span>
                 </div>
@@ -87,17 +87,22 @@ const formatPrice = (amount) => {
                 <div>
                     <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Product Details</h3>
                     <% order.items.forEach(item => { %>
-                    <div class="flex gap-4 mb-4">
-                        <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border">
-                        <div class="flex-1">
-                            <h4 class="text-sm font-bold text-stone-800"><%= item.productName %></h4>
-                            <p class="text-xs text-stone-500">Quantity: <%= item.quantity %></p>
-                            <p class="text-sm font-bold text-[#C8A97E] mt-1"><%= formatPrice(item.price) %></p>
+                        <div class="flex gap-4 mb-4 items-center">
+                            <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-stone-800"><%= item.productName %></h4>
+                                <p class="text-xs text-stone-500">Quantity: <%= item.quantity %></p>
+                                <span class="text-[9px] px-2 py-0.5 rounded border font-bold uppercase <%= item.status === 'Return Requested' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'hidden' %>">
+                                    <%= item.status %>
+                                </span>
+                                <p class="text-sm font-bold text-[#C8A97E] mt-1"><%= formatPrice(item.price) %></p>
+                            </div>
+                            <% if(order.status==='Delivered') { %>
+                                <button class="text-[10px] h-fit px-3 py-1 bg-stone-100 border border-stone-300 rounded font-bold hover:bg-stone-200">
+                                    WRITE REVIEW
+                                </button>
+                            <% } %>
                         </div>
-                        <% if(order.status === 'Delivered') { %>
-                            <button class="text-[10px] h-fit px-3 py-1 bg-stone-100 border border-stone-300 rounded font-bold hover:bg-stone-200">WRITE REVIEW</button>
-                        <% } %>
-                    </div>
                     <% }) %>
                 </div>
             </div>
@@ -120,8 +125,8 @@ const formatPrice = (amount) => {
             <div class="bg-white p-6 rounded-xl border border-stone-200">
                 <h3 class="font-semibold text-stone-700 mb-4">Price Summary</h3>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between"><span>Subtotal</span><span><%= formatPrice(order.total ) %></span></div>
-                    <div class="flex justify-between"><span>Shipping</span><span><%= shipping===0 ? "FREE" : formatPrice(shipping) %></span></div>
+                    <div class="flex justify-between"><span>Subtotal</span><span><%= formatPrice(order.total) %></span></div>
+                    <div class="flex justify-between"><span>Shipping</span><span><%= order.shipping === 0 ? "FREE" : formatPrice(order.shipping) %></span></div>
                     <div class="flex justify-between font-bold text-lg border-t pt-2 text-stone-800">
                         <span>Total</span><span><%= formatPrice(order.total) %></span>
                     </div>
@@ -134,34 +139,32 @@ const formatPrice = (amount) => {
                 DOWNLOAD INVOICE
             </button>
 
-            <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned') { %>
-                <button onclick="confirmCancel('<%= order._id %>')" 
-                        class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
+            <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Return Requested') { %>
+                <button onclick="confirmCancel('<%= order._id %>')" class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
                     CANCEL ORDER
                 </button>
             <% } else if (order.status === 'Delivered') { %>
-                <button onclick="confirmReturn('<%= order._id %>')" 
-                        class="px-8 py-3 bg-white text-stone-700 border border-stone-400 rounded-lg text-sm font-bold hover:bg-stone-50 transition-all">
+                <a href="/user/order-return/<%= order._id %>" class="inline-block px-8 py-3 bg-white text-stone-700 border border-stone-400 rounded-lg text-sm font-bold hover:bg-stone-50 transition-all">
                     RETURN ORDER
-                </button>
+                </a>
             <% } %>
         </div>
     </main>
 </div>
-<script>
-   async function confirmCancel(id){
- const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
-      try{
-      const response = await axios.patch(`/user/order-cancelled/${id}`);
-      if(response.data.success){
-        notyf.success(response.data.message);
-        setTimeout(() => {location.reload()}, 1000);
-      }else{
-        notyf.error(response.data.message);
-      }
-      }catch(error){
-       const errorMsg = error.response?.data?.message || "Error cancelling order";
-        notyf.error(errorMsg);
-      }
-    }
-</script>
+    <script>
+        async function confirmCancel(id) {
+            const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+            try {
+                const response = await axios.patch(`/user/order-cancelled/${id}`);
+                if (response.data.success) {
+                    notyf.success(response.data.message);
+                    setTimeout(() => { location.reload() }, 1000);
+                } else {
+                    notyf.error(response.data.message);
+                }
+            } catch (error) {
+                const errorMsg = error.response?.data?.message || "Error cancelling order";
+                notyf.error(errorMsg);
+            }
+        }
+    </script>
