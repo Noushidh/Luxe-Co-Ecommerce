@@ -158,24 +158,17 @@ export const orderCancel = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
     }
 
-    // Loop through items to restore stock
     for (const item of order.items) {
-        // 1. First, find the actual product from the database
         const product = await productModel.findById(item.productId);
         
         if (product) {
-            // 2. Find the correct variant inside the product
             const variant = product.variants.find(v => v.size === item.size && v.color === item.color);
 
             if (variant) {
-                // 3. Increment the stock for that specific variant
                 await productModel.updateOne(
                     { _id: item.productId, "variants._id": variant._id },
-                    { $inc: { "variants.$.stock": item.quantity } }
-                );
-            }
-        }
-    }
+                    { $inc: { "variants.$.stock": item.quantity } });
+            }}}
 
     order.status = "Cancelled";
     await order.save();

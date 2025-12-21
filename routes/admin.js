@@ -1,7 +1,7 @@
 
 import express from "express";
 const router = express.Router();
-import {upload}  from "../config/multer.js";
+import { upload } from "../config/multer.js";
 
 import * as adminAuth from "../middleware/adminAuth.js";
 import * as adminAuthController from "../controller/admincontroller/auth.js";
@@ -10,40 +10,45 @@ import * as admindashboard from "../controller/admincontroller/dashboard.js";
 import * as admincustomers from "../controller/admincontroller/customers.js";
 import * as category from "../controller/admincontroller/category.js"
 import * as Products from "../controller/admincontroller/products.js"
+import * as Orders from "../controller/admincontroller/orders.js"
 
-router.get('/login',adminAuth.isLoggin,adminAuthController.loadlogin)
-router.post('/login',adminAuth.isLoggin,adminAuthController.login)
+router.get('/login', adminAuth.isLoggin, adminAuthController.loadlogin)
+router.post('/login', adminAuth.isLoggin, adminAuthController.login)
 
-router.get('/dashboard',adminAuth.checkSession,admindashboard.load_dashboard)
+router.get('/dashboard', adminAuth.checkSession, admindashboard.load_dashboard)
 
-router.get('/customers',adminAuth.checkSession,admincustomers.load_customers)
-router.patch('/user/:id/toggle-block',adminAuth.checkSession,admincustomers.blockUser)
+router.get('/customers', adminAuth.checkSession, admincustomers.load_customers)
+router.patch('/user/:id/toggle-block', adminAuth.checkSession, admincustomers.blockUser)
 
 //category
-router.get('/category',adminAuth.checkSession,category.load_Category)
-router.post('/subcategory/add',adminAuth.checkSession,category.addSubCategory)
-router.patch('/subcategory/:id/toggle-block',adminAuth.checkSession,category.blocksubCategory)
-router.patch('/subcategory/:id',adminAuth.checkSession,category.updateSubcategory)
+router.get('/category', adminAuth.checkSession, category.load_Category)
+router.post('/subcategory/add', adminAuth.checkSession, category.addSubCategory)
+router.patch('/subcategory/:id/toggle-block', adminAuth.checkSession, category.blocksubCategory)
+router.patch('/subcategory/:id', adminAuth.checkSession, category.updateSubcategory)
 
 //products
-router.get('/products',adminAuth.checkSession,Products.load_Products)
+router.get('/products', adminAuth.checkSession, Products.load_Products)
 
-router.get('/products/add',adminAuth.checkSession,Products.load_add_product)
-router.post('/product/add',adminAuth.checkSession,upload.none(),Products.addProduct)
-router.get('/product/edit/:id',adminAuth.checkSession,Products.load_edit_product)
-router.patch('/product/edit/:id',adminAuth.checkSession,upload.none(),Products.editProduct)
-router.patch('/products/:id/toggle-block',adminAuth.checkSession,Products.blockProduct)
+router.get('/products/add', adminAuth.checkSession, Products.load_add_product)
+router.post('/product/add', adminAuth.checkSession, upload.none(), Products.addProduct)
+router.get('/product/edit/:id', adminAuth.checkSession, Products.load_edit_product)
+router.patch('/product/edit/:id', adminAuth.checkSession, upload.none(), Products.editProduct)
+router.patch('/products/:id/toggle-block', adminAuth.checkSession, Products.blockProduct)
 
-router.get('/products/:id/variants',adminAuth.checkSession,Products.load_add_variants)
-router.post('/products/variants/save',adminAuth.checkSession,upload.any(),Products.saveVarients)
-router.get('/products/:id/variants/edit',adminAuth.checkSession,Products.load_edit_variants)
-router.patch('/products/variants/update-one/:variantId',adminAuth.checkSession,upload.array('images'),Products.updateSingleVariants)
-router.patch("/products/variants/toggle-block/:variantId",adminAuth.checkSession,Products.blockVariants);
+router.get('/products/:id/variants', adminAuth.checkSession, Products.load_add_variants)
+router.post('/products/variants/save', adminAuth.checkSession, upload.any(), Products.saveVarients)
+router.get('/products/:id/variants/edit', adminAuth.checkSession, Products.load_edit_variants)
+router.patch('/products/variants/update-one/:variantId', adminAuth.checkSession, upload.array('images'), Products.updateSingleVariants)
+router.patch("/products/variants/toggle-block/:variantId", adminAuth.checkSession, Products.blockVariants);
 
+//orders
+router.get('/orders', adminAuth.checkSession, Orders.load_orders)
+router.get('/order-details/:id', adminAuth.checkSession, Orders.load_orders_Details)
+router.patch('/order-cancel/:id',adminAuth.checkSession,Orders.cancelOrder);
+router.patch('/orders/update-status/:id',Orders.updateStatus)
 
-router.get('/logout',adminAuth.checkSession,adminAuthController.isLogout)
+router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
-// Admin 404 page (publicly accessible so wrong admin URLs show a styled 404)
 router.get('/page-404', (req, res) => {
 	return adminPages.page_404(req, res);
 });

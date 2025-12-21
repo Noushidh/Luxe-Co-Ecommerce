@@ -1,0 +1,430 @@
+<div class="max-w-4xl mx-auto p-6 space-y-6 bg-[#F5E9DA] min-h-screen">
+
+    <div class="border-b-2 border-stone-400 pb-2">
+        <h1 class="text-2xl font-bold text-stone-700">
+            Order Details - #<%= order.orderId %>
+        </h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
+            <h2 class="text-base font-semibold text-stone-800">Order Summary</h2>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Order ID</p>
+                <p class="text-sm font-semibold text-stone-700">#<%= order.orderId %>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Customer Name</p>
+                <p class="text-sm font-semibold text-stone-700">
+                    <%= order.address.name %>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Customer Email</p>
+                <p class="text-sm font-semibold text-stone-700">
+                    <%= order.userId.email %>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Order Date</p>
+                <p class="text-sm font-semibold text-stone-700">
+                    <%= new Date(order.createdAt).toLocaleDateString() %>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Payment Status</p>
+                <span
+                    class="text-sm font-semibold <%= order.paymentStatus === 'Paid' ? 'text-green-600' : 'text-orange-600' %>">
+                    <%= order.paymentStatus %>
+                </span>
+            </div>
+
+            <div>
+                <% let badgeStyle='' ; switch (order.status) { case 'Pending' :
+                    badgeStyle='bg-stone-100 text-stone-600 border-stone-200' ; break; case 'Confirmed' :
+                    badgeStyle='bg-green-50 text-green-600 border-green-200' ; break; case 'Processing' :
+                    badgeStyle='bg-blue-50 text-blue-600 border-blue-200' ; break; case 'Shipped' :
+                    badgeStyle='bg-purple-50 text-purple-600 border-purple-200' ; break; case 'Delivered' :
+                    badgeStyle='bg-emerald-100 text-emerald-700 border-emerald-300' ; break; case 'Cancelled' :
+                    badgeStyle='bg-red-50 text-red-600 border-red-200' ; break; } %>
+
+                    <p class="text-xs text-stone-500 uppercase font-medium">
+                        Delivery Status
+                    </p>
+
+                    <p id="order-status-<%= order._id %>" class="mt-2 inline-flex items-center px-3 py-1 text-sm font-semibold
+         rounded-full border <%= badgeStyle %>">
+                        <%= order.status %>
+                    </p>
+
+
+            </div>
+
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Payment Method</p>
+                <p class="text-sm font-semibold text-stone-700 uppercase">
+                    <%= order.paymentMethod %>
+                </p>
+            </div>
+
+            <div>
+                <p class="text-xs text-stone-500 uppercase font-medium">Total Amount</p>
+                <p class="text-lg font-bold text-[#C8A97E]">
+                    ₹<%= order.total.toLocaleString('en-IN') %>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
+                <h2 class="text-base font-semibold text-stone-800">Delivery Address</h2>
+            </div>
+            <div class="p-6">
+                <p class="text-sm font-bold text-stone-800 mb-1">
+                    <%= order.address.name %>
+                </p>
+                <p class="text-sm text-stone-500 leading-relaxed">
+                    <%= order.address.houseName %>, <%= order.address.city %><br>
+                            <%= order.address.state %> - <%= order.address.pincode %><br>
+                                    Phone: <%= order.address.phone %>
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
+                <h2 class="text-base font-semibold text-stone-800">Payment Details</h2>
+            </div>
+            <div class="p-6 space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-sm text-stone-500">Method</span>
+                    <span class="text-sm font-medium text-stone-700 uppercase">
+                        <%= order.paymentMethod %>
+                    </span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-stone-500">Transaction ID</span>
+                    <span class="text-sm font-medium text-stone-700">
+                        <%= order.transactionId || 'N/A' %>
+                    </span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-stone-500">Status</span>
+                    <span class="text-sm font-medium text-stone-700">
+                        <%= order.paymentStatus %>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50 text-white" style="background-color: #C8A97E;">
+            <h2 class="text-base font-semibold">Product Details</h2>
+        </div>
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-stone-100">
+                <tr>
+                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase">Product</th>
+                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase text-center">Quantity</th>
+                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase text-right">Price</th>
+                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+                <% order.items.forEach(item=> { %>
+                    <tr>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <img src="<%= item.productId.image%>"
+                                    class="w-12 h-12 rounded object-cover border border-stone-200">
+                                <span class="text-sm font-medium text-stone-800">
+                                    <%= item.productId.name %>
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-stone-700 text-center">
+                            <%= item.quantity %>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-stone-700 text-right">₹<%= item.price.toLocaleString() %>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-semibold text-stone-800 text-right">₹<%= (item.price *
+                                item.quantity).toLocaleString() %>
+                        </td>
+                    </tr>
+                    <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+
+
+<div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+  <div class="flex justify-between items-center mb-8">
+    <h3 class="font-semibold text-stone-700">Delivery Progress</h3>
+
+    <% if(order.deliveredAt) { %>
+      <p class="text-xs text-stone-500">
+        Delivered on <%= new Date(order.deliveredAt).toLocaleDateString() %>
+      </p>
+    <% } %>
+  </div>
+
+  <div class="relative flex items-center justify-between">
+
+    <!-- Background Line -->
+    <div class="absolute left-0 top-5 w-full h-1 bg-stone-100"></div>
+
+    <!-- Progress Line -->
+    <%
+      let progressWidth = '20%';
+      if (order.status === 'Confirmed') progressWidth = '40%';
+      else if (order.status === 'Processing') progressWidth = '60%';
+      else if (order.status === 'Shipped') progressWidth = '80%';
+      else if (order.status === 'Delivered') progressWidth = '100%';
+    %>
+
+    <div
+      class="absolute left-0 top-5 h-1 bg-stone-700 transition-all duration-500"
+      style="width: <%= progressWidth %>">
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="relative z-10 flex flex-col items-center">
+      <div class="w-10 h-10 rounded-full bg-stone-700 text-white flex items-center justify-center mb-2">✓</div>
+      <span class="text-[10px] font-medium text-stone-600">Order Placed</span>
+      <span class="text-[9px] text-stone-400">
+        <%= new Date(order.createdAt).toLocaleDateString() %>
+      </span>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="relative z-10 flex flex-col items-center">
+      <div class="w-10 h-10 rounded-full
+        <%= ['Confirmed','Processing','Shipped','Delivered'].includes(order.status)
+          ? 'bg-stone-700 text-white'
+          : 'bg-white border-2 border-stone-200 text-stone-300' %>
+        flex items-center justify-center mb-2">
+        <%= ['Confirmed','Processing','Shipped','Delivered'].includes(order.status) ? '✓' : '2' %>
+      </div>
+      <span class="text-[10px] font-medium text-stone-600">Confirmed</span>
+      <% if(order.confirmedAt) { %>
+        <span class="text-[9px] text-stone-400"><%= new Date(order.confirmedAt).toLocaleDateString() %></span>
+      <% } %>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="relative z-10 flex flex-col items-center">
+      <div class="w-10 h-10 rounded-full
+        <%= ['Processing','Shipped','Delivered'].includes(order.status)
+          ? 'bg-stone-700 text-white'
+          : 'bg-white border-2 border-stone-200 text-stone-300' %>
+        flex items-center justify-center mb-2">
+        <%= ['Processing','Shipped','Delivered'].includes(order.status) ? '✓' : '3' %>
+      </div>
+      <span class="text-[10px] font-medium text-stone-600">Processing</span>
+      <% if(order.processingAt) { %>
+        <span class="text-[9px] text-stone-400"><%= new Date(order.processingAt).toLocaleDateString() %></span>
+      <% } %>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="relative z-10 flex flex-col items-center">
+      <div class="w-10 h-10 rounded-full
+        <%= ['Shipped','Delivered'].includes(order.status)
+          ? 'bg-stone-700 text-white'
+          : 'bg-white border-2 border-stone-200 text-stone-300' %>
+        flex items-center justify-center mb-2">
+        <%= ['Shipped','Delivered'].includes(order.status) ? '✓' : '4' %>
+      </div>
+      <span class="text-[10px] font-medium text-stone-600">Shipped</span>
+      <% if(order.shippedAt) { %>
+        <span class="text-[9px] text-stone-400"><%= new Date(order.shippedAt).toLocaleDateString() %></span>
+      <% } %>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="relative z-10 flex flex-col items-center">
+      <div class="w-10 h-10 rounded-full
+        <%= order.status === 'Delivered'
+          ? 'bg-stone-700 text-white'
+          : 'bg-white border-2 border-stone-200 text-stone-300' %>
+        flex items-center justify-center mb-2">
+        <%= order.status === 'Delivered' ? '✓' : '5' %>
+      </div>
+      <span class="text-[10px] font-medium text-stone-600">Delivered</span>
+      <% if(order.deliveredAt) { %>
+        <span class="text-[9px] text-stone-400"><%= new Date(order.deliveredAt).toLocaleDateString() %></span>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+    <div class="flex justify-end gap-4 pb-10">
+        <button type="button" onclick="updateStatusModal('<%= order._id %>')"
+            class="px-6 py-2 bg-[#C8A97E] text-white font-bold rounded-md text-smhover:bg-stone-700 transition-colors">
+            Change Delivery Status
+        </button>
+
+
+        <% if(order.status !=='Cancelled' && order.status !=='Delivered' ) { %>
+            <button onclick="cancelOrder('<%= order._id %>')" class="px-6 py-2 bg-red-500 text-white font-bold rounded-md text-sm
+         hover:bg-red-600 transition-colors">
+                Cancel Order
+            </button>
+
+            <% } %>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div id="cancelOrderModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-sm rounded-xl shadow-lg p-6">
+
+        <h3 class="text-lg font-bold text-stone-800 mb-2">
+            Cancel Order
+        </h3>
+
+        <p class="text-sm text-stone-600 mb-6">
+            Are you sure you want to cancel this order? This action cannot be undone.
+        </p>
+
+        <div class="flex justify-end gap-3">
+            <button onclick="closeCancelModal()" class="px-4 py-2 text-sm font-semibold rounded-md
+               bg-stone-200 text-stone-700 hover:bg-stone-300 transition">
+                No
+            </button>
+
+            <button onclick="confirmCancelOrder()" class="px-4 py-2 text-sm font-semibold rounded-md
+               bg-red-500 text-white hover:bg-red-600 transition">
+                Yes, Cancel
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Status change Modal -->
+
+<div id="statusModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 border border-stone-200">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-black text-stone-800 tracking-tight">Update Status</h3>
+            <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="statusForm">
+            <input type="hidden" id="modalOrderId">
+            <div class="space-y-4">
+                <label class="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-1">Choose New
+                    Status</label>
+                <select id="statusSelect"
+                    class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-[#C8A97E] focus:outline-none appearance-none cursor-pointer">
+        
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                </select>
+                <p class="text-[10px] text-stone-400 font-medium px-1">Note: Changing to 'Delivered' will finalize the
+                    order process.</p>
+            </div>
+
+            <div class="mt-8 flex gap-3">
+                <button type="button" onclick="closeModal()"
+                    class="flex-1 px-4 py-3 bg-stone-100 text-stone-600 text-xs font-bold rounded-xl hover:bg-stone-200 transition-all uppercase tracking-widest">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="flex-1 px-4 py-3 bg-[#C8A97E] text-white text-xs font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg shadow-stone-200 uppercase tracking-widest">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const notyf = new Notyf({ duration: 2000, position: { x: "right", y: "top" } });
+
+    let cancelOrderId = null;
+
+    function cancelOrder(orderId) {
+        cancelOrderId = orderId;
+        document.getElementById("cancelOrderModal").classList.remove("hidden");
+        document.getElementById("cancelOrderModal").classList.add("flex");
+    }
+
+    function closeCancelModal() {
+        document.getElementById("cancelOrderModal").classList.add("hidden");
+        document.getElementById("cancelOrderModal").classList.remove("flex");
+    }
+
+    async function confirmCancelOrder() {
+        if (!cancelOrderId) return;
+
+        try {
+            const response = await axios.patch(`/admin/order-cancel/${cancelOrderId}`);
+
+            if (response.data.success) {
+                notyf.success(response.data.message);
+                closeCancelModal();
+                setTimeout(() => location.reload(), 1200);
+            }
+        } catch (error) {
+            notyf.error(
+                error.response?.data?.message || "Failed to cancel order"
+            );
+        }
+    }
+
+    function updateStatusModal(orderId) {
+        document.getElementById("modalOrderId").value = orderId;
+        document.getElementById("statusModal").classList.remove("hidden");
+        document.getElementById("statusModal").classList.add("flex");
+    }
+
+    function closeModal() {
+        document.getElementById("statusModal").classList.add("hidden");
+        document.getElementById("statusModal").classList.remove("flex");
+    }
+
+    async function submitStatusUpdate(event) {
+        event.preventDefault();
+
+        const orderId = document.getElementById("modalOrderId").value;
+        const newStatus = document.getElementById("statusSelect").value;
+
+        try {
+            const response = await axios.patch(`/admin/orders/update-status/${orderId}`,{ status: newStatus });
+
+            if (response.data.success) {
+                const statusEl = document.getElementById(`order-status-${orderId}`);
+                if (statusEl) statusEl.textContent = newStatus;
+
+                notyf.success(response.data.message);
+                setTimeout(()=>location.reload(),1000)
+                closeModal();
+            }
+        } catch (error) {
+            notyf.error(error.response?.data?.message || "Failed to update order status");
+        }
+    }
+ document.getElementById("statusForm").addEventListener("submit", submitStatusUpdate);
+</script>

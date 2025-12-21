@@ -189,13 +189,11 @@
             const params = currentUrl.searchParams;
 
             params.delete("sort");
-            params.delete("page"); // Reset page on new sort
+            params.delete("page"); 
 
             if (sortType) {
                 params.set("sort", sortType);
             }
-
-            // This ensures all other existing filters (category, price, size) are preserved
             window.location.href = currentUrl.pathname + "?" + params.toString();
         });
     });
