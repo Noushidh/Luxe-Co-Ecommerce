@@ -16,12 +16,23 @@ const formatPrice = (amount) => {
     <main class="flex-grow max-w-5xl space-y-6">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-stone-700">Order Details</h1>
-          <span class="px-4 py-1 border rounded-full text-xs font-bold uppercase tracking-widest
-    <%= order.status === 'Cancelled' ? 'bg-red-50 border-red-200 text-red-600' : 
-        order.status === 'Confirmed' ? 'bg-green-50 border-green-200 text-green-600' : 
-        'bg-white border-stone-300 text-stone-600' %>">
-    <%= order.status %>
+        <span
+  class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest
+         border border-l-4
+         <%= order.status === 'Cancelled'
+           ? 'bg-red-50 border-red-200 border-l-red-500 text-red-600'
+           : order.status === 'Confirmed'
+           ? 'bg-green-50 border-green-200 border-l-green-500 text-green-600'
+           : order.status === 'Processing'
+           ? 'bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'
+           : order.status === 'Shipped'
+           ? 'bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'
+           : order.status === 'Delivered'
+           ? 'bg-emerald-100 border-emerald-300 border-l-emerald-600 text-emerald-700'
+           : 'bg-white border-stone-300 border-l-stone-400 text-stone-600' %>">
+  <%= order.status %>
 </span>
+
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
