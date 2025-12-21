@@ -59,33 +59,29 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
 });
 
 export const returnOrder_details = asyncHandler(async (req, res) => {
-    console.log(req.body)
-
     const { orderId, itemId, reason, refundMode, comments, addressId } = req.body;
 
-    const address = await addressModel.findById(addressId)
-    const fulladdress = `${address.name},${address.phone},${address.street},${address.city},${address.state},${address.pincode},${address.type}`
-    console.log(fulladdress);
+    const order = await orderModel.findById(orderId);
+    const itemToReturn = order.items.id(itemId); 
+    const address = await addressModel.findById(addressId);
+    const fulladdress = `${address.name}, ${address.phone}, ${address.street}, ${address.city}, ${address.state}, ${address.pincode}`;
+
     const newReturn = new returnModel({
         order_items_id: orderId,
         user_id: req.session.user._id,
-        product_id: itemId,
+        product_id: itemToReturn.productId, 
         reason: reason,
-        refundMode: refundMode,
+        refund_mode: refundMode, 
         comments: comments,
         pickup_address: fulladdress,
         pickup_date: Date.now(),
         status: "Pending",
-    })
+    });
     await newReturn.save();
 
-     await orderModel.updateOne({ _id: new mongoose.Types.ObjectId(orderId), "items._id": new mongoose.Types.ObjectId(itemId) },{$set: {"items.$.status": "Return Requested","status": "Return Requested"}});
-    return res.status(200).json({success:true,message:"Return request submitted"})
-})
+    await orderModel.updateOne({ _id: orderId, "items._id": itemId },
+        { $set: { "items.$.status": "Return Requested","status": "Return Requested" } });
 
+    return res.status(200).json({ success: true, message: "Return request submitted" });
+});
 
-    // if (result.matchedCount > 0) {
-    //     return res.status(200).json({ success: true, message: "Return request submitted!" });
-    // } else {
-    //     return res.status(404).json({ success: false, message: "Order or Item mismatch" });
-    // }
