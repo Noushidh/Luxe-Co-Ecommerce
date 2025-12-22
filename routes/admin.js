@@ -48,6 +48,7 @@ router.patch('/order-cancel/:id',adminAuth.checkSession,Orders.cancelOrder);
 router.patch('/orders/update-status/:id',Orders.updateStatus)
 //orders return and reject
 router.patch('/orders/return-approve',Orders.approveReturn)
+router.patch('/orders/return-reject',adminAuth.checkSession,Orders.rejectReturn)
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 

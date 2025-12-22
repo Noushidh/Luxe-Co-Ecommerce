@@ -4,20 +4,38 @@ import productModel from "../../models/productmodel.js"
 import returnModel from "../../models/returnmodel.js"
 
 export const load_orders = asyncHandler(async (req, res) => {
-    const { status, payment, sort } = req.query;
+    const { search = "", status = "", payment = "", Date: dateSort = "" } = req.query;
 
     let query = {};
-    if (status) query.status = status;
-    if (payment) query.paymentMethod = payment;
+    if (search) {
+        query.$or = [
+            { orderId: { $regex: search, $options: "i" } },
+            { status: { $regex: search, $options: "i" } },
+            { paymentMethod: { $regex: search, $options: "i" } },
+            { "address.name": { $regex: search, $options: "i" } } 
+        ];
+    }
+    if (status) {
+        query.status = status;
+    }
+    if (payment) {
+        query.paymentMethod = payment;
+    }
+    let sortQuery = { createdAt: -1 }; 
+    if (dateSort === "oldest") {
+        sortQuery = { createdAt: 1 };
+    }
 
-    const orders = await orderModel.find(query)
-        .populate('userId')
-        .sort({ createdAt: sort === 'oldest' ? 1 : -1 });
+    const orders = await orderModel.find(query).populate('userId').sort(sortQuery);
 
     res.render("admin/layout", {
         title: "Orders Management",
         body: "orders/orders.ejs",
-        orders
+        orders,
+        status,
+        payment,
+        sortDate: dateSort,
+        search
     });
 });
 
@@ -90,6 +108,27 @@ export const approveReturn = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: "Could not find product in this order" });
     }
 
+  const returnedItem = updatedOrder.items.find(item => item.productId.toString() === returnDoc.product_id.toString());
+
+    if (returnedItem) {
+        await productModel.updateOne(
+            { _id: returnedItem.productId, "variants.size": returnedItem.size, "variants.color": returnedItem.color },
+            { $inc: { "variants.$.stock": returnedItem.quantity } }
+        );
+    }
     await returnModel.findByIdAndUpdate(returnId, { status: "Approved" });
     res.status(200).json({ success: true, message: "Return approved and order status updated"});
 });
+
+export const rejectReturn = asyncHandler(async(req,res)=>{
+    console.log("REQUEST",req.body)
+    const {orderId,returnId}=req.body;
+    
+    const returnDoc = await returnModel.findById(returnId);
+         await orderModel.findOneAndUpdate(
+        {_id:orderId,"items.productId":returnDoc.product_id},
+        {$set:{"items.$.status":"Rejected","status":"Rejected"}},
+        {new:true}
+    )
+   return res.status(200).json({success:true,message:"Return Rejected"})
+})

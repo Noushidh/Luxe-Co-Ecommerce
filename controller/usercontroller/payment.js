@@ -95,7 +95,6 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
             phone: address.phone  
         },
     });
-    console.log("address:===",address)
     const saveOrder = await newOrder.save();
 
     for (const item of cart.items) {

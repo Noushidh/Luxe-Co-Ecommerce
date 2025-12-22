@@ -4,7 +4,7 @@ const variantSchema = new mongoose.Schema({
   color: { type: String, required: true, trim: true },
   size: { type: String, required: true, trim: true },
   stock: { type: Number, required: true, min: 0 },
-images: {
+  images: {
   type: [String],
    validate: {
     validator: arr => arr.length >= 3,

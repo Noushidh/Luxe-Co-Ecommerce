@@ -41,10 +41,6 @@ export const load_customers = asyncHandler(async (req, res) => {
 });
 
 
-
-
-
-
 export const blockUser = asyncHandler(async (req, res) => {
 
   const user = await Usermodel.findById(req.params.id);

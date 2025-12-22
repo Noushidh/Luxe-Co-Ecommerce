@@ -578,13 +578,7 @@ async function approveReturn() {
             return notyf.error("Missing Order or Return ID");
         }
 
-        console.log("Approving Order:", currentOrderId);
-        console.log("Approving Return:", currentReturnId);
-
-        const response = await axios.patch('/admin/orders/return-approve', {
-            orderId: currentOrderId,
-            returnId: currentReturnId 
-        });
+        const response = await axios.patch('/admin/orders/return-approve', {orderId: currentOrderId,returnId: currentReturnId });
 
         if (response.data.success) {
             notyf.success(response.data.message || 'Return Approved');
@@ -596,7 +590,6 @@ async function approveReturn() {
         }
 
     } catch (error) {
-        console.error("FULL ERROR OBJECT:", error);
         const errorMessage = error.response?.data?.message || "Something went wrong";
         notyf.error(errorMessage);
     }
@@ -608,18 +601,15 @@ async function rejectReturn() {
             return notyf.error("Missing Order or Return ID");
         }
 
-        const result = await axios.patch('/admin/orders/return-reject', {
-            orderId: currentOrderId,
-            returnId: currentReturnId 
-        });
+        const result = await axios.patch('/admin/orders/return-reject', {orderId: currentOrderId,returnId: currentReturnId });
 
         if (result.data.success) {
-            notyf.error('Return Request Rejected'); 
+            notyf.error(result.data.message); 
             setTimeout(() => location.reload(), 1500);
         }
     } catch (error) {
-        console.error(error);
-        notyf.error('Failed to reject');
+        const errorMessage = error.response?.data?.message || "Something went wrong";
+        notyf.error(errorMessage);
     }
 }
 </script>

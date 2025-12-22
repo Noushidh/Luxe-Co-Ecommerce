@@ -5,41 +5,55 @@
         <div class="mt-4 bg-white p-4 rounded-lg border border-stone-100 flex flex-wrap items-center gap-4">
             <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide">Order Status</label>
-                <select id="filterStatus" onchange="applyFilters()" class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none focus:ring-2 focus:ring-stone-200">
+                <select id="filterStatus" onchange="applyFilters()"
+                    class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none focus:ring-2 focus:ring-stone-200">
                     <option value="">All Statuses</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
+                    <option value="Pending" <%=status==="Pending" ? "selected" : "" %>>Pending</option>
+                    <option value="Confirmed" <%=status==="Confirmed" ? "selected" : "" %>>Confirmed</option>
+                    <option value="Processing" <%=status==="Processing" ? "selected" : "" %>>Processing</option>
+                    <option value="Shipped" <%=status==="Shipped" ? "selected" : "" %>>Shipped</option>
+                    <option value="Delivered" <%=status==="Delivered" ? "selected" : "" %>>Delivered</option>
+                    <option value="Cancelled" <%=status==="Cancelled" ? "selected" : "" %>>Cancelled</option>
+                    <option value="Return Requested" <%=status==="Return-Requested" ? "selected" : "" %>>Return
+                        Requested</option>
+                    <option value="Returned" <%=status==="Return-Requested" ? "selected" : "" %>>Returned</option>
                 </select>
             </div>
 
             <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide">Payment Method</label>
-                <select id="filterPayment" onchange="applyFilters()" class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none">
+                <select id="filterPayment" onchange="applyFilters()"
+                    class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none">
                     <option value="">All Methods</option>
-                    <option value="cashOnDelivery">Cash on Delivery</option>
-                    <option value="wallet">Wallet</option>
-                    <option value="razorpay">Razorpay</option>
+                    <option value="cashOnDelivery" <%=payment==="cashOnDelivery" ? "selected" : "" %>>Cash on Delivery
+                    </option>
+                    <option value="wallet" <%=payment==="wallet" ? "selected" : "" %>>Wallet</option>
+                    <option value="razorpay" <%=payment==="razorpay" ? "selected" : "" %>>Razorpay</option>
                 </select>
             </div>
 
             <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide">Sort by Date</label>
-                <select id="filterSort" onchange="applyFilters()" class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none">
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
+                <select id="filterSort" onchange="applyFilters()"
+                    class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none">
+                    <option value="newest" <%=Date==="newest" ? "selected" : "" %>>Newest First</option>
+                    <option value="oldest" <%=Date==="oldest" ? "selected" : "" %>>Oldest First</option>
                 </select>
             </div>
 
-            <button onclick="resetFilters()" class="ml-auto px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-xs font-bold hover:bg-stone-300 transition-all">
+            <button onclick="resetFilters()"
+                class="ml-auto px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-xs font-bold hover:bg-stone-300 transition-all">
                 RESET ALL
             </button>
         </div>
     </div>
-    
+
+    <!-- Search -->
+    <form method="GET" id="searchForm" class="flex items-center justify-between mt-6">
+        <input type="text" name="search" value="<%= search || '' %>" placeholder="Search by status, paymentMethod, name..."
+            class="ml-5 w-80 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm" oninput="autoSearch()" />
+    </form><br>
+
 
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -54,70 +68,76 @@
                     <th class="px-6 py-4 text-xs font-medium uppercase text-right">Actions</th>
                 </tr>
             </thead>
-            
+
             <tbody id="tableBodyContainer" class="divide-y divide-stone-100">
-          <% if (orders && orders.length > 0) { %>
-    <% orders.forEach((order, index) => { %>
-        <tr class="<%= index % 2 === 0 ? 'bg-orange-50/30' : 'bg-white' %> hover:bg-stone-50 transition-colors">
-            <td class="px-6 py-4 text-xs font-bold text-stone-800">#<%= order.orderId %></td>
-            <td class="px-6 py-4">
-                <div class="text-xs font-medium text-stone-800 text-nowrap"><%= order.address.name %></div>
-                <div class="text-[10px] text-gray-500"><%= order.address.phone %></div>
-            </td>
-            <td class="px-6 py-4 text-xs text-stone-800">₹<%= order.total.toLocaleString('en-IN') %></td>
-            <td class="px-6 py-4 text-xs text-stone-800"><%= new Date(order.createdAt).toLocaleDateString() %></td>
-            <td class="px-6 py-4 text-center">
-                <% 
-                    let badgeStyle = '';
-                    switch(order.status) {
-                        case 'Pending': badgeStyle = 'bg-stone-100 text-stone-600 border-stone-200'; break;
-                        case 'Confirmed': badgeStyle = 'bg-green-50 text-green-600 border-green-200'; break;
-                        case 'Processing': badgeStyle = 'bg-blue-50 text-blue-600 border-blue-200'; break;
-                        case 'Shipped': badgeStyle = 'bg-purple-50 text-purple-600 border-purple-200'; break;
-                        case 'Delivered': badgeStyle = 'bg-emerald-100 text-emerald-700 border-emerald-300'; break;
-                        case 'Cancelled': badgeStyle = 'bg-red-50 text-red-600 border-red-200'; break;
-                    }
-                %>
-                <span class="px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider <%= badgeStyle %>">
-                    <%= order.status %>
-                </span>
-            </td>
-            <td class="px-6 py-4 text-xs text-stone-800 uppercase"><%= order.paymentMethod %></td>
-            <td class="px-6 py-4 text-right">
-                <a href="/admin/order-details/<%= order._id %>" class="text-xs font-bold text-stone-400 hover:text-[#C8A97E]">VIEW</a>
-            </td>
-        </tr>
-    <% }) %>
-<% } else { %>
-    <tr><td colspan="7" class="text-center py-10 text-stone-400 italic">No orders found.</td></tr>
-<% } %>
+                <% if (orders && orders.length> 0) { %>
+                    <% orders.forEach((order, index)=> { %>
+                        <tr
+                            class="<%= index % 2 === 0 ? 'bg-orange-50/30' : 'bg-white' %> hover:bg-stone-50 transition-colors">
+                            <td class="px-6 py-4 text-xs font-bold text-stone-800">#<%= order.orderId %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-xs font-medium text-stone-800 text-nowrap">
+                                    <%= order.address.name %>
+                                </div>
+                                <div class="text-[10px] text-gray-500">
+                                    <%= order.address.phone %>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-stone-800">₹<%= order.total.toLocaleString('en-IN') %>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-stone-800">
+                                <%= new Date(order.createdAt).toLocaleDateString() %>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <% let badgeStyle='' ; switch(order.status) { case 'Pending' :
+                                    badgeStyle='bg-stone-100 text-stone-600 border-stone-200' ; break; case 'Confirmed'
+                                    : badgeStyle='bg-green-50 text-green-600 border-green-200' ; break;
+                                    case 'Processing' : badgeStyle='bg-blue-50 text-blue-600 border-blue-200' ; break;
+                                    case 'Shipped' : badgeStyle='bg-purple-50 text-purple-600 border-purple-200' ;
+                                    break; case 'Delivered' :
+                                    badgeStyle='bg-emerald-100 text-emerald-700 border-emerald-300' ; break;
+                                    case 'Cancelled' : badgeStyle='bg-red-50 text-red-600 border-red-200' ; break; } %>
+                                    <span
+                                        class="px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider <%= badgeStyle %>">
+                                        <%= order.status %>
+                                    </span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-stone-800 uppercase">
+                                <%= order.paymentMethod %>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="/admin/order-details/<%= order._id %>"
+                                    class="text-xs font-bold text-stone-400 hover:text-[#C8A97E]">VIEW</a>
+                            </td>
+                        </tr>
+                        <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="7" class="text-center py-10 text-stone-400 italic">No orders found.
+                                    </td>
+                                </tr>
+                                <% } %>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-async function applyFilters() {
-
-    const status = document.getElementById('filterStatus').value;
-    const payment = document.getElementById('filterPayment').value;
-    const sort = document.getElementById('filterSort').value;
-
-    console.log("Captured values:", { status, payment, sort }); 
-
-    try {
-        const response = await axios.get('/admin/orders', {
-            params: { 
-                status: status, 
-                payment: payment, 
-                sort: sort 
-            },
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
-
-        document.getElementById('tableBodyContainer').innerHTML = response.data;
-    } catch (error) {
-        console.error("Axios Error:", error);
+        let typingTimer;
+      function autoSearch() {
+        clearTimeout(typingTimer)
+        typingTimer = setTimeout(() => document.getElementById("searchForm").submit(), 1000)
+    };
+    async function applyFilters() {
+        const status = document.getElementById("filterStatus").value;
+        const payment = document.getElementById("filterPayment").value;
+        const dateSort = document.getElementById("filterSort").value;
+        const searchInput = document.querySelector('input[name="search"]');
+        const search = searchInput ? searchInput.value : "";
+        window.location.href = `/admin/orders?status=${status}&payment=${payment}&Date=${dateSort}&search=${encodeURIComponent(search)}`;
     }
-}
+    function resetFilters() {
+        window.location.href = "/admin/orders"
+    }
 </script>

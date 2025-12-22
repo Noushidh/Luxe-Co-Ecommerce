@@ -20,7 +20,7 @@ const orderSchema = new mongoose.Schema({
         color: String,
         status: { 
             type: String, 
-            enum: ["Placed", "Delivered", "Cancelled", "Return Requested", "Returned"],
+            enum: ["Placed", "Delivered", "Cancelled", "Return Requested", "Returned","Rejected"],
             default: "Placed"
         }
     }],
@@ -30,7 +30,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled","Return Requested","Returned"],
+        enum: ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled","Return Requested","Returned","Rejected"],
         default: "Pending"
     },
     paymentMethod: {

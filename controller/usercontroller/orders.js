@@ -3,7 +3,6 @@ import orderModel from "../../models/ordermodel.js"
 import userModel from "../../models/usermodel.js"
 import addressModel from "../../models/addressmodel.js";
 import returnModel from "../../models/returnmodel.js"
-import mongoose from "mongoose";
 
 export const load_orders = asyncHandler(async (req, res) => {
 

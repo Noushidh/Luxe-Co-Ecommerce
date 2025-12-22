@@ -108,9 +108,7 @@
 
 
 <script>
-    // ----------------------------------------------------------------------
-    // 1. DYNAMIC SUBCATEGORY FILTERING (Kept for visual hiding logic)
-    // ----------------------------------------------------------------------
+
     function filterSubcategories() {
         const selectedCategory = document.getElementById("category").value;
         const subcategorySelect = document.getElementById("subcategory");
@@ -135,27 +133,21 @@
         }
     }
 
-    // ----------------------------------------------------------------------
-    // 2. APPLY FILTER FUNCTIONS (Unified Redirection)
-    // ----------------------------------------------------------------------
+
 
     function applyFiltersAndRedirect(changedFilterType = null, changedValue = null) {
         const url = new URL(window.location.href);
         
-        // Reset page number on any filter change
         url.searchParams.delete('page');
 
-        // --- Category Filter ---
         const category = document.getElementById("category").value;
         if (category) url.searchParams.set("category", category);
         else url.searchParams.delete("category");
 
-        // --- Subcategory Filter (Styles) ---
         const subcategory = document.getElementById("subcategory").value;
         if (subcategory) url.searchParams.set("subcategory", subcategory);
         else url.searchParams.delete("subcategory");
 
-        // --- Price Filter ---
         const price = document.querySelector("input[name='price']:checked");
         if (price) url.searchParams.set("price", price.value);
         else url.searchParams.delete("price");
@@ -176,19 +168,15 @@
 
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Run once on load
         filterSubcategories(); 
 
-        // 1. Category change: Filter subcategories, then apply all filters
         document.getElementById("category").addEventListener("change", () => {
-             filterSubcategories(); // Update the visible options first
-             applyFiltersAndRedirect(); // Redirect with new filter state
+             filterSubcategories(); 
+             applyFiltersAndRedirect(); 
         });
 
-        // 2. Subcategory change: Apply all filters
         document.getElementById("subcategory").addEventListener("change", applyFiltersAndRedirect);
 
-        // 3. Size button click: Pass the size value to the redirect function for toggling
         document.querySelectorAll(".size-btn").forEach(btn => {
             btn.addEventListener("click", () => {
                 const sizeValue = btn.dataset.size;
@@ -196,12 +184,10 @@
             });
         });
 
-        // 4. Price radio buttons change: Apply all filters
         document.querySelectorAll("input[name='price']").forEach(radio => {
              radio.addEventListener("change", applyFiltersAndRedirect);
         });
         
-        // 5. Apply Filters button (Acts as fallback for robustness)
         document.getElementById("applyFilters").addEventListener("click", applyFiltersAndRedirect);
     });
 </script>
