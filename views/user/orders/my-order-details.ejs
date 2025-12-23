@@ -199,10 +199,6 @@ const formatPrice=(amount)=> {
                 <button onclick="confirmCancel('<%= order._id %>')" class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
                     CANCEL ORDER
                 </button>
-            <% } else if (order.status === 'Delivered') { %>
-                <a href="/user/order-return/<%= order._id %>" class="inline-block px-8 py-3 bg-white text-stone-700 border border-stone-400 rounded-lg text-sm font-bold hover:bg-stone-50 transition-all">
-                    RETURN ORDER
-                </a>
             <% } %>
         </div>
     </main>
