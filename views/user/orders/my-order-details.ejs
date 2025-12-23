@@ -14,25 +14,52 @@ const formatPrice=(amount)=> {
     </aside>
 
     <main class="flex-grow max-w-5xl space-y-6">
-        <div class="flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-stone-700">Order Details</h1>
-            
-            <% 
-            let mainBadgeStyle=''; 
+        <div class="flex justify-between items-center pb-6 border-b border-stone-200 mb-8">
+    <h1 class="text-3xl font-bold text-stone-700 tracking-tight">Order Details</h1>
+    
+    <% 
+        // 1. Logic check for partial returns within this order
+        const hasItemReturnRequested = order.items.some(item => item.status === 'Return Requested');
+        
+        let mainBadgeStyle=''; 
+        let displayStatus = order.status;
+
+        // 2. Priority Logic: If an item is being returned, show it in the main header
+        if (hasItemReturnRequested) {
+            displayStatus = 'Return In Progress';
+            mainBadgeStyle = 'bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600';
+        } else {
             switch (order.status) { 
-                case 'Cancelled': mainBadgeStyle='bg-red-50 border-red-200 border-l-red-500 text-red-600'; break;
-                case 'Confirmed': mainBadgeStyle='bg-green-50 border-green-200 border-l-green-500 text-green-600'; break;
-                case 'Processing': mainBadgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
-                case 'Shipped': mainBadgeStyle='bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'; break;
-                case 'Delivered': mainBadgeStyle='bg-emerald-100 border-emerald-300 border-l-emerald-600 text-emerald-700'; break;
-                case 'Return Requested': mainBadgeStyle='bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600'; break;
-                default: mainBadgeStyle='bg-white border-stone-300 border-l-stone-400 text-stone-600';
+                case 'Cancelled': 
+                    mainBadgeStyle='bg-red-50 border-red-200 border-l-red-500 text-red-600'; break;
+                case 'Confirmed': 
+                    mainBadgeStyle='bg-green-50 border-green-200 border-l-green-500 text-green-600'; break;
+                case 'Processing': 
+                    mainBadgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+                case 'Shipped': 
+                    mainBadgeStyle='bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'; break;
+                case 'Delivered': 
+                    mainBadgeStyle='bg-emerald-50 border-emerald-200 border-l-emerald-600 text-emerald-700'; break;
+                case 'Returned': 
+                    mainBadgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+                case 'Rejected':
+                case 'Return Rejected': 
+                    mainBadgeStyle='bg-red-50 border-red-200 border-l-red-600 text-red-700'; break;
+                default: 
+                    mainBadgeStyle='bg-white border-stone-300 border-l-stone-400 text-stone-600';
             } 
-            %>
-            <span class="inline-flex items-center px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-l-4 <%= mainBadgeStyle %>">
-                <%= order.status %>
-            </span>
-        </div>
+        }
+    %>
+
+    <div class="flex flex-col items-end gap-1">
+        <span class="inline-flex items-center px-4 py-2 border rounded text-[10px] font-black uppercase tracking-widest shadow-sm <%= mainBadgeStyle %>">
+            <%= displayStatus %>
+        </span>
+        <% if (hasItemReturnRequested) { %>
+            <span class="text-[9px] font-bold text-orange-400 animate-pulse">Waiting for admin approval</span>
+        <% } %>
+    </div>
+</div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
             <div class="flex justify-between items-center mb-8">
@@ -84,27 +111,55 @@ const formatPrice=(amount)=> {
                     </div>
                 </div>
 
-                <div>
-                    <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Product Details</h3>
-                    <% order.items.forEach(item => { %>
-                        <div class="flex gap-4 mb-4 items-center">
-                            <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border">
-                            <div class="flex-1">
-                                <h4 class="text-sm font-bold text-stone-800"><%= item.productName %></h4>
-                                <p class="text-xs text-stone-500">Quantity: <%= item.quantity %></p>
-                                <span class="text-[9px] px-2 py-0.5 rounded border font-bold uppercase <%= item.status === 'Return Requested' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'hidden' %>">
-                                    <%= item.status %>
-                                </span>
-                                <p class="text-sm font-bold text-[#C8A97E] mt-1"><%= formatPrice(item.price) %></p>
-                            </div>
-                            <% if(order.status==='Delivered') { %>
-                                <button class="text-[10px] h-fit px-3 py-1 bg-stone-100 border border-stone-300 rounded font-bold hover:bg-stone-200">
-                                    WRITE REVIEW
-                                </button>
-                            <% } %>
-                        </div>
-                    <% }) %>
-                </div>
+
+
+
+<div>
+    <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Product Details</h3>
+    
+    <% order.items.forEach(item => { %>
+    <div class="flex gap-4 mb-4 items-center border-b pb-4 last:border-0">
+        <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border">
+        
+        <div class="flex-1">
+            <h4 class="text-sm font-bold text-stone-800"><%= item.productName %></h4>
+            <p class="text-xs text-stone-500">Quantity: <%= item.quantity %></p>
+            
+            <% if (['Return Requested', 'Returned', 'Rejected'].includes(item.status)) { %>
+                <span class="inline-block mt-1 text-[9px] px-2 py-0.5 rounded border font-bold uppercase bg-orange-50 text-orange-600 border-orange-200">
+                    <%= item.status %>
+                </span>
+            <% } %>
+            
+            <p class="text-sm font-bold text-[#C8A97E] mt-1"><%= formatPrice(item.price) %></p>
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <% 
+                // SCOPE FIX: These must be inside the forEach loop
+                const isOrderEligible = ['Delivered', 'Return Requested'].includes(order.status);
+                const isItemEligible = !['Return Requested', 'Returned', 'Cancelled', 'Rejected'].includes(item.status);
+
+                if(isOrderEligible && isItemEligible) { 
+            %>
+                <a href="/user/order-return/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
+                   class="text-[10px] text-center px-3 py-1 bg-white border border-stone-400 rounded font-bold hover:bg-stone-50 transition-colors">
+                    RETURN ITEM
+                </a>
+            <% } %>
+
+            <% if(['Delivered', 'Return Requested'].includes(order.status)) { %>
+                <button class="text-[10px] h-fit px-3 py-1 bg-stone-100 border border-stone-300 rounded font-bold hover:bg-stone-200">
+                    WRITE REVIEW
+                </button>
+            <% } %>
+        </div>
+    </div>
+    <% }) %>
+</div>
+
+
+
             </div>
 
             <div class="bg-white p-2 rounded-xl shadow-sm border border-stone-200 hidden lg:block">
@@ -135,9 +190,10 @@ const formatPrice=(amount)=> {
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <button class="px-8 py-3 bg-stone-800 text-white rounded-lg text-sm font-bold shadow-md hover:bg-black transition-all">
-                DOWNLOAD INVOICE
-            </button>
+           <a href="/user/orders/invoice/<%= order._id %>" 
+              class="px-8 py-3 bg-stone-800 text-white rounded-lg text-sm font-bold shadow-md hover:bg-black transition-all inline-block">
+               DOWNLOAD INVOICE
+          </a>
 
             <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Return Requested') { %>
                 <button onclick="confirmCancel('<%= order._id %>')" class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">

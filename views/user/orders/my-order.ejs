@@ -14,57 +14,73 @@
     <div class="flex-grow max-w-5xl">
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-stone-700 tracking-tight">My Orders</h1>
-            <p class="text-stone-600 mt-2">Track your orders and view your purchase history.</p>
-        </div>
-
-        <div class="mb-10 relative">
-            <input type="text" id="orderSearch" placeholder="Search by Order ID or Product Name"
-                class="w-full md:w-96 pl-4 pr-12 py-3 rounded-lg border border-stone-300 focus:ring-2 focus:ring-[#C8A97E] outline-none shadow-sm transition-all bg-white text-stone-700">
+            <p class="text-stone-600 mt-2 text-sm">Review your purchase history and track active return requests.</p>
         </div>
 
         <div class="flex flex-col gap-6">
             <% if (orders && orders.length > 0) { %>
-                <% orders.forEach(order => { %>
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5 md:p-6 border border-stone-200">
+                <% orders.forEach(order => { 
+                    const hasReturnRequest = order.items.some(item => item.status === 'Return Requested');
+                %>
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5 md:p-6 border border-stone-200 group">
                         
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-stone-100 pb-4 mb-4">
                             <div class="mb-2 sm:mb-0">
-                                <h2 class="text-lg font-bold text-stone-800">#<%= order.orderId %></h2>
-                                <p class="text-xs font-medium text-stone-400 mt-0.5 uppercase tracking-wide">
+                                <div class="flex items-center gap-2">
+                                    <h2 class="text-lg font-bold text-stone-800">#<%= order.orderId %></h2>
+                                    <% if (hasReturnRequest) { %>
+                                        <span class="flex h-2 w-2 rounded-full bg-orange-500 animate-ping"></span>
+                                    <% } %>
+                                </div>
+                                <p class="text-[10px] font-medium text-stone-400 mt-0.5 uppercase tracking-wide">
                                     Placed on <%= new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) %>
                                 </p>
                             </div>
 
                             <% 
-                            let badgeStyle=''; 
-                            switch (order.status) { 
-                                case 'Pending': badgeStyle='bg-stone-100 text-stone-600 border-stone-200'; break; 
-                                case 'Confirmed': badgeStyle='bg-green-50 text-green-600 border-green-200'; break;
-                                case 'Processing': badgeStyle='bg-blue-50 text-blue-600 border-blue-200'; break;
-                                case 'Shipped': badgeStyle='bg-purple-50 text-purple-600 border-purple-200'; break; 
-                                case 'Delivered': badgeStyle='bg-emerald-100 text-emerald-700 border-emerald-300'; break;
-                                case 'Cancelled': badgeStyle='bg-red-50 text-red-600 border-red-200'; break; 
-                                case 'Return Requested': badgeStyle='bg-orange-50 text-orange-600 border-orange-200'; break; 
-                                default: badgeStyle='bg-gray-100 text-gray-600 border-gray-200';
-                            } 
+                                let badgeStyle=''; 
+                                let displayStatus = order.status;
+                                if (hasReturnRequest) {
+                                    displayStatus = "Return In Progress";
+                                    badgeStyle = 'bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600';
+                                } else {
+                                    switch (order.status) { 
+                                        case 'Cancelled': badgeStyle='bg-red-50 border-red-200 border-l-red-500 text-red-600'; break;
+                                        case 'Confirmed': badgeStyle='bg-green-50 border-green-200 border-l-green-500 text-green-600'; break;
+                                        case 'Processing': badgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+                                        case 'Shipped': badgeStyle='bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'; break; 
+                                        case 'Delivered': badgeStyle='bg-emerald-50 border-emerald-200 border-l-emerald-600 text-emerald-700'; break;
+                                        case 'Returned': badgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+                                        case 'Rejected':
+                                        case 'Return Rejected': badgeStyle='bg-red-50 border-red-200 border-l-red-600 text-red-700'; break;
+                                        default: badgeStyle='bg-stone-50 border-stone-200 border-l-stone-400 text-stone-600';
+                                    } 
+                                }
                             %>
-                            <span class="inline-flex items-center px-4 py-1 border rounded-full text-xs font-bold uppercase tracking-widest <%= badgeStyle %>">
-                                <%= order.status %>
+                            <span class="inline-flex items-center px-4 py-1.5 border-y border-r border-l-4 rounded text-[10px] font-black uppercase tracking-widest shadow-sm <%= badgeStyle %>">
+                                <%= displayStatus %>
                             </span>
                         </div>
 
                         <div class="flex flex-col sm:flex-row gap-5 mb-6">
                             <% if (order.items && order.items.length > 0) { %>
-                                <img src="<%= order.items[0].image %>" alt="Product" class="w-24 h-24 object-cover rounded-lg bg-stone-50 border border-stone-100">
+                                <div class="relative">
+                                    <img src="<%= order.items[0].image %>" alt="Product" class="w-24 h-24 object-cover rounded-lg bg-stone-50 border border-stone-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                                    <% if (order.items[0].status === 'Return Requested') { %>
+                                        <div class="absolute inset-0 bg-orange-500/10 rounded-lg border border-orange-200 flex items-center justify-center">
+                                            <span class="bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">RETURNING</span>
+                                        </div>
+                                    <% } %>
+                                </div>
                                 <div class="flex-1 space-y-1">
-                                    <h4 class="text-base font-semibold text-stone-700"><%= order.items[0].productName %></h4>
-                                    <div class="flex items-center text-sm text-stone-500">
-                                        <span>Quantity: <%= order.items[0].quantity %></span>
-                                        <span class="mx-2 text-stone-300">|</span>
-                                        <span class="font-medium text-stone-800"><%= formatPrice(order.total) %></span>
+                                    <h4 class="text-base font-semibold text-stone-700 leading-tight"><%= order.items[0].productName %></h4>
+                                    <div class="flex items-center text-sm text-stone-500 pt-1">
+                                        <span class="bg-stone-100 px-2 py-0.5 rounded text-[11px] font-bold">Qty: <%= order.items[0].quantity %></span>
+                                        <span class="mx-3 text-stone-300">|</span>
+                                        <span class="font-bold text-stone-800"><%= formatPrice(order.total) %></span>
                                     </div>
                                     <% if(order.items.length > 1) { %>
-                                        <p class="text-xs text-[#C8A97E] font-semibold italic">+ <%= order.items.length - 1 %> other items</p>
+                                        <p class="text-xs text-[#C8A97E] font-bold italic mt-2">+ <%= order.items.length - 1 %> other products</p>
                                     <% } %>
                                 </div>
                             <% } %>
@@ -72,18 +88,59 @@
 
                         <div class="flex flex-wrap gap-3 pt-2">
                             <a href="/user/order-details/<%= order._id %>"
-                                class="flex-1 sm:flex-none text-center px-8 py-2.5 rounded-lg text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+                                class="flex-1 sm:flex-none text-center px-8 py-3 rounded-lg text-xs font-black text-white shadow-md transition-all active:scale-95 hover:brightness-110 tracking-widest"
                                 style="background-color: #C8A97E;">
-                                VIEW DETAILS
+                                VIEW ORDER DETAILS
                             </a>
                         </div>
                     </div>
                 <% }) %>
+
+          <div class="flex justify-center items-center gap-3 mt-12 mb-10">
+    
+    <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>"
+           class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-[#E7D7C3] text-[#8B7355] hover:bg-[#C8A97E] hover:text-white transition-all duration-300 shadow-sm text-lg font-bold">
+           «
+        </a>
+    <% } else { %>
+        <span class="w-10 h-10 flex items-center justify-center rounded-full bg-stone-50 border border-stone-100 text-stone-300 cursor-not-allowed text-lg">
+           «
+        </span>
+    <% } %>
+
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="?page=<%= i %>"
+           class="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all duration-300
+               <%= i === currentPage 
+                   ? 'bg-[#C8A97E] text-white shadow-lg scale-110' 
+                   : 'bg-white border border-[#E7D7C3] text-[#8B7355] hover:bg-[#F5E9DA]' 
+               %>">
+            <%= i %>
+        </a>
+    <% } %>
+
+    <% if (currentPage < totalPages) { %>
+        <a href="?page=<%= currentPage + 1 %>"
+           class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-[#E7D7C3] text-[#8B7355] hover:bg-[#C8A97E] hover:text-white transition-all duration-300 shadow-sm text-lg font-bold">
+           »
+        </a>
+    <% } else { %>
+        <span class="w-10 h-10 flex items-center justify-center rounded-full bg-stone-50 border border-stone-100 text-stone-300 cursor-not-allowed text-lg">
+           »
+        </span>
+    <% } %>
+    
+</div>
+
             <% } else { %>
-                <div class="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-stone-300">
-                    <p class="text-stone-500 font-medium mb-6">You haven't placed any orders yet.</p>
-                    <button onclick="window.location.href='/user/shop'" class="px-10 py-3 rounded-lg text-sm font-bold text-white shadow-md" style="background-color: #C8A97E;">
-                        CONTINUE SHOPPING
+                <div class="text-center py-24 bg-white rounded-2xl border-2 border-dashed border-stone-300 shadow-inner">
+                    <div class="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-stone-100">
+                        <i class="fa-solid fa-box-open text-3xl text-stone-300"></i>
+                    </div>
+                    <p class="text-stone-500 font-medium mb-6 text-lg">Your order history is empty.</p>
+                    <button onclick="window.location.href='/user/shop'" class="px-10 py-3 rounded-lg text-sm font-bold text-white shadow-lg" style="background-color: #C8A97E;">
+                        START SHOPPING
                     </button>
                 </div>
             <% } %>

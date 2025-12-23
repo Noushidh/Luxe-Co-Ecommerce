@@ -4,8 +4,10 @@ import productModel from "../../models/productmodel.js"
 import returnModel from "../../models/returnmodel.js"
 
 export const load_orders = asyncHandler(async (req, res) => {
-    const { search = "", status = "", payment = "", Date: dateSort = "" } = req.query;
+    const { page = 1, search = "", status = "", payment = "", Date: dateSort = "" } = req.query;
 
+    const limit = 10;
+    const skip = (parseInt(page) - 1) * limit;
     let query = {};
     if (search) {
         query.$or = [
@@ -26,7 +28,9 @@ export const load_orders = asyncHandler(async (req, res) => {
         sortQuery = { createdAt: 1 };
     }
 
-    const orders = await orderModel.find(query).populate('userId').sort(sortQuery);
+    const totalOrdersCount = await orderModel.countDocuments(query);
+    const orders = await orderModel.find(query).populate('userId').sort(sortQuery).skip(skip).limit(limit);
+    const totalPages = Math.ceil(totalOrdersCount / limit);
 
     res.render("admin/layout", {
         title: "Orders Management",
@@ -34,15 +38,17 @@ export const load_orders = asyncHandler(async (req, res) => {
         orders,
         status,
         payment,
-        sortDate: dateSort,
-        search
+        sortDate: dateSort, 
+        search,
+        currentPage: parseInt(page),
+        totalPages
     });
 });
 
 export const load_orders_Details = asyncHandler(async (req, res) => {
     const { id } = req.params
     const order = await orderModel.findById(id).populate("userId").populate("items.productId")
-    const returnInfo = await returnModel.findOne({ order_items_id: id })
+    const returnInfo = await returnModel.find({ order_items_id: id })
     res.render("admin/layout", {
         title: "Order details",
         body: "orders/order-details.ejs",

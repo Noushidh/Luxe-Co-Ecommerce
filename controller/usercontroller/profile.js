@@ -74,7 +74,6 @@ export const editProfile = asyncHandler(async (req, res) => {
   return res.status(200).json({ success: true, message: "Profile updated successfully", redirect: "/user/profile", });
 });
 
-/*---------------- change password side------------*/
 export const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -98,7 +97,7 @@ export const changePassword = asyncHandler(async (req, res) => {
   });
 })
 
-/*---------------- change Email side------------*/
+
 export const sendChangeEmailLink = asyncHandler(async (req, res) => {
   const { newEmail } = req.body;
   console.log(newEmail)

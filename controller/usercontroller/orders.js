@@ -5,18 +5,30 @@ import addressModel from "../../models/addressmodel.js";
 import returnModel from "../../models/returnmodel.js"
 
 export const load_orders = asyncHandler(async (req, res) => {
-
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5; 
+    const skip = (page - 1) * limit;
     const userId = req.session.user?._id;
-    const orders = await orderModel.find({ userId }).sort({ createdAt: -1 });
+    const totalOrdersCount = await orderModel.countDocuments({ userId });
+
+    const orders = await orderModel.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const totalPages = Math.ceil(totalOrdersCount / limit);
+
     res.render("user/layout", {
         title: "My orders",
         body: "user/orders/my-order",
         currentPath: '/user/orders',
         orders,
         userData: req.session.user,
-
-    })
-})
+        currentPage: page,
+        totalPages: totalPages,
+        totalOrders: totalOrdersCount
+    });
+});
 
 export const load_orders_Details = asyncHandler(async (req, res) => {
     const { orderId } = req.params;
@@ -36,23 +48,38 @@ export const load_orders_Details = asyncHandler(async (req, res) => {
 })
 
 export const load_returnOrder = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params; 
+    const productIdFromQuery = req.query.productId; 
     const userId = req.session.user._id;
 
+    // Populate ensures we have product details, but it changes the ID structure
     const order = await orderModel.findOne({ _id: id, userId }).populate('items.productId');
-    const user = await userModel.findById(userId);
-    const addresses = await addressModel.find({ userId: userId })
+    const addresses = await addressModel.find({ userId: userId });
 
     if (!order) return res.status(404).send("Order not found");
 
-    const itemToReturn = order.items[0];
+    // FIX: Safely find the item without calling .toString() on undefined
+    const itemToReturn = order.items.find(item => {
+        // Since you used .populate('productId'), the ID is likely at item.productId._id
+        const idFromItem = item.productId?._id?.toString() || 
+                           item.productId?.toString() || 
+                           item.product_id?.toString();
+        
+        return idFromItem === productIdFromQuery;
+    });
+
+    if (!itemToReturn) {
+        console.error("Item not found in order. Clicked ID:", productIdFromQuery);
+        return res.redirect('/user/orders'); 
+    }
+
     res.render("user/layout", {
         title: "Return Order",
         body: "user/orders/return-order",
         currentPath: '/user/orders',
         order: order,
-        userData: user,
-        item: itemToReturn,
+        userData: req.session.user,
+        item: itemToReturn, 
         addresses: addresses
     });
 });
@@ -83,4 +110,3 @@ export const returnOrder_details = asyncHandler(async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Return request submitted" });
 });
-

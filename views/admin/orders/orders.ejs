@@ -14,9 +14,8 @@
                     <option value="Shipped" <%=status==="Shipped" ? "selected" : "" %>>Shipped</option>
                     <option value="Delivered" <%=status==="Delivered" ? "selected" : "" %>>Delivered</option>
                     <option value="Cancelled" <%=status==="Cancelled" ? "selected" : "" %>>Cancelled</option>
-                    <option value="Return Requested" <%=status==="Return-Requested" ? "selected" : "" %>>Return
-                        Requested</option>
-                    <option value="Returned" <%=status==="Return-Requested" ? "selected" : "" %>>Returned</option>
+                    <option value="Return Requested" <%=status==="Return Requested" ? "selected" : "" %>>Return Requested</option>
+                    <option value="Returned" <%=status==="Returned" ? "selected" : "" %>>Returned</option>
                 </select>
             </div>
 
@@ -25,8 +24,7 @@
                 <select id="filterPayment" onchange="applyFilters()"
                     class="mt-1 px-3 py-2 border rounded-lg text-sm bg-stone-50 outline-none">
                     <option value="">All Methods</option>
-                    <option value="cashOnDelivery" <%=payment==="cashOnDelivery" ? "selected" : "" %>>Cash on Delivery
-                    </option>
+                    <option value="cashOnDelivery" <%=payment==="cashOnDelivery" ? "selected" : "" %>>Cash on Delivery</option>
                     <option value="wallet" <%=payment==="wallet" ? "selected" : "" %>>Wallet</option>
                     <option value="razorpay" <%=payment==="razorpay" ? "selected" : "" %>>Razorpay</option>
                 </select>
@@ -46,14 +44,12 @@
                 RESET ALL
             </button>
         </div>
+
+        <form method="GET" id="searchForm" class="flex items-center justify-between mt-6">
+            <input type="text" name="search" value="<%= search || '' %>" placeholder="Search by ID or Customer Name..."
+                class="w-80 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#C8A97E]" oninput="autoSearch()" />
+        </form>
     </div>
-
-    <!-- Search -->
-    <form method="GET" id="searchForm" class="flex items-center justify-between mt-6">
-        <input type="text" name="search" value="<%= search || '' %>" placeholder="Search by status, paymentMethod, name..."
-            class="ml-5 w-80 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm" oninput="autoSearch()" />
-    </form><br>
-
 
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -62,82 +58,138 @@
                     <th class="px-6 py-4 text-xs font-medium uppercase">Order ID</th>
                     <th class="px-6 py-4 text-xs font-medium uppercase">Customer</th>
                     <th class="px-6 py-4 text-xs font-medium uppercase">Amount</th>
+                    <th class="px-6 py-4 text-xs font-medium uppercase text-center">Status Info</th>
                     <th class="px-6 py-4 text-xs font-medium uppercase">Date</th>
-                    <th class="px-6 py-4 text-xs font-medium uppercase text-center">Status</th>
                     <th class="px-6 py-4 text-xs font-medium uppercase">Mode</th>
                     <th class="px-6 py-4 text-xs font-medium uppercase text-right">Actions</th>
                 </tr>
             </thead>
 
             <tbody id="tableBodyContainer" class="divide-y divide-stone-100">
-                <% if (orders && orders.length> 0) { %>
-                    <% orders.forEach((order, index)=> { %>
-                        <tr
-                            class="<%= index % 2 === 0 ? 'bg-orange-50/30' : 'bg-white' %> hover:bg-stone-50 transition-colors">
-                            <td class="px-6 py-4 text-xs font-bold text-stone-800">#<%= order.orderId %>
-                            </td>
+                <% if (orders && orders.length > 0) { %>
+                    <% orders.forEach((order, index) => { 
+                        // Logical Check: Does this order have any item pending return?
+                        const hasReturnRequest = order.items.some(item => item.status === 'Return Requested');
+                    %>
+                        <tr class="<%= hasReturnRequest ? 'bg-orange-50/60 animate-row-pulse border-l-4 border-l-orange-400' : (index % 2 === 0 ? 'bg-stone-50/30' : 'bg-white') %> hover:bg-stone-100 transition-all">
+                            <td class="px-6 py-4 text-xs font-bold text-stone-800">#<%= order.orderId %></td>
                             <td class="px-6 py-4">
-                                <div class="text-xs font-medium text-stone-800 text-nowrap">
-                                    <%= order.address.name %>
-                                </div>
-                                <div class="text-[10px] text-gray-500">
-                                    <%= order.address.phone %>
-                                </div>
+                                <div class="text-xs font-bold text-stone-800"><%= order.address.name %></div>
+                                <div class="text-[10px] text-gray-500"><%= order.address.phone %></div>
                             </td>
-                            <td class="px-6 py-4 text-xs text-stone-800">₹<%= order.total.toLocaleString('en-IN') %>
-                            </td>
-                            <td class="px-6 py-4 text-xs text-stone-800">
+                            <td class="px-6 py-4 text-xs text-stone-800 font-bold">₹<%= order.total.toLocaleString('en-IN') %></td>
+                            
+                      <td class="px-6 py-4 text-center">
+    <% if (hasReturnRequest) { %>
+        <div class="inline-flex items-center gap-1.5 bg-orange-100 border border-orange-200 px-3 py-1 rounded-full">
+            <span class="flex h-2 w-2 rounded-full bg-orange-500 animate-ping"></span>
+            <span class="text-[9px] font-black text-orange-700 uppercase tracking-tighter">Action Required</span>
+        </div>
+    <% } else { %>
+    <% 
+    let mainBadgeStyle=''; 
+    switch (order.status) { 
+        case 'Cancelled': 
+            mainBadgeStyle='bg-red-50 border-red-200 border-l-red-500 text-red-600'; break;
+        case 'Confirmed': 
+            mainBadgeStyle='bg-green-50 border-green-200 border-l-green-500 text-green-600'; break;
+        case 'Processing': 
+            mainBadgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+        case 'Shipped': 
+            mainBadgeStyle='bg-purple-50 border-purple-200 border-l-purple-500 text-purple-600'; break;
+        case 'Delivered': 
+            mainBadgeStyle='bg-emerald-100 border-emerald-300 border-l-emerald-600 text-emerald-700'; break;
+        case 'Return Requested': 
+            mainBadgeStyle='bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600'; break;
+        case 'Returned': 
+            mainBadgeStyle='bg-blue-50 border-blue-200 border-l-blue-500 text-blue-600'; break;
+        case 'Return Rejected': 
+        case 'Rejected': 
+            mainBadgeStyle='bg-red-50 border-red-200 border-l-red-600 text-red-700'; break;
+            
+        default: 
+            mainBadgeStyle='bg-white border-stone-300 border-l-stone-400 text-stone-600';
+    } 
+%>
+        <span class="px-3 py-1 rounded border-y border-r border-l-4 text-[9px] font-bold uppercase tracking-wider <%= mainBadgeStyle %> shadow-sm">
+            <%= order.status %>
+        </span>
+    <% } %>
+</td>
+
+                            <td class="px-6 py-4 text-xs text-stone-500">
                                 <%= new Date(order.createdAt).toLocaleDateString() %>
                             </td>
-                            <td class="px-6 py-4 text-center">
-                                <% let badgeStyle='' ; switch(order.status) { case 'Pending' :
-                                    badgeStyle='bg-stone-100 text-stone-600 border-stone-200' ; break; case 'Confirmed'
-                                    : badgeStyle='bg-green-50 text-green-600 border-green-200' ; break;
-                                    case 'Processing' : badgeStyle='bg-blue-50 text-blue-600 border-blue-200' ; break;
-                                    case 'Shipped' : badgeStyle='bg-purple-50 text-purple-600 border-purple-200' ;
-                                    break; case 'Delivered' :
-                                    badgeStyle='bg-emerald-100 text-emerald-700 border-emerald-300' ; break;
-                                    case 'Cancelled' : badgeStyle='bg-red-50 text-red-600 border-red-200' ; break; } %>
-                                    <span
-                                        class="px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider <%= badgeStyle %>">
-                                        <%= order.status %>
-                                    </span>
-                            </td>
-                            <td class="px-6 py-4 text-xs text-stone-800 uppercase">
+                            <td class="px-6 py-4 text-[10px] font-bold text-stone-400 uppercase">
                                 <%= order.paymentMethod %>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <a href="/admin/order-details/<%= order._id %>"
-                                    class="text-xs font-bold text-stone-400 hover:text-[#C8A97E]">VIEW</a>
+                                    class="text-[10px] font-black text-stone-400 hover:text-[#C8A97E] border border-stone-200 px-3 py-1.5 rounded-md transition-all uppercase">Manage</a>
                             </td>
                         </tr>
-                        <% }) %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="7" class="text-center py-10 text-stone-400 italic">No orders found.
-                                    </td>
-                                </tr>
-                                <% } %>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" class="text-center py-20 text-stone-400 italic">No orders found.</td>
+                    </tr>
+                <% } %>
             </tbody>
         </table>
     </div>
 </div>
 
+<%
+    let params = [];
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (status) params.push(`status=${status}`);
+    if (payment) params.push(`payment=${payment}`);
+    if (Date) params.push(`Date=${Date}`);
+    const qs = params.length > 0 ? params.join("&") + "&" : "";
+%>
+
+<div class="flex justify-center items-center gap-3 mt-8 mb-10">
+    <% if (currentPage > 1) { %>
+        <a href="?<%= qs %>page=<%= currentPage - 1 %>" class="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200">«</a>
+    <% } %>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+        <a href="?<%= qs %>page=<%= i %>" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold <%= i === currentPage ? 'bg-[#C8A97E] text-white shadow-md' : 'bg-stone-100 text-stone-500 hover:bg-stone-200' %>">
+            <%= i %>
+        </a>
+    <% } %>
+    <% if (currentPage < totalPages) { %>
+        <a href="?<%= qs %>page=<%= currentPage + 1 %>" class="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200">»</a>
+    <% } %>
+</div>
+
+<style>
+    @keyframes row-glow {
+        0%, 100% { background-color: rgba(255, 237, 213, 0.5); }
+        50% { background-color: rgba(255, 237, 213, 0.2); }
+    }
+    .animate-row-pulse {
+        animation: row-glow 2.5s ease-in-out infinite;
+    }
+</style>
+
 <script>
-        let typingTimer;
-      function autoSearch() {
-        clearTimeout(typingTimer)
-        typingTimer = setTimeout(() => document.getElementById("searchForm").submit(), 1000)
-    };
-    async function applyFilters() {
+    let typingTimer;
+    function autoSearch() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => applyFilters(), 800);
+    }
+
+    function applyFilters() {
         const status = document.getElementById("filterStatus").value;
         const payment = document.getElementById("filterPayment").value;
         const dateSort = document.getElementById("filterSort").value;
         const searchInput = document.querySelector('input[name="search"]');
         const search = searchInput ? searchInput.value : "";
-        window.location.href = `/admin/orders?status=${status}&payment=${payment}&Date=${dateSort}&search=${encodeURIComponent(search)}`;
+        
+        window.location.href = `/admin/orders?status=${status}&payment=${payment}&DateSort=${dateSort}&search=${encodeURIComponent(search)}`;
     }
+
     function resetFilters() {
-        window.location.href = "/admin/orders"
+        window.location.href = "/admin/orders";
     }
 </script>

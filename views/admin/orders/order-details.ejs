@@ -46,77 +46,6 @@
                     <%= order.paymentStatus %>
                 </span>
             </div>
-          <div>
-    <% 
-    // 1. SET BADGE STYLE
-    let badgeStyle='' ; 
-    switch (order.status) { 
-        case 'Pending' : badgeStyle='bg-stone-100 text-stone-600 border-stone-200' ; break; 
-        case 'Confirmed' : badgeStyle='bg-green-50 text-green-600 border-green-200' ; break; 
-        case 'Processing' : badgeStyle='bg-blue-50 text-blue-600 border-blue-200' ; break; 
-        case 'Shipped' : badgeStyle='bg-purple-50 text-purple-600 border-purple-200' ; break; 
-        case 'Delivered' : badgeStyle='bg-emerald-100 text-emerald-700 border-emerald-300' ; break; 
-        case 'Cancelled' : badgeStyle='bg-red-50 text-red-600 border-red-200' ; break; 
-        case 'Return Requested' : badgeStyle='bg-orange-50 text-orange-600 border-orange-200' ; break; 
-        case 'Returned' : badgeStyle='bg-emerald-50 text-emerald-600 border-emerald-200' ; break; 
-    } 
-    %>
-
-    <p class="text-xs text-stone-500 uppercase font-medium">Delivery Status</p>
-
-    <p id="order-status-<%= order._id %>"
-        class="mt-2 inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full border <%= badgeStyle %>">
-        <%= order.status %>
-    </p>
-
-    <% 
-    /* FIX: We look for items that are 'Return Requested' OR already 'Returned' 
-       This ensures the div doesn't disappear after you click Approve.
-    */
-    const hasReturnActivity = order.items.find(item => item.status === 'Return Requested' || item.status === 'Returned');
-    
-    if (hasReturnActivity) { 
-    %>
-        <div class="mt-3">
-            <div class="mt-6 pt-4 border-t border-stone-100">
-                
-                <% if (returnInfo && returnInfo.status === 'Pending') { %>
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                        </span>
-                        <p class="text-[10px] font-bold text-orange-600 uppercase tracking-tight">Action Required</p>
-                    </div>
-
-                    <button onclick="openVerifyModal('<%= order._id %>', '<%= returnInfo._id %>', '<%= order.items[0].productName %>', '<%= returnInfo.reason %>', '<%= returnInfo.comments %>')"
-                        class="w-full px-4 py-3 bg-white text-orange-700 border border-orange-200 border-l-4 border-l-orange-500 rounded-lg shadow-sm hover:shadow-md hover:bg-orange-50 transition-all duration-200 text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Verify Return Request
-                    </button>
-
-                <% } else if (returnInfo && returnInfo.status === 'Approved') { %>
-                    <div class="w-full px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 border-l-4 border-l-emerald-500 rounded-lg flex items-center justify-center gap-3 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                        </svg>
-                        <div class="flex flex-col items-start">
-                            <span class="text-[11px] font-black uppercase tracking-widest">Return Approved</span>
-                            <span class="text-[9px] opacity-80 font-medium">Refund processed to user wallet</span>
-                        </div>
-                    </div>
-
-                <% } else if (returnInfo && returnInfo.status === 'Rejected') { %>
-                    <div class="w-full px-4 py-3 bg-stone-50 text-stone-600 border border-stone-200 border-l-4 border-l-stone-500 rounded-lg flex items-center justify-center gap-3 shadow-sm">
-                        <span class="text-[11px] font-black uppercase tracking-widest">Return Request Rejected</span>
-                    </div>
-                <% } %>
-            </div>
-        </div>
-    <% } %>
-</div>
 
             <div>
                 <p class="text-xs text-stone-500 uppercase font-medium">Payment Method</p>
@@ -135,21 +64,50 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
-                <h2 class="text-base font-semibold text-stone-800">Delivery Address</h2>
-            </div>
-            <div class="p-6">
-                <p class="text-sm font-bold text-stone-800 mb-1">
-                    <%= order.address.name %>
-                </p>
-                <p class="text-sm text-stone-500 leading-relaxed">
-                    <%= order.address.houseName %>, <%= order.address.city %><br>
-                            <%= order.address.state %> - <%= order.address.pincode %><br>
-                                    Phone: <%= order.address.phone %>
-                </p>
-            </div>
+      <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+    <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50 flex justify-between items-center">
+        <h2 class="text-base font-semibold text-stone-800">Items Summary</h2>
+        <span class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-bold">
+            <%= order.items.length %> <%= order.items.length > 1 ? 'PRODUCTS' : 'PRODUCT' %>
+        </span>
+    </div>
+    
+    <div class="p-4 max-h-[300px] overflow-y-auto">
+        <div class="space-y-3">
+            <% order.items.forEach(item => { %>
+                <div class="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-stone-50 transition-colors border border-transparent hover:border-stone-100">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <img src="<%= item.image %>" class="w-10 h-10 rounded object-cover border border-stone-200 shrink-0">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-stone-800 truncate">
+                                <%= item.productName %>
+                            </p>
+                            <p class="text-[10px] text-stone-500 font-medium uppercase">
+                                Qty: <%= item.quantity %> • ₹<%= item.price.toLocaleString() %>
+                            </p>
+                        </div>
+                    </div>
+
+                    <% 
+                        let dotColor = 'bg-stone-400';
+                        if (item.status === 'Return Requested') dotColor = 'bg-orange-500';
+                        if (item.status === 'Delivered' || item.status === 'Returned') dotColor = 'bg-emerald-500';
+                        if (item.status === 'Cancelled' || item.status === 'Return Rejected') dotColor = 'bg-red-500';
+                    %>
+
+                    <div class="flex flex-col items-end shrink-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full <%= dotColor %> <%= item.status === 'Return Requested' ? 'animate-pulse' : '' %>"></span>
+                            <span class="text-[9px] font-black text-stone-600 uppercase tracking-tighter">
+                                <%= item.status %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
         </div>
+    </div>
+</div>
 
         <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
@@ -182,42 +140,101 @@
         <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50 text-white" style="background-color: #C8A97E;">
             <h2 class="text-base font-semibold">Product Details</h2>
         </div>
-        <table class="w-full text-left border-collapse">
-            <thead class="bg-stone-100">
-                <tr>
-                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase">Product</th>
-                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase text-center">Quantity</th>
-                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase text-right">Price</th>
-                    <th class="px-6 py-3 text-xs font-bold text-stone-600 uppercase text-right">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-stone-100">
-                <% order.items.forEach(item=> { %>
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <img src="<%= item.productId.image%>"
-                                    class="w-12 h-12 rounded object-cover border border-stone-200">
-                                <span class="text-sm font-medium text-stone-800">
-                                    <%= item.productId.name %>
-                                </span>
+
+<table class="w-full text-left border-collapse">
+    <thead class="bg-stone-100">
+        <tr>
+            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase tracking-widest">Product</th>
+            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase tracking-widest">Fulfillment Address</th>
+            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-center tracking-widest">Qty</th>
+            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-right tracking-widest">Price</th>
+            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-right tracking-widest">Status</th>
+            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-center tracking-widest">Action</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100 bg-white">
+        <% order.items.forEach(item => { %>
+            <% 
+                const itemReturn = (Array.isArray(returnInfo) ? returnInfo : []).find(r => {
+                    const rProdId = r.product_id?.toString();
+                    const iProdId = (item.productId?._id || item.productId)?.toString();
+                    return rProdId === iProdId;
+                });
+
+                let itemBadgeStyle = ''; 
+                switch (item.status) { 
+                    case 'Pending' : itemBadgeStyle='bg-stone-50 text-stone-500 border-stone-200'; break; 
+                    case 'Confirmed' : itemBadgeStyle='bg-emerald-50 text-emerald-600 border-emerald-200'; break; 
+                    case 'Return Requested' : itemBadgeStyle='bg-orange-50 text-orange-600 border-orange-200'; break; 
+                    case 'Returned' : itemBadgeStyle='bg-blue-50 text-blue-600 border-blue-200'; break; 
+                    case 'Return Rejected' : itemBadgeStyle='bg-red-50 text-red-600 border-red-200'; break;
+                    default: itemBadgeStyle='bg-stone-50 text-stone-400 border-stone-100';
+                } 
+            %>
+            <tr class="<%= item.status === 'Return Requested' ? 'bg-orange-50/20' : 'hover:bg-stone-50/50' %> transition-all group">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <img src="<%= item.image %>" class="w-10 h-10 rounded-md object-cover border border-stone-100 shadow-sm">
+                        <span class="text-xs font-semibold text-stone-700 truncate max-w-[120px]"><%= item.productName %></span>
+                    </div>
+                </td>
+
+                <td class="px-6 py-4">
+                    <div class="max-w-[220px]">
+                        <% if (item.status === 'Return Requested' && itemReturn) { %>
+                            <div class="flex flex-col gap-0.5 border-l-2 border-orange-300 pl-3">
+                                <span class="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Pickup Location</span>
+                                <p class="text-[11px] text-stone-600 leading-tight italic font-medium">
+                                    <%= itemReturn.pickup_address %>
+                                </p>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-stone-700 text-center">
-                            <%= item.quantity %>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-stone-700 text-right">₹<%= item.price.toLocaleString() %>
-                        </td>
-                        <td class="px-6 py-4 text-sm font-semibold text-stone-800 text-right">₹<%= (item.price *
-                                item.quantity).toLocaleString() %>
-                        </td>
-                    </tr>
-                    <% }) %>
-            </tbody>
-        </table>
+                        <% } else { %>
+                            <div class="flex flex-col gap-0.5 border-l-2 border-stone-200 pl-3">
+                                <span class="text-[11px] font-bold text-stone-800"><%= order.address.name %></span>
+                                <p class="text-[10px] text-stone-500 leading-snug">
+                                    <%= order.address.houseName %>, <%= order.address.city %>, <%= order.address.pincode %><br>
+                                    <span class="text-stone-400 font-medium">Ph: <%= order.address.phone %></span>
+                                </p>
+                            </div>
+                        <% } %>
+                    </div>
+                </td>
+
+                <td class="px-6 py-4 text-[11px] font-medium text-stone-600 text-center"><%= item.quantity %></td>
+                <td class="px-6 py-4 text-[11px] font-bold text-stone-800 text-right">₹<%= item.price.toLocaleString() %></td>
+                
+                <td class="px-6 py-4 text-right">
+                    <span class="inline-flex items-center justify-center text-center px-3 py-2 min-h-[32px] min-w-[100px] rounded text-[9px] font-bold border <%= itemBadgeStyle %> uppercase tracking-tight leading-tight">
+                        <%= item.status %>
+                    </span>
+                </td>
+
+                <td class="px-6 py-4 text-center">
+                    <% if (item.status === 'Return Requested' && itemReturn && itemReturn.status === 'Pending') { %>
+                        <div class="flex flex-col items-center gap-1.5">
+                            <div class="flex items-center gap-1">
+                                <span class="flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                <span class="text-[8px] font-bold text-orange-600 uppercase">Review</span>
+                            </div>
+                            <button onclick="openVerifyModal('<%= order._id %>', '<%= itemReturn._id %>', '<%= item.productName %>', '<%= itemReturn.reason %>', '<%= itemReturn.comments %>')"
+                                class="px-4 py-1.5 bg-orange-500 text-white text-[9px] font-black rounded hover:bg-stone-900 transition-colors shadow-sm uppercase tracking-widest">
+                                Verify
+                            </button>
+                        </div>
+                    <% } else { %>
+                        <div class="flex flex-col items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span class="text-[8px] font-bold text-emerald-600 uppercase tracking-tighter mt-0.5">Processed</span>
+                        </div>
+                    <% } %>
+                </td>
+            </tr>
+        <% }) %>
+    </tbody>
+</table>
     </div>
-
-
 
     <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
         <div class="flex justify-between items-center mb-8">
@@ -339,7 +356,6 @@
             </button>
 
             <% } %>
-    </div>
 </div>
 
 <!-- Cancel Order Modal -->
@@ -371,7 +387,6 @@
 </div>
 
 <!-- Status change Modal -->
-
 <div id="statusModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
     <div
         class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 border border-stone-200">
@@ -474,63 +489,59 @@
     const notyf = new Notyf({ duration: 2000, position: { x: "right", y: "top" } });
 
     let cancelOrderId = null;
+    let currentOrderId = '';
+    let currentReturnId = ''; 
 
+    // --- CANCEL ORDER MODAL ---
     function cancelOrder(orderId) {
         cancelOrderId = orderId;
-        document.getElementById("cancelOrderModal").classList.remove("hidden");
-        document.getElementById("cancelOrderModal").classList.add("flex");
+        const modal = document.getElementById("cancelOrderModal");
+        modal.classList.replace("hidden", "flex");
     }
 
     function closeCancelModal() {
-        document.getElementById("cancelOrderModal").classList.add("hidden");
-        document.getElementById("cancelOrderModal").classList.remove("flex");
+        const modal = document.getElementById("cancelOrderModal");
+        modal.classList.replace("flex", "hidden");
+        cancelOrderId = null;
     }
 
     async function confirmCancelOrder() {
         if (!cancelOrderId) return;
-
         try {
             const response = await axios.patch(`/admin/order-cancel/${cancelOrderId}`);
-
             if (response.data.success) {
                 notyf.success(response.data.message);
                 closeCancelModal();
                 setTimeout(() => location.reload(), 1200);
             }
         } catch (error) {
-            notyf.error(
-                error.response?.data?.message || "Failed to cancel order"
-            );
+            notyf.error(error.response?.data?.message || "Failed to cancel order");
         }
     }
 
+    // --- STATUS UPDATE MODAL ---
     function updateStatusModal(orderId) {
         document.getElementById("modalOrderId").value = orderId;
-        document.getElementById("statusModal").classList.remove("hidden");
-        document.getElementById("statusModal").classList.add("flex");
+        const modal = document.getElementById("statusModal");
+        modal.classList.replace("hidden", "flex");
     }
 
-    function closeModal() {
-        document.getElementById("statusModal").classList.add("hidden");
-        document.getElementById("statusModal").classList.remove("flex");
+    function closeStatusModal() {
+        const modal = document.getElementById("statusModal");
+        modal.classList.replace("flex", "hidden");
     }
 
     async function submitStatusUpdate(event) {
         event.preventDefault();
-
         const orderId = document.getElementById("modalOrderId").value;
         const newStatus = document.getElementById("statusSelect").value;
 
         try {
             const response = await axios.patch(`/admin/orders/update-status/${orderId}`, { status: newStatus });
-
             if (response.data.success) {
-                const statusEl = document.getElementById(`order-status-${orderId}`);
-                if (statusEl) statusEl.textContent = newStatus;
-
                 notyf.success(response.data.message);
-                setTimeout(() => location.reload(), 1000)
-                closeModal();
+                closeStatusModal();
+                setTimeout(() => location.reload(), 1000);
             }
         } catch (error) {
             notyf.error(error.response?.data?.message || "Failed to update order status");
@@ -538,78 +549,64 @@
     }
     document.getElementById("statusForm").addEventListener("submit", submitStatusUpdate);
 
-    
-
-
-
-let currentOrderId = '';
-let currentReturnId = ''; // Use 'currentReturnId' consistently
-
-function openVerifyModal(orderId, returnId, product, reason, comments) {
-    // 2. Assign values to the global variables
-    currentOrderId = orderId;
-    currentReturnId = returnId; 
-    
-    document.getElementById('modalProduct').innerText = product;
-    document.getElementById('modalReason').innerText = reason;
-    document.getElementById('modalComments').innerText = comments || "No specific comments provided by user.";
-    
-    const modal = document.getElementById('verifyModal');
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; 
-}
-
-function closeModal() {
-    const modal = document.getElementById('verifyModal');
-    modal.classList.add('hidden');
-    document.body.style.overflow = 'auto'; 
-}
-
-window.onclick = function(event) {
-    const modal = document.getElementById('verifyModal');
-    if (event.target == modal) {
-        closeModal();
+    function openVerifyModal(orderId, returnId, product, reason, comments) {
+        currentOrderId = orderId;
+        currentReturnId = returnId; 
+        
+        document.getElementById('modalProduct').innerText = product;
+        document.getElementById('modalReason').innerText = reason;
+        document.getElementById('modalComments').innerText = comments || "No specific comments provided by user.";
+        
+        const modal = document.getElementById('verifyModal');
+        modal.classList.replace("hidden", "flex");
+        document.body.style.overflow = 'hidden'; 
     }
-}
 
-async function approveReturn() {
-    try {
-        if (!currentOrderId || !currentReturnId) {
-            return notyf.error("Missing Order or Return ID");
-        }
-
-        const response = await axios.patch('/admin/orders/return-approve', {orderId: currentOrderId,returnId: currentReturnId });
-
-        if (response.data.success) {
-            notyf.success(response.data.message || 'Return Approved');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            notyf.error(response.data.message || 'Backend returned failure');
-        }
-
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || "Something went wrong";
-        notyf.error(errorMessage);
+    function closeVerifyModal() {
+        const modal = document.getElementById('verifyModal');
+        modal.classList.replace("flex", "hidden");
+        document.body.style.overflow = 'auto'; 
     }
-}
 
-async function rejectReturn() {
-    try {
-        if (!currentOrderId || !currentReturnId) {
-            return notyf.error("Missing Order or Return ID");
-        }
-
-        const result = await axios.patch('/admin/orders/return-reject', {orderId: currentOrderId,returnId: currentReturnId });
-
-        if (result.data.success) {
-            notyf.error(result.data.message); 
-            setTimeout(() => location.reload(), 1500);
-        }
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || "Something went wrong";
-        notyf.error(errorMessage);
+    function closeModal() {
+        closeStatusModal();
+        closeVerifyModal();
+        closeCancelModal();
     }
-}
+
+    window.onclick = function(event) {
+        const vModal = document.getElementById('verifyModal');
+        const sModal = document.getElementById('statusModal');
+        const cModal = document.getElementById('cancelOrderModal');
+        
+        if (event.target == vModal) closeVerifyModal();
+        if (event.target == sModal) closeStatusModal();
+        if (event.target == cModal) closeCancelModal();
+    }
+
+    async function approveReturn() {
+        try {
+            if (!currentOrderId || !currentReturnId) return notyf.error("Missing IDs");
+            const response = await axios.patch('/admin/orders/return-approve', {orderId: currentOrderId, returnId: currentReturnId });
+            if (response.data.success) {
+                notyf.success(response.data.message || 'Return Approved');
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        } catch (error) {
+            notyf.error(error.response?.data?.message || "Something went wrong");
+        }
+    }
+
+    async function rejectReturn() {
+        try {
+            if (!currentOrderId || !currentReturnId) return notyf.error("Missing IDs");
+            const result = await axios.patch('/admin/orders/return-reject', {orderId: currentOrderId, returnId: currentReturnId });
+            if (result.data.success) {
+                notyf.error(result.data.message); 
+                setTimeout(() => location.reload(), 1500);
+            }
+        } catch (error) {
+            notyf.error(error.response?.data?.message || "Something went wrong");
+        }
+    }
 </script>
