@@ -1,0 +1,198 @@
+
+<% 
+// Matching the currency formatter from your Orders page
+const formatPrice = (amount) => { 
+    return new Intl.NumberFormat('en-IN', { 
+        style: 'currency', 
+        currency: 'INR', 
+        minimumFractionDigits: 2 
+    }).format(amount || 0); 
+}; 
+%>
+
+<style>
+    /* Styling to ensure the background covers the full area like the orders page */
+    .invoice-wrapper {
+        background-color: #F5E9DA;
+        min-height: 100vh;
+    }
+
+    /* Professional Invoice Card Styling */
+    .invoice-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e7d7c3;
+    }
+
+    .items-table th { 
+        background: #faf7f2; 
+        text-align: left; 
+        padding: 12px; 
+        border-bottom: 2px solid #e7d7c3; 
+        color: #78716c;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .items-table td { 
+        padding: 16px 12px; 
+        border-bottom: 1px solid #f5f5f4; 
+    }
+
+    @media print {
+        aside, .no-print, nav, footer, .header-main { display: none !important; }
+        body, .invoice-wrapper { background-color: white !important; padding: 0 !important; }
+        .flex-grow { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+        .invoice-card { box-shadow: none; border: none; padding: 0; width: 100%; }
+        .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
+    }
+</style>
+
+<div class="invoice-wrapper flex flex-col md:flex-row p-4 md:p-8">
+    <aside class="w-full md:w-[260px] shrink-0 mb-8 md:mb-0 md:mr-8">
+        <%- include("../../partials/user/sidebar") %>
+    </aside>
+
+    <div class="flex-grow max-w-5xl">
+        
+        <div class="no-print flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-stone-700 tracking-tight">Invoice Details</h1>
+                <p class="text-stone-600 mt-1 text-sm">Download or print your official transaction record.</p>
+            </div>
+            
+            <button onclick="window.print()" 
+                class="flex items-center gap-2 px-6 py-3 rounded-lg text-xs font-black text-white shadow-md transition-all active:scale-95 hover:brightness-110 tracking-widest"
+                style="background-color: #C8A97E;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                DOWNLOAD INVOICE
+            </button>
+        </div>
+
+        <div class="invoice-card p-6 md:p-10">
+            <div class="flex justify-between items-start border-b border-stone-100 pb-8 mb-8">
+                <div>
+                    <h2 class="text-2xl font-black tracking-tighter text-stone-800">YOUR BRAND</h2>
+                    <p class="text-xs text-stone-400 mt-1 uppercase font-bold tracking-widest">Order Status: <%= order.status %></p>
+                </div>
+                <div class="text-right">
+                    <h3 class="text-lg font-bold text-stone-700 uppercase">Invoice</h3>
+                    <p class="text-sm font-medium text-stone-500">#<%= order.orderId %></p>
+                    <p class="text-[11px] text-stone-400 uppercase mt-1">
+                        <%= new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
+                <div class="space-y-2">
+                    <h4 class="text-[10px] font-black text-stone-400 uppercase tracking-widest border-b border-stone-50 pb-1">Billed To</h4>
+                    <p class="font-bold text-stone-800"><%= order.address.name %></p>
+                    <p class="text-sm text-stone-500 leading-relaxed">
+                        <%= order.address.street %><br>
+                        <%= order.address.city %>, <%= order.address.state %> - <%= order.address.pincode %><br>
+                        <span class="text-stone-400">Phone:</span> <%= order.address.phone %>
+                    </p>
+                </div>
+                <div class="sm:text-right space-y-2">
+                    <h4 class="text-[10px] font-black text-stone-400 uppercase tracking-widest border-b border-stone-50 pb-1">Payment Info</h4>
+                    <p class="text-sm text-stone-600">Method: <span class="font-bold text-stone-800 uppercase"><%= order.paymentMethod %></span></p>
+                    <p class="text-sm text-stone-600">Status: <span class="font-bold text-emerald-600"><%= order.paymentStatus %></span></p>
+                    <% if(order.deliveryDate) { %>
+                        <p class="text-[11px] text-stone-400 mt-2">Delivered: <%= new Date(order.deliveryDate).toLocaleDateString() %></p>
+                    <% } %>
+                </div>
+            </div>
+
+<div class="mt-8 space-y-4">
+
+  <!-- ================= ORDER ITEMS TABLE ================= -->
+  <div class="overflow-x-auto bg-white border border-stone-200">
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="bg-[#FCF8F3] border-b border-stone-200">
+          <th class="text-left p-4 text-[10px] font-black uppercase tracking-widest text-stone-500 border-r border-stone-100">
+            Product Description
+          </th>
+          <th class="text-right p-4 text-[10px] font-black uppercase tracking-widest text-stone-500 w-32 border-r border-stone-100">
+            Price
+          </th>
+          <th class="text-right p-4 text-[10px] font-black uppercase tracking-widest text-stone-500 w-20 border-r border-stone-100">
+            Qty
+          </th>
+          <th class="text-right p-4 text-[10px] font-black uppercase tracking-widest text-stone-500 w-32">
+            Total
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% order.items.forEach(item => { %>
+          <tr class="border-b border-stone-100 last:border-none">
+            <td class="p-4 border-r border-stone-100">
+              <div class="font-bold text-stone-800">
+                <%= item.productName %>
+              </div>
+              <div class="text-[10px] text-stone-400 font-medium uppercase mt-1">
+                SIZE: <%= item.size %> | COLOR: <%= item.color %>
+              </div>
+            </td>
+
+            <td class="text-right p-4 text-stone-600 text-sm border-r border-stone-100">
+              <%= formatPrice(item.price) %>
+            </td>
+
+            <td class="text-right p-4 text-stone-600 text-sm border-r border-stone-100">
+              <%= item.quantity %>
+            </td>
+
+            <td class="text-right p-4 font-bold text-stone-900 text-sm">
+              <%= formatPrice(item.price * item.quantity) %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================= SUMMARY BOX ================= -->
+  <div class="flex justify-end">
+    <div class="w-full sm:w-80 bg-white border border-stone-200 p-4 space-y-2">
+
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-medium text-stone-500">
+          Shipping
+        </span>
+        <span class="text-sm text-stone-600">
+          <%= formatPrice(order.shipping) %>
+        </span>
+      </div>
+
+      <div class="border-t border-stone-800 pt-3 flex justify-between items-center">
+        <span class="text-[11px] font-black text-stone-400 uppercase tracking-widest">
+          Total Paid
+        </span>
+        <span class="text-2xl font-black text-stone-900">
+          <%= formatPrice(order.total) %>
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+            <div class="mt-20 pt-8 border-t border-stone-50 text-center">
+                <p class="text-[10px] text-stone-400 font-medium uppercase tracking-tighter">This is a system-generated document. No signature required.</p>
+                <p class="text-[11px] text-stone-500 mt-2 font-bold">Thank you for shopping with Your Brand!</p>
+            </div>
+        </div>
+    </div>
+</div>
+

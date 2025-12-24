@@ -52,15 +52,12 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
     const productIdFromQuery = req.query.productId; 
     const userId = req.session.user._id;
 
-    // Populate ensures we have product details, but it changes the ID structure
     const order = await orderModel.findOne({ _id: id, userId }).populate('items.productId');
     const addresses = await addressModel.find({ userId: userId });
 
     if (!order) return res.status(404).send("Order not found");
 
-    // FIX: Safely find the item without calling .toString() on undefined
     const itemToReturn = order.items.find(item => {
-        // Since you used .populate('productId'), the ID is likely at item.productId._id
         const idFromItem = item.productId?._id?.toString() || 
                            item.productId?.toString() || 
                            item.product_id?.toString();
