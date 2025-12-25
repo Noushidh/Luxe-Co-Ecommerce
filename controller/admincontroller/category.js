@@ -21,6 +21,7 @@ export const load_Category = asyncHandler(async (req, res) => {
     res.render("admin/layout", {
         title: "Category",
         body: "./category",
+        currentPath: '/admin/category',
         categories: FIXED_CATEGORIES,
         subcategories: results,currentPage,totalPages,search
     });

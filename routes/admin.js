@@ -10,7 +10,8 @@ import * as admindashboard from "../controller/admincontroller/dashboard.js";
 import * as admincustomers from "../controller/admincontroller/customers.js";
 import * as category from "../controller/admincontroller/category.js"
 import * as Products from "../controller/admincontroller/products.js"
-import * as Orders from "../controller/admincontroller/orders.js"
+import * as Orders from "../controller/admincontroller/orders.js";
+import * as Coupon from "../controller/admincontroller/coupons.js"
 
 router.get('/login', adminAuth.isLoggin, adminAuthController.loadlogin)
 router.post('/login', adminAuth.isLoggin, adminAuthController.login)
@@ -49,6 +50,11 @@ router.patch('/orders/update-status/:id',Orders.updateStatus)
 //orders return and reject
 router.patch('/orders/return-approve',Orders.approveReturn)
 router.patch('/orders/return-reject',adminAuth.checkSession,Orders.rejectReturn)
+
+//coupen management
+router.get('/coupons',Coupon.load_coupons)
+router.get('/coupons/add',adminAuth.checkSession,Coupon.load_couponAddEdit)
+router.post('/coupons/add',Coupon.addCoupen)
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 

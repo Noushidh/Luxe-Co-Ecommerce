@@ -4,7 +4,7 @@ const subCategorySchema = new mongoose.Schema(
   {
     category: {
       type: String,
-      enum: ["Men", "Women", "Kids"],  // FIXED categories
+      enum: ["Men", "Women", "Kids"],  
       required: true,
     },
 

@@ -6,15 +6,15 @@
     <!-- MENU ITEMS -->
     <div class="mt-2 space-y-1">
 
-        <!-- Dashboard -->
+        <!-- Dashboard (ALWAYS COLORED) -->
         <a href="/admin/dashboard"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           bg-[#eae0d1]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
+           bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm
            hover:bg-[#e0d4c2]
            hover:shadow-lg hover:shadow-[#c8a97e]/30
            hover:scale-[1.03]
            transition-all duration-200 transform-gpu rounded-md">
-            
+
             <div class="w-1 h-12 bg-[#c8a97e] rounded-r"></div>
             <img class="w-5 h-5 ml-3" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-8.svg" />
             <span class="text-[#c8a97e] font-medium text-sm">Dashboard</span>
@@ -22,111 +22,137 @@
 
         <!-- Products -->
         <a href="/admin/products"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/products'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-4.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Products</span>
+            <span class="font-medium text-sm">Products</span>
         </a>
 
-        <!-- ⭐ CATEGORY (NEW) -->
+        <!-- Categories -->
         <a href="/admin/category"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/category'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
-            <img class="w-5 h-5 ml-6" 
-                 src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-5.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Categories</span>
+            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-5.svg" />
+            <span class="font-medium text-sm">Categories</span>
         </a>
 
         <!-- Orders -->
         <a href="/admin/orders"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/orders'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Orders</span>
+            <span class="font-medium text-sm">Orders</span>
         </a>
 
         <!-- Customers -->
         <a href="/admin/customers"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/customers'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-2.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Customers</span>
+            <span class="font-medium text-sm">Customers</span>
         </a>
 
         <!-- Analytics -->
         <a href="/admin/analytics"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/analytics'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-5.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Analytics</span>
+            <span class="font-medium text-sm">Analytics</span>
         </a>
 
         <!-- Coupons -->
         <a href="/admin/coupons"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/coupons'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-6.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Coupons</span>
+            <span class="font-medium text-sm">Coupons</span>
         </a>
 
         <!-- Banner -->
         <a href="/admin/banner"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/banner'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-7.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Banner</span>
+            <span class="font-medium text-sm">Banner</span>
         </a>
 
         <!-- Offers -->
         <a href="/admin/offers"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/offers'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-3.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Offers</span>
+            <span class="font-medium text-sm">Offers</span>
         </a>
 
         <!-- Settings -->
         <a href="/admin/settings"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer 
-           hover:bg-[#f5f0ea]
+           class="group w-full flex items-center gap-3 py-3 cursor-pointer
            hover:-translate-y-[1px] hover:translate-x-[3px]
            hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md">
+           hover:scale-[1.01] transition-all duration-200 rounded-md
+           <%= currentPath === '/admin/settings'
+             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
+             : 'hover:bg-[#f5f0ea] text-stone-600'
+           %>">
 
             <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-1.svg" />
-            <span class="font-medium text-[#2c2c2c] text-sm">Settings</span>
+            <span class="font-medium text-sm">Settings</span>
         </a>
 
     </div>

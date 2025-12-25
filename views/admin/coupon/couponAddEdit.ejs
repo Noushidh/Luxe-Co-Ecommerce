@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Coupon | Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-stone-100 font-sans">
+
+<div class="max-w-5xl mx-auto p-6 min-h-screen">
+  <div class="flex justify-between items-center mb-6">
+    <h1 id="pageTitle" class="text-2xl font-bold text-stone-800">Add New Coupon</h1>
+    <a href="/admin/coupons" class="text-stone-500 hover:text-stone-700 flex items-center gap-2 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Back to List
+    </a>
+  </div>
+
+  <form id="couponForm" class="space-y-6">
+    <input type="hidden" id="couponId" name="couponId">
+    <input type="hidden" id="finalTargetId" name="targetId">
+
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+  <h3 class="text-lg font-medium text-stone-700 mb-4 border-b pb-2">Basic Information</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    
+    <div>
+      <label class="block text-sm font-medium text-stone-600">Coupon Name *</label>
+      <input type="text" id="name" name="name" required placeholder="Festival Offer" 
+             class="mt-1 w-full border rounded-lg px-3 py-2 outline-none border-stone-300 focus:ring-2 focus:ring-[#C8A97E]">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-stone-600">Coupon Code *</label>
+      <div class="flex gap-2 mt-1">
+        <input type="text" id="code" name="code" required placeholder="SAVE50" 
+               class="flex-1 border rounded-lg px-3 py-2 uppercase font-mono font-bold border-stone-300 outline-none focus:ring-2 focus:ring-[#C8A97E]">
+        <button type="button" onclick="generateRandomCode()" 
+                class="px-4 py-2 bg-stone-800 text-white text-xs font-bold rounded-lg hover:bg-stone-700 transition-all active:scale-95 shadow-sm">
+          GENERATE
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+      <h3 class="text-lg font-medium text-stone-700 mb-4 border-b pb-2">Discount Logic & Application</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-stone-600">Discount Type</label>
+          <select id="discountType" name="discountType" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixedAmount">Fixed Amount (₹)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-stone-600">Discount Value *</label>
+          <input type="number" id="discountValue" name="discountValue" required class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-stone-600">Max Discount (₹)</label>
+          <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" placeholder="e.g. 500" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-stone-600">Applies To</label>
+          <select id="appliesTo" name="appliesTo" onchange="toggleScopeFields()" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+            <option value="all">Entire Store (All Products)</option>
+            <option value="category">Specific Category</option>
+            <option value="product">Specific Product</option>
+          </select>
+        </div>
+
+        <div id="categoryScopeDiv" class="hidden animate-in fade-in slide-in-from-top-1 duration-300">
+          <label class="block text-sm font-medium text-stone-600">Select Main Category</label>
+          <select id="categoryScope" name="categoryScope" onchange="fetchSubCategories()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-stone-50 border-stone-300">
+            <option value="none">-- Select Category --</option>
+            <option value="men">Men</option>
+            <option value="women">Women</option>
+            <option value="kids">Kids</option>
+          </select>
+        </div>
+
+        <div id="productSearchDiv" class="hidden animate-in fade-in slide-in-from-top-1 duration-300 relative">
+          <label class="block text-sm font-medium text-stone-600">Search Product *</label>
+          <input type="text" id="productSearchInput" placeholder="Type product name..." onkeyup="searchProducts(this.value)" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300 focus:ring-2 focus:ring-[#C8A97E] outline-none">
+          
+          <div id="searchResults" class="absolute z-10 w-full bg-white border rounded-lg mt-1 shadow-xl hidden max-h-48 overflow-y-auto"></div>
+          
+          <div id="selectedProductBadge" class="mt-2 hidden">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#C8A97E] text-white">
+              Selected: <span id="chosenProductName" class="ml-1"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div id="targetIdDiv" class="mt-6 hidden p-4 bg-stone-50 rounded-xl border border-dashed border-stone-300">
+        <label class="block text-sm font-medium text-stone-600 mb-2 font-bold text-[#C8A97E]">Sub-Category Focus</label>
+        <select id="subCategorySelect" class="w-full border rounded-lg px-3 py-2 border-stone-300 bg-white" onchange="updateFinalTarget(this.value)">
+            <option value="all">Apply to ALL items in this Category</option>
+            <% subcategories.forEach(sc => { %>
+              <option value="<%= sc._id %>" data-category="<%= (sc.category || '').toLowerCase() %>" class="subcat-option">
+                <%= sc.subcategory %>
+              </option>
+            <% }) %>
+        </select>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+      <h3 class="text-lg font-medium text-stone-700 mb-4 border-b pb-2">Usage & Validity</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div><label class="block text-sm font-medium text-stone-600">Min Purchase (₹)</label>
+          <input type="number" id="minPurchase" name="minPurchase" placeholder="0" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+        </div>
+        <div><label class="block text-sm font-medium text-stone-600">Total Usage Limit</label>
+          <input type="number" id="limit" name="limit" placeholder="Unlimited" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+        </div>
+        <div><label class="block text-sm font-medium text-stone-600">Start Date</label>
+          <input type="date" id="startDate" name="startDate" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+        </div>
+        <div><label class="block text-sm font-medium text-stone-600">Expiry Date *</label>
+          <input type="date" id="expiryDate" name="expiryDate" required class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between p-6 bg-white rounded-xl shadow-sm border border-stone-200">
+      <div class="flex items-center gap-3">
+        <input type="checkbox" id="isActive" name="isActive" checked class="w-5 h-5 accent-[#C8A97E]">
+        <label for="isActive" class="text-sm font-medium text-stone-700">Active and Ready to Use</label>
+      </div>
+      <div class="flex gap-4">
+        <button type="button" onclick="window.location.href='/admin/coupons'" class="px-8 py-2 text-stone-600 font-medium">Discard</button>
+        <button type="submit" id="submitBtn" class="px-10 py-2 text-white rounded shadow-md font-black tracking-widest text-xs transition-all hover:brightness-110 active:scale-95" style="background-color: #C8A97E;">SAVE COUPON</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+      const notyf = new Notyf({ position: { x: 'right', y: 'top' }, duration: 3000 });
+  function toggleScopeFields() {
+    const appliesTo = document.getElementById('appliesTo').value;
+    const scopeDiv = document.getElementById('categoryScopeDiv');
+    const targetDiv = document.getElementById('targetIdDiv');
+    const searchDiv = document.getElementById('productSearchDiv');
+
+    // Reset hidden fields
+    scopeDiv.classList.add('hidden');
+    targetDiv.classList.add('hidden');
+    searchDiv.classList.add('hidden');
+    document.getElementById('finalTargetId').value = "";
+
+    if (appliesTo === 'category') {
+      scopeDiv.classList.remove('hidden');
+      targetDiv.classList.remove('hidden');
+    } else if (appliesTo === 'product') {
+      searchDiv.classList.remove('hidden');
+    } else {
+      document.getElementById('finalTargetId').value = "all";
+    }
+  }
+
+  function fetchSubCategories() {
+    const mainCat = document.getElementById('categoryScope').value.toLowerCase();
+    const subSelect = document.getElementById('subCategorySelect');
+    const options = subSelect.querySelectorAll('.subcat-option');
+
+    subSelect.value = "all";
+    updateFinalTarget("all"); // If "All" is selected, ID is set to category-related logic
+
+    options.forEach(opt => {
+      const parentCat = opt.getAttribute('data-category');
+      opt.hidden = (parentCat !== mainCat);
+    });
+  }
+
+  // Live Search Logic for Products
+  let debounceTimer;
+  async function searchProducts(query) {
+    clearTimeout(debounceTimer);
+    const resultsDiv = document.getElementById('searchResults');
+    
+    if (query.length < 2) {
+      resultsDiv.classList.add('hidden');
+      return;
+    }
+
+    debounceTimer = setTimeout(async () => {
+      try {
+        const response = await axios.get(`/admin/coupons/api/search-products?q=${query}`);
+        const products = response.data.products;
+
+        resultsDiv.innerHTML = '';
+        if (products.length > 0) {
+          resultsDiv.classList.remove('hidden');
+          products.forEach(p => {
+            const item = document.createElement('div');
+            item.className = "p-3 hover:bg-stone-100 cursor-pointer border-b text-sm";
+            item.textContent = p.name;
+            item.onclick = () => {
+              updateFinalTarget(p._id, p.name);
+              resultsDiv.classList.add('hidden');
+            };
+            resultsDiv.appendChild(item);
+          });
+        } else {
+          resultsDiv.innerHTML = '<div class="p-3 text-stone-400 text-sm">No products found</div>';
+        }
+      } catch (err) {
+        console.error("Search error:", err);
+      }
+    }, 300);
+  }
+
+function generateRandomCode() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "CPN-"; 
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  document.getElementById('code').value = result;
+}
+  
+  function updateFinalTarget(id, name = null) {
+    document.getElementById('finalTargetId').value = id;
+    if (name) {
+      document.getElementById('chosenProductName').textContent = name;
+      document.getElementById('selectedProductBadge').classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('couponForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    data.isActive = document.getElementById('isActive').checked;
+
+    try {
+        const response = await axios.post('/admin/coupons/add', data);
+        if (response.data.success) {
+            window.location.href = '/admin/coupons';
+        }
+    } catch (err) {
+        notyf.error(err.response?.data?.message || "Error saving coupon!");
+    }
+  });
+</script>
+
+</body>
+</html>
