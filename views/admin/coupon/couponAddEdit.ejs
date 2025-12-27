@@ -61,11 +61,11 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-stone-600">Discount Value *</label>
-          <input type="number" id="discountValue" name="discountValue" required class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+          <input type="number" id="discountValue" name="discountValue" min="1" required class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
         </div>
         <div>
           <label class="block text-sm font-medium text-stone-600">Max Discount (₹)</label>
-          <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" placeholder="e.g. 500" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+          <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" min="0" placeholder="e.g. 500" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
         </div>
       </div>
       
@@ -83,9 +83,9 @@
           <label class="block text-sm font-medium text-stone-600">Select Main Category</label>
           <select id="categoryScope" name="categoryScope" onchange="fetchSubCategories()" class="mt-1 w-full border rounded-lg px-3 py-2 bg-stone-50 border-stone-300">
             <option value="none">-- Select Category --</option>
-            <option value="men">Men</option>
-            <option value="women">Women</option>
-            <option value="kids">Kids</option>
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+            <option value="Kids">Kids</option>
           </select>
         </div>
 
@@ -120,10 +120,10 @@
       <h3 class="text-lg font-medium text-stone-700 mb-4 border-b pb-2">Usage & Validity</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div><label class="block text-sm font-medium text-stone-600">Min Purchase (₹)</label>
-          <input type="number" id="minPurchase" name="minPurchase" placeholder="0" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+          <input type="number" id="minPurchase" name="minPurchase" placeholder="0" min="0" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
         </div>
         <div><label class="block text-sm font-medium text-stone-600">Total Usage Limit</label>
-          <input type="number" id="limit" name="limit" placeholder="Unlimited" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
+          <input type="number" id="limit" name="limit" placeholder="Unlimited" min="0" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
         </div>
         <div><label class="block text-sm font-medium text-stone-600">Start Date</label>
           <input type="date" id="startDate" name="startDate" class="mt-1 w-full border rounded-lg px-3 py-2 border-stone-300">
@@ -177,7 +177,7 @@
     const options = subSelect.querySelectorAll('.subcat-option');
 
     subSelect.value = "all";
-    updateFinalTarget("all"); // If "All" is selected, ID is set to category-related logic
+    updateFinalTarget("all"); 
 
     options.forEach(opt => {
       const parentCat = opt.getAttribute('data-category');
@@ -185,11 +185,11 @@
     });
   }
 
-  // Live Search Logic for Products
-  let debounceTimer;
+let debounceTimer;
   async function searchProducts(query) {
     clearTimeout(debounceTimer);
     const resultsDiv = document.getElementById('searchResults');
+    const searchInput = document.getElementById('productSearchInput'); // Get the input field
     
     if (query.length < 2) {
       resultsDiv.classList.add('hidden');
@@ -208,7 +208,11 @@
             const item = document.createElement('div');
             item.className = "p-3 hover:bg-stone-100 cursor-pointer border-b text-sm";
             item.textContent = p.name;
+            
             item.onclick = () => {
+              // --- ADDED THIS LINE ---
+              searchInput.value = p.name; // This puts the name into the input box
+              
               updateFinalTarget(p._id, p.name);
               resultsDiv.classList.add('hidden');
             };
@@ -221,6 +225,16 @@
         console.error("Search error:", err);
       }
     }, 300);
+  }
+
+  function updateFinalTarget(productId, productName) {
+    document.getElementById('targetId').value = productId;
+    
+    const selectedLabel = document.getElementById('selectedProductLabel');
+    if (selectedLabel) {
+      selectedLabel.textContent = `Selected: ${productName}`;
+      selectedLabel.classList.remove('hidden');
+    }
   }
 
 function generateRandomCode() {
@@ -249,7 +263,10 @@ function generateRandomCode() {
     try {
         const response = await axios.post('/admin/coupons/add', data);
         if (response.data.success) {
-            window.location.href = '/admin/coupons';
+          notyf.success(response.data.message)
+          setTimeout(()=>{window.location.href = '/admin/coupons'},1000)  
+        }else{
+          notyf.error(response.data.message);
         }
     } catch (err) {
         notyf.error(err.response?.data?.message || "Error saving coupon!");

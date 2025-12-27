@@ -8,7 +8,6 @@ const couponSchema = new mongoose.Schema({
     }],
     name: { type: String, required: true },
     code: { type: String, required: true, unique: true, uppercase: true },
-    description: { type: String },
     discountType: { type: String, enum: ['percentage', 'fixedAmount'], default: 'fixedAmount' },
     discountValue: { type: Number, required: true },
     maxDiscountAmount: { type: Number }, 
@@ -16,10 +15,9 @@ const couponSchema = new mongoose.Schema({
     expiryDate: { type: Date, required: true },
     startDate: { type: Date, default: Date.now },
     limit: { type: Number, default: null }, 
-    usageCount: { type: Number, default: 0 },
     maxUsagePerUser: { type: Number, default: 1 },
     appliesTo: { type: String, enum: ['all', 'product', 'category'], default: 'all'},
-    categoryScope: { type: String, enum: ['men', 'women', 'kids', 'none'], default: 'none' },
+    categoryScope: { type: String, enum: ["Men", "Women", "Kids","none"], default: 'none' },
     targetId: { type: String, default: 'all'},
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
