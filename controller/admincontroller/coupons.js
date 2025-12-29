@@ -42,13 +42,12 @@ export const load_couponEdit = asyncHandler(async (req, res) => {
 });
 
 export const saveCoupon = asyncHandler(async (req, res) => {
-    const { id } = req.params; // If ID exists, we are EDITING. If not, we are ADDING.
+    const { id } = req.params; 
     const { 
         name, code, discountType, discountValue, maxDiscountAmount,
         minPurchase, expiryDate, startDate, limit, isActive 
     } = req.body;
 
-    // 1. Common Validation
     if (!name || !code || !discountValue || !expiryDate) {
         return res.status(400).json({ success: false, message: "Mandatory fields are missing" });
     }
@@ -65,16 +64,14 @@ export const saveCoupon = asyncHandler(async (req, res) => {
 
     let cleanCode = code.toUpperCase().trim();
 
-    // 2. Duplicate Check Logic (Slightly different for Add vs Edit)
     const query = { code: cleanCode };
-    if (id) query._id = { $ne: id }; // During edit, ignore the current coupon's own code
+    if (id) query._id = { $ne: id }; 
 
     const existingCoupon = await couponModel.findOne(query);
     if (existingCoupon) {
         return res.status(400).json({ success: false, message: "Coupon code already exists!" });
     }
 
-    // 3. Prepare Data Object
     const couponData = {
         name,
         code: cleanCode,
@@ -99,3 +96,16 @@ export const saveCoupon = asyncHandler(async (req, res) => {
     }
 });
 
+export const deleteCoupen = asyncHandler(async(req,res)=>{
+    const {id}=req.params;
+
+    console.log(req.params.id)
+
+    const coupon = await couponModel.findByIdAndDelete(id);
+
+    if(!coupon){
+       return res.status(404).json({success:false,message:"Coupon not found"})
+    }
+
+    res.status(200).json({success:true,message:"Coupen deleted Successfully"})
+})

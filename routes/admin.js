@@ -57,6 +57,8 @@ router.get('/coupons/add',adminAuth.checkSession,Coupon.load_couponAdd)
 router.post('/coupons/add',adminAuth.checkSession,Coupon.saveCoupon)
 router.get('/coupons/edit/:id',adminAuth.checkSession,Coupon.load_couponEdit)
 router.patch('/coupons/edit/:id',adminAuth.checkSession,Coupon.saveCoupon)
+router.delete('/coupons/delete/:id',adminAuth.checkSession,Coupon.deleteCoupen);
+
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
 router.get('/page-404', (req, res) => {

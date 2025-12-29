@@ -7,14 +7,15 @@
                     <h2 class="text-2xl font-bold text-stone-800 tracking-tight">Coupon Management</h2>
                     <p class="text-sm text-stone-500 font-medium">Create and monitor discount codes for your store.</p>
                 </div>
-               <a href="/admin/coupons/add" 
-   class="flex items-center gap-2 px-6 py-3 rounded shadow-sm text-white text-xs font-black tracking-widest transition-all hover:brightness-110 active:scale-95 inline-block"
-   style="background-color: #C8A97E; text-decoration: none;">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-    </svg>
-    ADD NEW COUPON
-</a>
+                <a href="/admin/coupons/add"
+                    class="flex items-center gap-2 px-6 py-3 rounded shadow-sm text-white text-xs font-black tracking-widest transition-all hover:brightness-110 active:scale-95 inline-block"
+                    style="background-color: #C8A97E; text-decoration: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+                    </svg>
+                    ADD NEW COUPON
+                </a>
             </div>
 
             <div class="flex flex-wrap items-center gap-4 mb-6">
@@ -138,11 +139,42 @@
                                                 </div>
                                             </td>
                                         </tr>
-                             <% } %>
+                                        <% } %>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const notyf = new Notyf({ position: { x: 'right', y: 'top' }, duration: 3000 });
+    async function deleteCoupon(couponId) {
+        console.log("click")
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#4b5563',
+            confirmButtonText: 'Yes, delete it!'
+        });
 
+        if (result.isConfirmed) {
+            try {
+                const response = await axios.delete(`/admin/coupons/delete/${couponId}`);
+
+                if (response.data.success) {
+                    notyf.success(response.data.message);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.log(error)
+                notyf.error(error.response?.data?.message || 'Something went wrong', 'error');
+            }
+        }
+    }
+</script>
