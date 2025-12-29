@@ -55,7 +55,6 @@ router.patch('/orders/return-reject',adminAuth.checkSession,Orders.rejectReturn)
 router.get('/coupons',Coupon.load_coupons)
 router.get('/coupons/add',adminAuth.checkSession,Coupon.load_couponAdd)
 router.post('/coupons/add',Coupon.addCoupen)
-router.get('/coupons/api/search-products',Coupon.searchSpecificProduct)
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 

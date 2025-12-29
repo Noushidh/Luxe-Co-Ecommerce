@@ -16,8 +16,6 @@ export const load_checkout = asyncHandler(async (req, res) => {
         return res.redirect("/user/cart");
     }
 
-    const cartCategories = cart.items.map(item => {return item.productId && item.productId.subCategory_id ? item.productId.subCategory_id.category.trim() : null}).filter(Boolean);
-
     let originalTotal = 0;
     let payableTotal = 0;
     cart.items.forEach(item => {
@@ -31,17 +29,11 @@ export const load_checkout = asyncHandler(async (req, res) => {
     const addresses = await addressmodel.find({ userId: userId });
 
     const now = new Date();
-    const AllactiveCoupons = await couponModel.find({ isActive: true,startDate:{$lte:now},expiryDate:{$gte:now}});
-
-    const filteredCoupons = AllactiveCoupons.filter(coupon => {
-        if (coupon.appliesTo === "all") {
-            return true;
-        } else if (coupon.appliesTo === "category") {
-            const scope = coupon.categoryScope && coupon.categoryScope !== 'none' ? coupon.categoryScope : coupon.targetId;
-            return cartCategories.some(cat => cat.trim().toLowerCase() === String(scope).trim().toLowerCase());
-        }
-        return false;
-    });
+ const AvailableCoupens = await couponModel.find({ 
+    isActive: true,startDate: { $lte: now },expiryDate: { $gte: now }, usersUsed: { $ne: userId }
+});
+console.log("Current Time:", now);
+console.log("Coupons Found:", AvailableCoupens);
 
     return res.render("user/layout", {
         title: "Checkout",
@@ -53,7 +45,7 @@ export const load_checkout = asyncHandler(async (req, res) => {
         discount: finalDiscount,
         shipping: shipping,
         total: subTotal + shipping, 
-        coupons: filteredCoupons
+        coupons: AvailableCoupens
     });
 });
 

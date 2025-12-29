@@ -132,93 +132,129 @@
                 <h2 class="text-2xl font-semibold mb-6">Order Summary</h2>
 
                 <!-- COUPON -->
-<div class="mb-4">
+         <div class="mb-4">
   <label class="block text-sm font-medium text-gray-700 mb-2">Have a Coupon?</label>
   <div class="flex gap-2">
-    <input type="text" id="couponInput" placeholder="Enter code" class="flex-grow border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#C8A97E] outline-none" />
-    <button onclick="applyCoupon()" class="bg-[#C8A97E] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#b8986d] transition">
+    <input type="text" id="couponInput" placeholder="Enter code"
+      class="flex-grow border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#C8A97E] outline-none uppercase font-mono font-bold" />
+    <button onclick="applyCoupon()"
+      class="bg-[#C8A97E] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#b8986d] transition active:scale-95">
       Apply
     </button>
   </div>
+  <p id="couponMessage" class="text-[10px] mt-1 hidden"></p>
 </div>
 
 <% if (locals.coupons && coupons.length > 0) { %>
   <div class="mb-6">
-    <button onclick="toggleCouponList()" class="text-[#4B3621] text-xs font-bold flex items-center gap-1 hover:underline mb-2 uppercase tracking-tight">
+    <button onclick="toggleCouponList()"
+      class="text-[#4B3621] text-xs font-bold flex items-center gap-1 hover:underline mb-3 uppercase tracking-tight">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01" />
       </svg>
-      View Available Offers (<%= coupons.length %>)
+      Available & Upcoming Offers (<%= coupons.length %>)
     </button>
 
-    <div id="couponList" class="hidden space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-      <% coupons.forEach(coupon => { %>
-        <div class="border-2 border-dashed border-stone-200 rounded-lg p-3 bg-stone-50 hover:border-[#C8A97E] transition-all relative group">
-          <div class="flex justify-between items-start">
+    <div id="couponList" class="hidden space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+      <% coupons.forEach(coupon => { 
+          const isLocked = subTotal < coupon.minPurchase;
+          const progress = Math.min((subTotal / coupon.minPurchase) * 100, 100);
+      %>
+        <div class="border-2 rounded-xl p-3 transition-all relative group 
+          <%= isLocked ? 'border-gray-200 bg-gray-50/50' : 'border-dashed border-[#C8A97E] bg-white shadow-sm' %>">
+          
+          <div class="flex justify-between items-start mb-2">
             <div>
-              <p class="font-mono font-bold text-sm text-[#4B3621] uppercase tracking-wider"><%= coupon.code %></p>
-              <p class="text-[11px] text-green-600 font-bold mt-0.5">
-                Save <%= coupon.discountType === 'percentage' ? coupon.discountValue + '%' : formatPrice(coupon.discountValue) %>
+              <div class="flex items-center gap-2">
+                <p class="font-mono font-bold text-sm <%= isLocked ? 'text-gray-400' : 'text-[#4B3621]' %> uppercase tracking-wider">
+                  <%= coupon.code %>
+                </p>
+                <% if (isLocked) { %>
+                  <span class="text-[8px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase font-bold">Locked</span>
+                <% } else { %>
+                  <span class="text-[8px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded uppercase font-bold animate-pulse">Available</span>
+                <% } %>
+              </div>
+
+              <p class="text-[11px] font-bold mt-1 <%= isLocked ? 'text-gray-400' : 'text-green-600' %>">
+                Save <%= coupon.discountType === 'percentage' ? coupon.discountValue + '%' : '₹' + coupon.discountValue %>
               </p>
-              <p class="text-[9px] text-gray-500 mt-1 italic">Min purchase: <%= formatPrice(coupon.minPurchase) %></p>
             </div>
-            <button onclick="copyAndFill('<%= coupon.code %>')" class="text-[10px] bg-white border border-[#C8A97E] text-[#C8A97E] px-2.5 py-1 rounded-md font-bold hover:bg-[#C8A97E] hover:text-white transition-all shadow-sm">
-              USE CODE
+
+            <button onclick="copyAndFill('<%= coupon.code %>')" <%= isLocked ? 'disabled' : '' %>
+              class="text-[10px] px-3 py-1.5 rounded-md font-bold transition-all shadow-sm
+              <%= isLocked ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#C8A97E] text-white hover:brightness-110' %>">
+              <%= isLocked ? 'LOCKED' : 'APPLY' %>
             </button>
           </div>
+
+          <% if (isLocked) { %>
+            <div class="mt-2">
+              <div class="flex justify-between items-center mb-1">
+                <p class="text-[9px] text-red-500 font-semibold">
+                  Add ₹<%= (coupon.minPurchase - subTotal).toFixed(0) %> more to unlock
+                </p>
+                <p class="text-[8px] text-gray-400"><%= progress.toFixed(0) %>%</p>
+              </div>
+              <div class="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                <div class="bg-[#C8A97E] h-full transition-all duration-500" style="width: <%= progress %>%"></div>
+              </div>
+              <a href="/user/products" class="text-[9px] text-[#C8A97E] font-bold hover:underline mt-2 inline-block">
+                + Add more items to save
+              </a>
+            </div>
+          <% } else { %>
+            <p class="text-[9px] text-gray-500 mt-1 italic">Successfully reached minimum purchase of ₹<%= coupon.minPurchase %></p>
+          <% } %>
+
         </div>
       <% }) %>
     </div>
   </div>
 <% } else { %>
   <div class="mb-6 p-4 border-2 border-dotted border-stone-200 rounded-xl bg-stone-50/50 flex items-center gap-3">
-    <div class="p-2 bg-white rounded-full">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-      </svg>
-    </div>
     <p class="text-[11px] text-stone-500 font-medium">No special coupons available at this moment.</p>
   </div>
 <% } %>
 
-                <!-- SUMMARY -->
-                <div class="space-y-3 text-gray-700">
-                  <div class="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>
-                      <%= formatPrice(subTotal) %>
-                    </span>
-                  </div>
+                      <!-- SUMMARY -->
+                      <div class="space-y-3 text-gray-700">
+                        <div class="flex justify-between">
+                          <span>Subtotal</span>
+                          <span>
+                            <%= formatPrice(subTotal) %>
+                          </span>
+                        </div>
 
-                  <% if (discount> 0) { %>
-                    <div class="flex justify-between text-green-600 font-medium">
-                      <span>Discount Applied</span>
-                      <span>- <%= formatPrice(discount) %></span>
-                    </div>
-                    <% } %>
+                        <% if (discount> 0) { %>
+                          <div class="flex justify-between text-green-600 font-medium">
+                            <span>Discount Applied</span>
+                            <span>- <%= formatPrice(discount) %></span>
+                          </div>
+                          <% } %>
 
-                      <div class="flex justify-between">
-                        <span>Shipping</span>
-                        <span>
-                          <%= shipping===0 ? "FREE" : formatPrice(shipping) %>
-                        </span>
+                            <div class="flex justify-between">
+                              <span>Shipping</span>
+                              <span>
+                                <%= shipping===0 ? "FREE" : formatPrice(shipping) %>
+                              </span>
+                            </div>
+
+                            <div class="border-t mt-4 pt-4 flex justify-between font-bold text-xl">
+                              <span>Total</span>
+                              <span>
+                                <%= formatPrice(total) %>
+                              </span>
+                            </div>
                       </div>
 
-                      <div class="border-t mt-4 pt-4 flex justify-between font-bold text-xl">
-                        <span>Total</span>
-                        <span>
-                          <%= formatPrice(total) %>
-                        </span>
-                      </div>
-                </div>
+                      <button onclick="processPayment()" class="<%= primaryBtnClass %> mt-8 bg-[#C8A97E] shadow-lg">
+                        Continue to Payment
+                      </button>
 
-                <button onclick="processPayment()" class="<%= primaryBtnClass %> mt-8 bg-[#C8A97E] shadow-lg">
-                  Continue to Payment
-                </button>
-
-                <p class="text-[10px] text-center text-gray-400 mt-4">
-                  By clicking, you agree to our Terms & Conditions
-                </p>
+                      <p class="text-[10px] text-center text-gray-400 mt-4">
+                        By clicking, you agree to our Terms & Conditions
+                      </p>
 
               </div>
             </div>
@@ -228,71 +264,71 @@
           <% } %>
     </div>
   </div>
-<style>
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #C8A97E;
-    border-radius: 10px;
-  }
-</style>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #C8A97E;
+      border-radius: 10px;
+    }
+  </style>
   <script>
     const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
 
- async function processPayment() {
-    const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
+    async function processPayment() {
+      const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
 
-    try {
+      try {
         const selected = document.querySelector('input[name="selectedAddress"]:checked');
         if (!selected) {
-            return notyf.error("Please select an address");
+          return notyf.error("Please select an address");
         }
 
         const addressId = selected.value;
 
         const response = await fetch(`/user/payment?addressId=${addressId}`, {
-            method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          method: 'GET',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
         const contentType = response.headers.get("content-type");
 
         if (!response.ok) {
-            if (contentType && contentType.includes("application/json")) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Invalid request. Please check your address.");
-            }
-            throw new Error(`Server error: ${response.status}`);
+          if (contentType && contentType.includes("application/json")) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Invalid request. Please check your address.");
+          }
+          throw new Error(`Server error: ${response.status}`);
         }
-        
+
         window.location.href = `/user/payment?addressId=${addressId}`;
 
-    } catch (error) {
+      } catch (error) {
         console.error("Payment Error:", error);
         notyf.error(error.message);
+      }
     }
-}
 
-  function toggleCouponList() {
-    const list = document.getElementById('couponList');
-    list.classList.toggle('hidden');
-  }
+    function toggleCouponList() {
+      const list = document.getElementById('couponList');
+      list.classList.toggle('hidden');
+    }
 
-  function copyAndFill(code) {
-    const input = document.getElementById('couponInput');
-    input.value = code;
-    // Optional: Directly call applyCoupon() if you want
-    // applyCoupon(); 
-  }
+    function copyAndFill(code) {
+      const input = document.getElementById('couponInput');
+      input.value = code;
+      input.focus();
+      notyf.success("Code applied to input");
+    }
 
-  async function applyCoupon() {
-    const code = document.getElementById('couponInput').value;
-    if(!code) return alert("Please enter a code");
-    
-    // Ningalude Axios/Fetch logic ivide ezhuthaam
-    console.log("Applying coupon:", code);
-  }
+    async function applyCoupon() {
+      const code = document.getElementById('couponInput').value;
+      if (!code) return alert("Please enter a code");
+
+      console.log("Applying coupon:", code);
+    }
 
 
   </script>

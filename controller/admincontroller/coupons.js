@@ -1,7 +1,6 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import couponModel from "../../models/couponmodel.js"
 import SubCategory from "../../models/subcategory.js";
-import ProductModel from "../../models/productmodel.js";
 
 //single product
 //Applies to all products in a category
@@ -20,13 +19,6 @@ export const load_coupons = asyncHandler(async (req, res) => {
     })
 })
 
-export const searchSpecificProduct = asyncHandler(async(req,res)=>{
-   const {q}=req.query;
-   const products = await ProductModel.find({
-    name:{$regex:`^${q}`,$options:"i"}
-   }).limit(5)
-   res.json({products})
-});
 
 export const load_couponAdd = asyncHandler(async (req, res) => {
     const subcategories = await SubCategory.find({ isBlocked: false })
@@ -39,21 +31,15 @@ export const load_couponAdd = asyncHandler(async (req, res) => {
 
 export const addCoupen = asyncHandler(async (req, res) => {
     const { name, code, discountType, discountValue, maxDiscountAmount,
-        minPurchase, expiryDate, startDate, limit, appliesTo,
-        categoryScope, targetId, isActive
+        minPurchase, expiryDate, startDate, limit, isActive
     } = req.body;
     if (!name || !code || !discountValue || !expiryDate) {
         return res.status(400).json({ success: false, message: "Mandatory fields are missing" });
     }
-    if (Number(discountValue) < 0 || Number(maxDiscountAmount) < 0 || Number(minPurchase) < 0 || Number(limit) < 0) {
+    if (Number(discountValue) <= 0 || Number(maxDiscountAmount) < 0 || Number(minPurchase) < 0 || Number(limit) < 0) {
         return res.status(400).json({ success: false, message: "Numbers must be greater than or equal to 0" })
     }
-let finalTarget = "all";
-if (appliesTo === "category") {
-    finalTarget = categoryScope; 
-} else if (appliesTo === "product") {
-    finalTarget = targetId; 
-}
+
     const stDate = new Date(startDate || Date.now());
     const eDate = new Date(expiryDate)
     if (eDate <= stDate) {
@@ -82,10 +68,7 @@ if (appliesTo === "category") {
         expiryDate,
         startDate: startDate || Date.now(),
         limit: limit || null,
-        appliesTo,
-        categoryScope: appliesTo === 'category' ? categoryScope : 'none',
-        targetId: finalTarget,
-        isActive: isActive === true || isActive === 'true'
+        isActive:isActive === 'on'|| isActive === true || isActive === 'true'
     });
     console.log(newCoupon)
     await newCoupon.save();

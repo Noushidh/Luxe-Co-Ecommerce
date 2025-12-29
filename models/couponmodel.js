@@ -1,5 +1,5 @@
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const couponSchema = new mongoose.Schema({
     usersUsed: [{ 
@@ -16,10 +16,11 @@ const couponSchema = new mongoose.Schema({
     startDate: { type: Date, default: Date.now },
     limit: { type: Number, default: null }, 
     maxUsagePerUser: { type: Number, default: 1 },
-    appliesTo: { type: String, enum: ['all', 'product', 'category'], default: 'all'},
-    categoryScope: { type: String, enum: ["Men", "Women", "Kids","none"], default: 'none' },
-    targetId: { type: String, default: 'all'},
+    // appliesTo: { type: String, enum: ['all', 'product', 'category'], default: 'all'},
+    // categoryScope: { type: String, enum: ["Men", "Women", "Kids","none"], default: 'none' },
+    // targetId: { type: String, default: 'all'},
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Coupon', couponSchema);
+const Coupon = mongoose.model('Coupon', couponSchema);
+export default Coupon;
