@@ -1,6 +1,5 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import couponModel from "../../models/couponmodel.js"
-import SubCategory from "../../models/subcategory.js";
 
 //single product
 //Applies to all products in a category
@@ -21,44 +20,62 @@ export const load_coupons = asyncHandler(async (req, res) => {
 
 
 export const load_couponAdd = asyncHandler(async (req, res) => {
-    const subcategories = await SubCategory.find({ isBlocked: false })
     res.render("admin/layout", {
-        title: "Add",
+        title: "Add coupen",
         body: "coupon/couponAddEdit",
-        product: null, subcategories
+        coupon: null
     })
 })
 
-export const addCoupen = asyncHandler(async (req, res) => {
-    const { name, code, discountType, discountValue, maxDiscountAmount,
-        minPurchase, expiryDate, startDate, limit, isActive
+export const load_couponEdit = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    console.log(id)
+    const coupon = await couponModel.findById(id);
+    if (!coupon) {
+        return res.redirect("/admin/coupons");
+    }
+    res.render("admin/layout", {
+        title: "Edit Coupon",
+        body: "coupon/couponAddEdit",
+        coupon: coupon
+    });
+});
+
+export const saveCoupon = asyncHandler(async (req, res) => {
+    const { id } = req.params; // If ID exists, we are EDITING. If not, we are ADDING.
+    const { 
+        name, code, discountType, discountValue, maxDiscountAmount,
+        minPurchase, expiryDate, startDate, limit, isActive 
     } = req.body;
+
+    // 1. Common Validation
     if (!name || !code || !discountValue || !expiryDate) {
         return res.status(400).json({ success: false, message: "Mandatory fields are missing" });
     }
-    if (Number(discountValue) <= 0 || Number(maxDiscountAmount) < 0 || Number(minPurchase) < 0 || Number(limit) < 0) {
-        return res.status(400).json({ success: false, message: "Numbers must be greater than or equal to 0" })
+
+    if (Number(discountValue) <= 0 || Number(maxDiscountAmount) < 0 || Number(minPurchase) < 0 || (limit !== null && Number(limit) < 0)) {
+        return res.status(400).json({ success: false, message: "Numbers must be greater than or equal to 0" });
     }
 
     const stDate = new Date(startDate || Date.now());
-    const eDate = new Date(expiryDate)
+    const eDate = new Date(expiryDate);
     if (eDate <= stDate) {
-       return res.status(400).json({ success: false, message: "Expiry date must be after start date" })
+        return res.status(400).json({ success: false, message: "Expiry date must be after start date" });
     }
 
-    if (discountType === "percentage") {
-        const val = Number(discountValue);
-        if (val <= 0 || val > 100) {
-            return res.status(400).json({ success: false, message: "Percentage must be between 1% and 100%" });
-        }
-    }
-        let cleanCode = code.toUpperCase().trim();
+    let cleanCode = code.toUpperCase().trim();
 
-    let existingCoupen = await couponModel.findOne({ code: cleanCode});
-    if (existingCoupen) {
+    // 2. Duplicate Check Logic (Slightly different for Add vs Edit)
+    const query = { code: cleanCode };
+    if (id) query._id = { $ne: id }; // During edit, ignore the current coupon's own code
+
+    const existingCoupon = await couponModel.findOne(query);
+    if (existingCoupon) {
         return res.status(400).json({ success: false, message: "Coupon code already exists!" });
     }
-    const newCoupon = new couponModel({
+
+    // 3. Prepare Data Object
+    const couponData = {
         name,
         code: cleanCode,
         discountType,
@@ -68,10 +85,17 @@ export const addCoupen = asyncHandler(async (req, res) => {
         expiryDate,
         startDate: startDate || Date.now(),
         limit: limit || null,
-        isActive:isActive === 'on'|| isActive === true || isActive === 'true'
-    });
-    console.log(newCoupon)
-    await newCoupon.save();
-   return res.status(200).json({ success: true, message: "Coupon created successfully" });
-})
+        isActive: isActive === 'on' || isActive === true || isActive === 'true'
+    };
+
+    if (id) {
+        const updated = await couponModel.findByIdAndUpdate(id, couponData, { new: true });
+        if (!updated) return res.status(404).json({ success: false, message: "Coupon not found" });
+        return res.status(200).json({ success: true, message: "Coupon updated successfully" });
+    } else {
+        const newCoupon = new couponModel(couponData);
+        await newCoupon.save();
+        return res.status(200).json({ success: true, message: "Coupon created successfully" });
+    }
+});
 

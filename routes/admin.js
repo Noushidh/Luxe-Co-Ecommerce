@@ -54,8 +54,9 @@ router.patch('/orders/return-reject',adminAuth.checkSession,Orders.rejectReturn)
 //coupen management
 router.get('/coupons',Coupon.load_coupons)
 router.get('/coupons/add',adminAuth.checkSession,Coupon.load_couponAdd)
-router.post('/coupons/add',Coupon.addCoupen)
-
+router.post('/coupons/add',adminAuth.checkSession,Coupon.saveCoupon)
+router.get('/coupons/edit/:id',adminAuth.checkSession,Coupon.load_couponEdit)
+router.patch('/coupons/edit/:id',adminAuth.checkSession,Coupon.saveCoupon)
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
 router.get('/page-404', (req, res) => {
