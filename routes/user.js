@@ -86,6 +86,8 @@ router.delete('/cart/remove-item/:variantId',userAuth.isAuthenticated,Cart.delet
 //checkout
 router.get('/cart/check-stock',userAuth.isAuthenticated,Checkout.checkStockBeforeCheckout)
 router.get('/checkout',userAuth.isAuthenticated,Checkout.load_checkout)
+//coupen applied
+router.post('/apply-coupon',userAuth.isAuthenticated,Checkout.applyCoupen)
 
 
 //payment

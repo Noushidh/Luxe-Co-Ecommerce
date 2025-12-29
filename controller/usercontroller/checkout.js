@@ -9,7 +9,8 @@ export const load_checkout = asyncHandler(async (req, res) => {
     }
     const userId = req.session.user._id;
 
-    const cart = await CartModel.findOne({ user: userId }).populate({path: 'items.productId',populate: {path: 'subCategory_id',model: 'SubCategory'}
+    const cart = await CartModel.findOne({ user: userId }).populate({
+        path: 'items.productId', populate: { path: 'subCategory_id', model: 'SubCategory' }
     });
 
     if (!cart || !cart.items || cart.items.length === 0) {
@@ -22,18 +23,22 @@ export const load_checkout = asyncHandler(async (req, res) => {
         originalTotal += (item.productId.price * item.quantity);
         payableTotal += (item.price * item.quantity);
     });
+    const subTotal = payableTotal
+    const productDiscount = originalTotal - payableTotal;
 
-    const subTotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const finalDiscount = originalTotal - payableTotal;
+    const appliedCoupon = req.session.appliedCoupon || { discountValue: 0 };
+    const couponDiscount = appliedCoupon.discountValue;
+
+
     const shipping = subTotal > 500 ? 0 : 50;
+    const finalTotal = (originalTotal - productDiscount - couponDiscount) + shipping;
+    const totalSavings = productDiscount + couponDiscount;
     const addresses = await addressmodel.find({ userId: userId });
 
     const now = new Date();
- const AvailableCoupens = await couponModel.find({ 
-    isActive: true,startDate: { $lte: now },expiryDate: { $gte: now }, usersUsed: { $ne: userId }
-});
-console.log("Current Time:", now);
-console.log("Coupons Found:", AvailableCoupens);
+    const AvailableCoupens = await couponModel.find({
+        isActive: true, startDate: { $lte: now }, expiryDate: { $gte: now }, usersUsed: { $ne: userId }
+    });
 
     return res.render("user/layout", {
         title: "Checkout",
@@ -41,10 +46,13 @@ console.log("Coupons Found:", AvailableCoupens);
         checkout: cart.items,
         checkoutitemcount: cart.items.length,
         addresses: addresses,
-        subTotal: subTotal,
-        discount: finalDiscount,
+        subTotal: originalTotal,
+        productDiscount: productDiscount,
+        couponDiscount: couponDiscount,
+        totalDiscount: totalSavings,   
+        appliedCouponCode: appliedCoupon.code,
         shipping: shipping,
-        total: subTotal + shipping, 
+        total: finalTotal,
         coupons: AvailableCoupens
     });
 });
@@ -75,3 +83,26 @@ export const checkStockBeforeCheckout = asyncHandler(async (req, res) => {
     return res.status(200).json({ success: true, redirect: "/user/checkout" });
 });
 
+
+export const applyCoupen = asyncHandler(async (req, res) => {
+    const { code } = req.body;
+    const userId = req.session.user;
+    console.log("code===", code);
+    const cart = await CartModel.findOne({ user: userId }).populate('items.productId')
+    const subTotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    console.log(subTotal)
+    const coupon = await couponModel.findOne({ code: code, isActive: true })
+
+    let finalDiscountValue = coupon.discountType === 'percentage'
+        ? (subTotal * coupon.discountValue) / 100 : coupon.discountValue;
+
+    if (coupon.discountType === 'percentage' && coupon.maxDiscount && finalDiscountValue > coupon.maxDiscount) {
+        finalDiscountValue = coupon.maxDiscount;
+    }
+    req.session.appliedCoupon = {
+        code: coupon.code,
+        discountValue: finalDiscountValue
+    };
+    console.log("finalDiscountValue", finalDiscountValue)
+    res.status(200).json({ success: true, message: "Coupon applied!", discount: finalDiscountValue });
+})

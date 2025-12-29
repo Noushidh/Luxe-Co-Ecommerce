@@ -226,12 +226,22 @@
                           </span>
                         </div>
 
-                        <% if (discount> 0) { %>
+                        <% if (productDiscount> 0) { %>
                           <div class="flex justify-between text-green-600 font-medium">
-                            <span>Discount Applied</span>
-                            <span>- <%= formatPrice(discount) %></span>
+                            <span>Product Offer Savings</span>
+                            <span>- <%= formatPrice(productDiscount) %></span>
                           </div>
                           <% } %>
+
+                      <% if (couponDiscount > 0) { %>
+                       <div class="flex justify-between items-center bg-green-50 p-2 rounded-lg border border-dashed border-green-200">
+                        <div>
+                         <p class="text-green-700 font-semibold text-sm">Coupon Applied</p>
+                         <p class="text-[10px] text-green-600 uppercase font-mono"><%= appliedCouponCode %></p>
+                        </div>
+                        <span class="text-green-700 font-bold">- <%= formatPrice(couponDiscount) %></span>
+                        </div>
+                         <% } %>
 
                             <div class="flex justify-between">
                               <span>Shipping</span>
@@ -241,12 +251,18 @@
                             </div>
 
                             <div class="border-t mt-4 pt-4 flex justify-between font-bold text-xl">
-                              <span>Total</span>
+                              <span>Total Amount</span>
                               <span>
                                 <%= formatPrice(total) %>
                               </span>
                             </div>
-                      </div>
+
+                            <div class="bg-[#fdf8f3] p-3 rounded-xl border border-[#C8A97E]/20 text-center">
+                            <p class="text-[#C8A97E] text-xs font-bold uppercase tracking-wider">
+                             Total Savings on this order: <%= formatPrice(totalDiscount) %>
+                             </p>
+                             </div>
+                            </div>
 
                       <button onclick="processPayment()" class="<%= primaryBtnClass %> mt-8 bg-[#C8A97E] shadow-lg">
                         Continue to Payment
@@ -275,7 +291,7 @@
     }
   </style>
   <script>
-    const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
+    const notyf = new Notyf({ duration: 1000, position: { x: 'right', y: 'top' } });
 
     async function processPayment() {
       const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
@@ -325,9 +341,16 @@
 
     async function applyCoupon() {
       const code = document.getElementById('couponInput').value;
-      if (!code) return alert("Please enter a code");
-
-      console.log("Applying coupon:", code);
+      if (!code) return notyf.error("Please enter a code");
+      try{
+       const response = await axios.post('/user/apply-coupon',{code})
+       if(response.data.success){
+        notyf.success(response.data.message);
+        setTimeout(()=>location.reload(),1000)
+       }
+      }catch(error){
+        notyf.error(err.response?.data?.message || "Error coupon Applied");
+      }
     }
 
 
