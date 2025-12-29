@@ -12,6 +12,7 @@ import * as category from "../controller/admincontroller/category.js"
 import * as Products from "../controller/admincontroller/products.js"
 import * as Orders from "../controller/admincontroller/orders.js";
 import * as Coupon from "../controller/admincontroller/coupons.js"
+import * as Offer from "../controller/admincontroller/offer.js"
 
 router.get('/login', adminAuth.isLoggin, adminAuthController.loadlogin)
 router.post('/login', adminAuth.isLoggin, adminAuthController.login)
@@ -59,6 +60,8 @@ router.get('/coupons/edit/:id',adminAuth.checkSession,Coupon.load_couponEdit)
 router.patch('/coupons/edit/:id',adminAuth.checkSession,Coupon.saveCoupon)
 router.delete('/coupons/delete/:id',adminAuth.checkSession,Coupon.deleteCoupen);
 
+//offer
+router.get('/offers',adminAuth.checkSession,Offer.load_offer)
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
