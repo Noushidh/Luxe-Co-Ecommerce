@@ -68,6 +68,7 @@ router.get('/offers/edit/:id',adminAuth.checkSession,Offer.load_editOffer)
 router.post('/offers/add',adminAuth.checkSession,Offer.addOrUpdateOffer)
 router.patch('/offers/edit/:id',adminAuth.checkSession,Offer.addOrUpdateOffer)
 
+
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
 router.get('/page-404', (req, res) => {
