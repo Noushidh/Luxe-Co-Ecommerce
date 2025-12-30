@@ -47,9 +47,12 @@ export const searchSpecificProduct = asyncHandler(async (req, res) => {
     res.json({ products })
 });
 
-export const addOffer = asyncHandler(async (req, res) => {
-    const { offerTitle, discountType, discountValue, appliesTo,
-        targetId, startDate, expiryDate, categoryScope, isActive } = req.body;
+export const addOrUpdateOffer = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { 
+        offerTitle, discountType, discountValue, appliesTo,
+        targetId, startDate, expiryDate, categoryScope, isActive 
+    } = req.body;
 
     const value = Number(discountValue);
     if (value < 0) {
@@ -73,12 +76,12 @@ export const addOffer = asyncHandler(async (req, res) => {
         targetId,
         startDate: new Date(startDate),
         expiryDate: new Date(expiryDate),
-        isActive
+        isActive: String(req.body.isActive) === 'true',
+        productId: null,
+        categoryId: null
     };
 
-const isVaidId = mongoose.Types.ObjectId.isValid(targetId);
-
-    if (isVaidId) {
+    if (mongoose.Types.ObjectId.isValid(targetId)) {
         if (appliesTo === 'product') {
             offerData.productId = targetId;
         } else if (appliesTo === 'category') {
@@ -86,9 +89,15 @@ const isVaidId = mongoose.Types.ObjectId.isValid(targetId);
         }
     }
 
-    const newOffer = new offerModal(offerData);
-    await newOffer.save();
-
-    console.log("Offer Saved successfully",newOffer);
-    res.status(200).json({ success: true, message: "Offer added Successfully" });
+    if (id) {
+        const updated = await offerModal.findByIdAndUpdate(id, offerData, { new: true });
+        if (!updated) {
+            return res.status(404).json({ success: false, message: "Offer not found" });
+        }
+        return res.status(200).json({ success: true, message: "Offer updated successfully" });
+    } else {
+        const newOffer = new offerModal(offerData);
+        await newOffer.save();
+        return res.status(200).json({ success: true, message: "Offer created successfully" });
+    }
 });

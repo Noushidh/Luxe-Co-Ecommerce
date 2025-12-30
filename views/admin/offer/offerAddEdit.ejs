@@ -12,6 +12,9 @@
 
         <form action="<%= offer ? '/admin/offers/edit/' + offer._id : '/admin/offers/add' %>" method="POST" id="addOfferForm"
             class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+            
+            <input type="hidden" id="offerId" value="<%= offer ? offer._id : '' %>">
+
             <div class="p-6 md:p-8 space-y-6">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -60,19 +63,19 @@
                         <label class="block text-sm font-bold text-stone-700">Select Main Category</label>
                         <select id="categoryScope" onchange="fetchSubCategories()"
                             class="mt-1 w-full border rounded-lg px-3 py-2.5 bg-stone-50 border-stone-200 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none transition-all">
-                            <option value="none" <%= offer && offer.categoryScope === 'none' ? 'selected' : '' %>>-- Select Category --</option>
+                            <option value="none" <%= !offer || offer.categoryScope === 'none' ? 'selected' : '' %>>-- Select Category --</option>
                             <option value="Men" <%= offer && offer.categoryScope === 'Men' ? 'selected' : '' %>>Men</option>
                             <option value="Women" <%= offer && offer.categoryScope === 'Women' ? 'selected' : '' %>>Women</option>
                             <option value="Kids" <%= offer && offer.categoryScope === 'Kids' ? 'selected' : '' %>>Kids</option>
                         </select>
                     </div>
 
-                    <div id="subCategoryDiv" class="<%= offer && offer.appliesTo === 'category' ? '' : 'hidden' %> animate-in fade-in slide-in-from-top-1 duration-300">
+                    <div id="subCategoryDiv" class="<%= offer && offer.appliesTo === 'category' && offer.categoryScope !== 'none' ? '' : 'hidden' %> animate-in fade-in slide-in-from-top-1 duration-300">
                         <label class="block text-sm font-bold text-stone-700">Select Subcategory</label>
                         <select id="subCategorySelect" onchange="setTargetId(this.value)"
                             class="w-full mt-1 px-4 py-2.5 border border-stone-200 rounded-lg bg-stone-50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
                             <option value="all_in_category">-- Apply to All Subcategories --</option>
-                            <% if (typeof subcategories !=='undefined' && subcategories.length > 0) { %>
+                            <% if (typeof subcategories !== 'undefined' && subcategories.length > 0) { %>
                                 <% subcategories.forEach(sc => { %>
                                     <option class="subcat-option"
                                         data-category="<%= (sc.category || '').toString().toLowerCase() %>"
@@ -128,7 +131,7 @@
                         </div>
 
                         <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="isActive" id="isActiveToggle" class="sr-only peer" <%= !offer || offer.isActive ? 'checked' : '' %>>
+                            <input type="checkbox" name="isActive" id="isActiveToggle" class="sr-only peer" <%= (!offer || offer.isActive) ? 'checked' : '' %>>
                             <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer 
                                 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
                                 peer-checked:after:border-white after:content-[''] after:absolute 
@@ -155,6 +158,23 @@
 
 <script>
     const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' }, });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const offerId = document.getElementById('offerId').value;
+        
+        if (!offerId) {
+            const today = new Date().toISOString().split('T')[0];
+            const startDateInput = document.getElementById('startDate');
+            if (startDateInput && !startDateInput.value) {
+                startDateInput.value = today;
+            }
+        }
+        
+        updateDiscountLabels();
+        if (document.getElementById('appliesTo').value === 'category') {
+            fetchSubCategories();
+        }
+    });
 
     function updateDiscountLabels() {
         const type = document.getElementById('discountType').value;
@@ -207,12 +227,18 @@
         }
 
         subDiv.classList.remove('hidden');
-        subSelect.value = "all_in_category";
-        targetIdInput.value = "category_" + mainCat;
-
+        
+        let visibleCount = 0;
         options.forEach(opt => {
-            opt.style.display = (opt.getAttribute('data-category') === mainCat) ? 'block' : 'none';
+            const isMatch = opt.getAttribute('data-category') === mainCat;
+            opt.style.display = isMatch ? 'block' : 'none';
+            if (isMatch) visibleCount++;
         });
+
+        if (!subSelect.value || subSelect.value === "") {
+            subSelect.value = "all_in_category";
+            targetIdInput.value = "category_" + mainCat;
+        }
     }
 
     function setTargetId(val) {
@@ -221,30 +247,61 @@
         targetIdInput.value = (val === "all_in_category") ? "category_" + mainCat : val;
     }
 
+    async function saveOfferData() {
+        const form = document.getElementById('addOfferForm');
+        const offerId = document.getElementById('offerId').value;
+
+        const data = {
+            offerTitle: form.offerTitle.value.trim(),
+            discountType: document.getElementById('discountType').value,
+            discountValue: parseFloat(document.getElementById('discountValue').value),
+            appliesTo: document.getElementById('appliesTo').value,
+            targetId: document.getElementById('targetId').value,
+            categoryScope: document.getElementById('categoryScope').value,
+            startDate: document.getElementById('startDate').value,
+            expiryDate: document.getElementById('expiryDate').value,
+            isActive: document.getElementById('isActiveToggle').checked
+        };
+
+        if (!data.offerTitle) return notyf.error("Offer title is required");
+        if (isNaN(data.discountValue) || data.discountValue <= 0) return notyf.error("Enter a valid discount");
+        if (!data.targetId || data.targetId === "none") return notyf.error("Select a Category or Product");
+        if (new Date(data.expiryDate) <= new Date(data.startDate)) return notyf.error("Expiry must be after Start date");
+
+        const url = offerId ? `/admin/offers/edit/${offerId}` : '/admin/offers/add';
+        const method = offerId ? 'patch' : 'post';
+
+        try {
+            const response = await axios({ method, url, data });
+
+            if (response.data.success) {
+                notyf.success(response.data.message);
+                setTimeout(() => window.location.href = '/admin/offers', 1500);
+            }
+        } catch (error) {
+            notyf.error(error.response?.data?.message || "Server Error");
+        }
+    }
+
     let debounceTimer;
     async function searchProducts(query) {
         clearTimeout(debounceTimer);
         const resultsDiv = document.getElementById('searchResults');
-        const searchInput = document.getElementById('productSearchInput');
-
-        if (query.length < 2) {
-            resultsDiv.classList.add('hidden');
-            return;
-        }
+        if (query.length < 2) return resultsDiv.classList.add('hidden');
 
         debounceTimer = setTimeout(async () => {
             try {
                 const response = await axios.get(`/admin/offers/api/search-products?q=${query}`);
                 const products = response.data.products;
                 resultsDiv.innerHTML = '';
-                if (products && products.length > 0) {
+                if (products?.length > 0) {
                     resultsDiv.classList.remove('hidden');
                     products.forEach(p => {
                         const item = document.createElement('div');
-                        item.className = "p-3 hover:bg-stone-100 cursor-pointer border-b border-stone-50 text-sm";
+                        item.className = "p-3 hover:bg-stone-100 cursor-pointer text-sm";
                         item.textContent = p.name;
                         item.onclick = () => {
-                            searchInput.value = p.name;
+                            document.getElementById('productSearchInput').value = p.name;
                             document.getElementById('targetId').value = p._id;
                             document.getElementById('chosenProductName').textContent = p.name;
                             document.getElementById('selectedProductBadge').classList.remove('hidden');
@@ -253,57 +310,7 @@
                         resultsDiv.appendChild(item);
                     });
                 }
-            } catch (err) { console.error("Search error:", err); }
+            } catch (err) { console.error(err); }
         }, 300);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('startDate').value = today;
-    });
-
-    async function saveOfferData() {
-        const form = document.getElementById('addOfferForm');
-
-        const data = {
-            offerTitle: form.offerTitle.value.trim(),
-            discountType: document.getElementById('discountType').value,
-            discountValue: parseFloat(document.getElementById('discountValue').value),
-            appliesTo: document.getElementById('appliesTo').value,
-            targetId: document.getElementById('targetId').value,
-            startDate: document.getElementById('startDate').value,
-            expiryDate: document.getElementById('expiryDate').value,
-            isActive: document.getElementById('isActiveToggle').checked
-        };
-        if (!data.offerTitle) return notyf.error("Offer title is required");
-        if (isNaN(data.discountValue) || data.discountValue <= 0) {
-            return notyf.error("Please enter a valid discount value");
-        }
-        if (data.discountType === 'percentage' && data.discountValue > 100) {
-            return notyf.error("Percentage cannot exceed 100%");
-        }
-        if (!data.targetId || data.targetId === "" || data.targetId === "none") {
-            return notyf.error("Please select a valid Category or Product");
-        }
-        if (!data.startDate || !data.expiryDate) {
-            return notyf.error("Please select both start and expiry dates");
-        }
-        if (new Date(data.expiryDate) <= new Date(data.startDate)) {
-            return notyf.error("Expiry date must be after start date");
-        }
-
-        try {
-            const response = await axios.post('/admin/offers/add', data);
-            if (response.data.success) {
-                notyf.success(response.data.message);
-                setTimeout(() => {
-                    window.location.href = '/admin/offers';
-                }, 1500);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            const errorMessage = error.response?.data?.message || "Internal Server Error";
-            notyf.error(errorMessage);
-        }
     }
 </script>
