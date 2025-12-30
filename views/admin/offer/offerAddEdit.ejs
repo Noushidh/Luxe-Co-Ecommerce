@@ -3,10 +3,12 @@
 
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-stone-800 tracking-tight">Create New Offer</h1>
-            <p class="text-stone-500 text-sm font-medium">Define discounts for specific products, categories, or your entire store.</p>
+            <p class="text-stone-500 text-sm font-medium">Define discounts for specific products, categories, or your
+                entire store.</p>
         </div>
 
-        <form action="/admin/offers/add" method="POST" id="addOfferForm" class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+        <form action="/admin/offers/add" method="POST" id="addOfferForm"
+            class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
             <div class="p-6 md:p-8 space-y-6">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -26,8 +28,10 @@
                     </div>
 
                     <div>
-                        <label id="discountValueLabel" class="block text-sm font-bold text-stone-700">Discount Value *</label>
-                        <input type="number" id="discountValue" name="discountValue" min="1" required placeholder="e.g. 20"
+                        <label id="discountValueLabel" class="block text-sm font-bold text-stone-700">Discount Value
+                            *</label>
+                        <input type="number" id="discountValue" name="discountValue" min="1" required
+                            placeholder="e.g. 20"
                             class="mt-1 w-full border rounded-lg px-4 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
                     </div>
                 </div>
@@ -63,25 +67,32 @@
                         <select id="subCategorySelect" onchange="setTargetId(this.value)"
                             class="w-full mt-1 px-4 py-2.5 border border-stone-200 rounded-lg bg-stone-50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
                             <option value="all_in_category">-- Apply to All Subcategories --</option>
-                            <% if (typeof subcategories !== 'undefined' && subcategories.length > 0) { %>
-                                <% subcategories.forEach(sc => { %>
-                                    <option class="subcat-option" data-category="<%= (sc.category || '').toString().toLowerCase() %>" value="<%= sc._id %>">
+                            <% if (typeof subcategories !=='undefined' && subcategories.length> 0) { %>
+                                <% subcategories.forEach(sc=> { %>
+                                    <option class="subcat-option"
+                                        data-category="<%= (sc.category || '').toString().toLowerCase() %>"
+                                        value="<%= sc._id %>">
                                         <%= sc.subcategory %>
                                     </option>
-                                <% }) %>
-                            <% } %>
+                                    <% }) %>
+                                        <% } %>
                         </select>
                     </div>
 
-                    <div id="productSearchDiv" class="hidden animate-in fade-in slide-in-from-top-1 duration-300 relative">
+                    <div id="productSearchDiv"
+                        class="hidden animate-in fade-in slide-in-from-top-1 duration-300 relative">
                         <label class="block text-sm font-bold text-stone-700">Search Product *</label>
-                        <input type="text" id="productSearchInput" placeholder="Type product name..." onkeyup="searchProducts(this.value)"
+                        <input type="text" id="productSearchInput" placeholder="Type product name..."
+                            onkeyup="searchProducts(this.value)"
                             class="mt-1 w-full border rounded-lg px-3 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
 
-                        <div id="searchResults" class="absolute z-10 w-full bg-white border rounded-lg mt-1 shadow-xl hidden max-h-48 overflow-y-auto"></div>
+                        <div id="searchResults"
+                            class="absolute z-10 w-full bg-white border rounded-lg mt-1 shadow-xl hidden max-h-48 overflow-y-auto">
+                        </div>
 
                         <div id="selectedProductBadge" class="mt-2 hidden">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest bg-[#C8A97E] text-white uppercase">
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest bg-[#C8A97E] text-white uppercase">
                                 Selected: <span id="chosenProductName" class="ml-1"></span>
                             </span>
                         </div>
@@ -90,36 +101,53 @@
 
                 <hr class="border-stone-100">
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700">Start Date</label>
-                        <input type="date" name="startDate" id="startDate" required
-                            class="mt-1 w-full border rounded-lg px-4 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700">Expiry Date</label>
-                        <input type="date" name="expiryDate" id="expiryDate" required
-                            class="mt-1 w-full border rounded-lg px-4 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-stone-700">Manual Activation</label>
-                        <select name="isActive" class="mt-1 w-full border rounded-lg px-3 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
-                            <option value="true">Active Now</option>
-                            <option value="false">Inactive / Draft</option>
-                        </select>
-                    </div>
-                </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+    <div>
+        <label class="block text-sm font-bold text-stone-700">Start Date</label>
+        <input type="date" name="startDate" id="startDate" required
+            class="mt-1 w-full border rounded-lg px-4 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none h-[46px]">
+    </div>
+
+    <div>
+        <label class="block text-sm font-bold text-stone-700">Expiry Date</label>
+        <input type="date" name="expiryDate" id="expiryDate" required
+            class="mt-1 w-full border rounded-lg px-4 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none h-[46px]">
+    </div>
+
+    <div class="flex items-center justify-between px-1 py-2 h-[46px]">
+        <div>
+            <label class="block text-sm font-bold text-stone-700">Status</label>
+            <p class="text-[11px] text-stone-500 leading-none">Enable or disable offers</p>
+        </div>
+
+        <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="isActive" id="isActiveToggle" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer 
+                peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
+                peer-checked:after:border-white after:content-[''] after:absolute 
+                after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 
+                after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
+                peer-checked:bg-[#C8A97E]">
+            </div>
+        </label>
+    </div>
+</div>
             </div>
 
             <div class="bg-stone-50 px-8 py-5 flex justify-end items-center gap-6 border-t border-stone-200">
-                <button type="button" onclick="history.back()" class="text-xs font-black text-stone-400 hover:text-stone-800 uppercase tracking-widest transition-colors">Cancel</button>
-                <button type="submit" class="px-10 py-3 bg-[#C8A97E] text-white rounded shadow-sm hover:brightness-110 active:scale-95 transition-all font-black text-xs tracking-[0.15em] uppercase">Save Offer</button>
+                <button type="button" onclick="history.back()"
+                    class="text-xs font-black text-stone-400 hover:text-stone-800 uppercase tracking-widest transition-colors">Cancel</button>
+                <button type="button" onclick="saveOfferData()"
+                    class="px-10 py-3 bg-[#C8A97E] text-white rounded shadow-sm hover:brightness-110 active:scale-95 transition-all font-black text-xs tracking-[0.15em] uppercase">Save
+                    Offer</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+    const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' }, });
+
     function updateDiscountLabels() {
         const type = document.getElementById('discountType').value;
         const label = document.getElementById('discountValueLabel');
@@ -208,7 +236,7 @@
                         item.className = "p-3 hover:bg-stone-100 cursor-pointer border-b border-stone-50 text-sm";
                         item.textContent = p.name;
                         item.onclick = () => {
-                            searchInput.value = p.name; 
+                            searchInput.value = p.name;
                             document.getElementById('targetId').value = p._id;
                             document.getElementById('chosenProductName').textContent = p.name;
                             document.getElementById('selectedProductBadge').classList.remove('hidden');
@@ -225,4 +253,49 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('startDate').value = today;
     });
+
+    async function saveOfferData() {
+        const form = document.getElementById('addOfferForm');
+
+        const data = {
+            offerTitle: form.offerTitle.value.trim(),
+            discountType: document.getElementById('discountType').value,
+            discountValue: parseFloat(document.getElementById('discountValue').value),
+            appliesTo: document.getElementById('appliesTo').value,
+            targetId: document.getElementById('targetId').value,
+            startDate: document.getElementById('startDate').value,
+            expiryDate: document.getElementById('expiryDate').value,
+            isActive: document.getElementById('isActiveToggle').checked
+        };
+        if (!data.offerTitle) return notyf.error("Offer title is required");
+        if (isNaN(data.discountValue) || data.discountValue <= 0) {
+            return notyf.error("Please enter a valid discount value");
+        }
+        if (data.discountType === 'percentage' && data.discountValue > 100) {
+            return notyf.error("Percentage cannot exceed 100%");
+        }
+        if (!data.targetId || data.targetId === "" || data.targetId === "none") {
+            return notyf.error("Please select a valid Category or Product");
+        }
+        if (!data.startDate || !data.expiryDate) {
+            return notyf.error("Please select both start and expiry dates");
+        }
+        if (new Date(data.expiryDate) <= new Date(data.startDate)) {
+            return notyf.error("Expiry date must be after start date");
+        }
+
+        try {
+            const response = await axios.post('/admin/offers/add', data);
+            if (response.data.success) {
+                notyf.success(response.data.message);
+                setTimeout(() => {
+                    window.location.href = '/admin/offers';
+                }, 1500);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            const errorMessage = error.response?.data?.message || "Internal Server Error";
+            notyf.error(errorMessage);
+        }
+    }
 </script>

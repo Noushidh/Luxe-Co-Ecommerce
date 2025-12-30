@@ -64,6 +64,7 @@ router.delete('/coupons/delete/:id',adminAuth.checkSession,Coupon.deleteCoupen);
 router.get('/offers',adminAuth.checkSession,Offer.load_offer)
 router.get('/offers/add',adminAuth.checkSession,Offer.load_addOffer)
 router.get('/offers/api/search-products',Offer.searchSpecificProduct)
+router.post('/offers/add',adminAuth.checkSession,Offer.addOffer)
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
