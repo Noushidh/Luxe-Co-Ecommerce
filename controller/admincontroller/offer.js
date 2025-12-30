@@ -23,6 +23,22 @@ export const load_addOffer = asyncHandler(async (req, res) => {
     })
 })
 
+export const load_editOffer = asyncHandler(async (req, res) => {
+    const {id}=req.params
+    const subcategories = await SubCategory.find({ isBlocked: false })
+    const offer = await offerModal.findById(id)
+      if (!offer) {
+        return res.redirect("/admin/offers");
+    }
+    res.render("admin/layout", {
+        title: "Edit Offers",
+        body: "offer/offerAddEdit",
+        subcategories: subcategories,
+        offer: offer
+    })
+})
+
+
 export const searchSpecificProduct = asyncHandler(async (req, res) => {
     const { q } = req.query;
     const products = await ProductModel.find({

@@ -1,13 +1,7 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import couponModel from "../../models/couponmodel.js"
 
-//single product
-//Applies to all products in a category
-//Applies to total cart value =>
-// Coupon: SAVE500 || Condition: Cart ≥ ₹3000  ||Discount: ₹500
-//Only certain users can use it=>only first users
-//No code needed – applied automatically=>“10% OFF on orders above ₹5000”
-//
+
 export const load_coupons = asyncHandler(async (req, res) => {
 
     const coupons = await couponModel.find({}).sort({ createdAt: -1 })
@@ -29,7 +23,6 @@ export const load_couponAdd = asyncHandler(async (req, res) => {
 
 export const load_couponEdit = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    console.log(id)
     const coupon = await couponModel.findById(id);
     if (!coupon) {
         return res.redirect("/admin/coupons");
