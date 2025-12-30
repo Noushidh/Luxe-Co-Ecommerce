@@ -1,52 +1,53 @@
 import ProductModel from "../../models/productmodel.js";
 import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import offerModal from "../../models/offermodel.js"
 
 const mapCategory = (cat) => {
     if (!cat) return "";
     const c = cat.toLowerCase();
     if (c === "men") return "Men";
     if (c === "women") return "Women";
-    if (c === "kids") return "Kids"; 
+    if (c === "kids") return "Kids";
     return "";
 };
 
 export const loadFiltersPage = asyncHandler(async (req, res) => {
 
-    const { page, category, subcategory, price, size, sort } = req.query; 
+    const { page, category, subcategory, price, size, sort } = req.query;
     const currentPage = parseInt(page) || 1;
-    const limit = 9; 
+    const limit = 9;
     const skip = (currentPage - 1) * limit;
 
     const filter = {};
-    filter.isBlocked = false; 
+    filter.isBlocked = false;
 
     const fixedCategory = mapCategory(category);
-    const allSubcategories = await SubCategory.find({ isBlocked: false }).lean(); 
-    
+    const allSubcategories = await SubCategory.find({ isBlocked: false }).lean();
+
 
     if (subcategory) {
-        filter.subCategory_id = subcategory; 
-        
+        filter.subCategory_id = subcategory;
+
     } else if (fixedCategory) {
-        
+
         const filteredSubCats = allSubcategories.filter(sc => mapCategory(sc.category) === fixedCategory);
         const allowedCatIds = filteredSubCats.map(sc => sc._id);
 
         if (allowedCatIds.length > 0) {
             filter.subCategory_id = { $in: allowedCatIds };
         } else {
-            filter.subCategory_id = { $in: [] }; 
+            filter.subCategory_id = { $in: [] };
         }
-    } 
-    
+    }
+
     const selectedSize = size || '';
     if (selectedSize) {
         filter.variants = {
-             $elemMatch: {
+            $elemMatch: {
                 size: selectedSize,
-                isBlocked: false 
-             }
+                isBlocked: false
+            }
         };
     }
 
@@ -66,13 +67,13 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         const priceQuery = {};
         if (!isNaN(min)) priceQuery.$gte = min;
         if (!isNaN(max) && max !== Infinity) priceQuery.$lte = max;
-        
-      
+
+
         if (Object.keys(priceQuery).length > 0) {
-             filter.price = priceQuery;
+            filter.price = priceQuery;
         }
     }
-    
+
     let sortCriteria = {};
     if (sort === "price_asc") {
         sortCriteria.price = 1;
@@ -83,7 +84,7 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
     }
 
     const totalDocuments = await ProductModel.countDocuments(filter);
-    const totalPages = Math.ceil(totalDocuments / limit); 
+    const totalPages = Math.ceil(totalDocuments / limit);
 
     const products = await ProductModel.find(filter)
         .populate("subCategory_id")
@@ -103,18 +104,19 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         category: category || '',
         price: priceFilter,
         selectedSize: selectedSize,
-        subcategories: allSubcategories, 
-        currentSubcategory: subcategory || '', 
+        subcategories: allSubcategories,
+        currentSubcategory: subcategory || '',
         activeCategory: category || '',
         currentPage: currentPage,
         totalPages: totalPages,
         sort: sort || '',
-        totalDocuments: totalDocuments 
+        totalDocuments: totalDocuments
     });
 });
 
 export const ProductDetails = asyncHandler(async (req, res) => {
     const productId = req.params.id;
+    const now = new Date(); 
 
     const product = await ProductModel.findById(productId)
         .populate('subCategory_id')
@@ -127,22 +129,61 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         });
     }
 
+    const categoryName = product.subCategory_id ? product.subCategory_id.category : null;
+    const subId = product.subCategory_id ? product.subCategory_id._id : null;
 
-    const subCategoryData = product.subCategory_id;
+    let queryConditions = [
+        { appliesTo: 'all' } 
+    ];
 
-    const category = subCategoryData ? subCategoryData.category : 'All';
+    if (categoryName) {
+        queryConditions.push({ categoryScope: categoryName });
+    }
+    
+    if (subId) {
+        queryConditions.push({ categoryId: subId }); 
+    }
 
-    const subcategoryName = subCategoryData ? subCategoryData.name : null;
+    queryConditions.push({ productId: product._id }); 
 
-    const relProds = await ProductModel.find({ $and: [{ subCategory_id: subCategoryData, _id: { $ne: product._id } }] }).limit(4)
+    const applicableOffers = await offerModal.find({
+        isActive: true,
+        startDate: { $lte: now },
+        expiryDate: { $gte: now },
+        $or: queryConditions
+    });
+
+    let bestDiscount = 0;
+
+    applicableOffers.forEach(offer => {
+        let currentDiscountValue = 0;
+        if (offer.discountType === 'percentage') {
+            currentDiscountValue = (product.price * offer.discountValue) / 100;
+        } else {
+            currentDiscountValue = offer.discountValue;
+        }
+
+        if (currentDiscountValue > bestDiscount) {
+            bestDiscount = currentDiscountValue;
+        }
+    });
+
+    const finalPrice = Math.max(0, product.price - bestDiscount);
+    const discountPercentage = product.price > 0 ? Math.round((bestDiscount / product.price) * 100) : 0;
+
+    const relProds = await ProductModel.find({ 
+        subCategory_id: product.subCategory_id, 
+        _id: { $ne: product._id } 
+    }).limit(4).lean();
 
     res.render("user/layout", {
         title: product.name,
         body: "user/collections/productDetails",
-        product: product,
-
-        category: category,
-        subcategoryName: subcategoryName,
-        relProds
+        product,
+        category: categoryName || 'All',
+        subcategoryName: product.subCategory_id ? product.subCategory_id.subcategory : null,
+        relProds,
+        finalPrice,
+        discountPercentage
     });
 });
