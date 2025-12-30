@@ -125,7 +125,7 @@ export const ProductDetails = asyncHandler(async (req, res) => {
             title: "Not Found",
             body: "user/error-404"
         });
-    }
+}
 
 
     const subCategoryData = product.subCategory_id;
