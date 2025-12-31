@@ -75,14 +75,16 @@
                             <span>Subtotal</span>
                             <span>₹<%= subTotal.toFixed(2) %></span>
                         </div>
+
                         <div class="flex justify-between text-green-600">
-                            <span>Discount</span>
+                            <span>Product Offer Savings</span>
                             <span>- ₹<%= discount.toFixed(2) %></span>
                         </div>
+
                         <div class="flex justify-between">
                             <span>Shipping</span>
                             <span>
-                                <%= shipping===0 ? 'Free' : '₹' + shipping %>
+                                <%= shipping===0 ? 'FREE' : '₹' + shipping.toFixed(2) %>
                             </span>
                         </div>
                     </div>
@@ -108,70 +110,70 @@
 </div>
 
 <script>
-async function handlePlaceOrder() {
-    const notyf = new Notyf({ 
-        duration: 3000, 
-        position: { x: 'right', y: 'top' } 
-    });
-    
-    const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
-    if (!paymentMethodElement) {
-        return notyf.error("Please select a payment method");
-    }
-    
-    const paymentMethod = paymentMethodElement.value;
-    
-    const addressDetails = {
-        id: "<%= address._id %>",
-        name: "<%= address.name %>",
-        addressLine: "<%= address.addressLine || address.street %>",
-        city: "<%= address.city %>",
-        state: "<%= address.state %>",
-        pincode: "<%= address.pincode %>",
-        phone: "<%= address.phone %>"
-    };
+    async function handlePlaceOrder() {
+        const notyf = new Notyf({
+            duration: 3000,
+            position: { x: 'right', y: 'top' }
+        });
 
-    try {
-        let res;
-
-        if (paymentMethod === "COD") {
-            res = await axios.post("/user/order/cashOnDelivery", { address: addressDetails });
-        } else if (paymentMethod === "Wallet") {
-            res = await axios.post("/user/order/wallet", { address: addressDetails });
-        } else if (paymentMethod === "Razorpay") {
-            res = await axios.post("/user/order/razorpay", { address: addressDetails });
-        } else {
-            throw new Error("Invalid payment method selected");
+        const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!paymentMethodElement) {
+            return notyf.error("Please select a payment method");
         }
 
-        if (res.data.success) {
-            if (paymentMethod === "Razorpay") {
-                openRazorpay(res.data.order);
-            } else {
-                notyf.success(res.data.message || "Order placed successfully!");
-                
-                const orderId = res.data.orderId;
-                if (!orderId) {
-                    console.error("Critical Error: No orderId returned from server");
-                    return notyf.error("Order processed but ID missing. Please check My Orders.");
-                }
+        const paymentMethod = paymentMethodElement.value;
 
+        const addressDetails = {
+            id: "<%= address._id %>",
+            name: "<%= address.name %>",
+            addressLine: "<%= address.addressLine || address.street %>",
+            city: "<%= address.city %>",
+            state: "<%= address.state %>",
+            pincode: "<%= address.pincode %>",
+            phone: "<%= address.phone %>"
+        };
+
+        try {
+            let res;
+
+            if (paymentMethod === "COD") {
+                res = await axios.post("/user/order/cashOnDelivery", { address: addressDetails });
+            } else if (paymentMethod === "Wallet") {
+                res = await axios.post("/user/order/wallet", { address: addressDetails });
+            } else if (paymentMethod === "Razorpay") {
+                res = await axios.post("/user/order/razorpay", { address: addressDetails });
+            } else {
+                throw new Error("Invalid payment method selected");
+            }
+
+            if (res.data.success) {
+                if (paymentMethod === "Razorpay") {
+                    openRazorpay(res.data.order);
+                } else {
+                    notyf.success(res.data.message || "Order placed successfully!");
+
+                    const orderId = res.data.orderId;
+                    if (!orderId) {
+                        console.error("Critical Error: No orderId returned from server");
+                        return notyf.error("Order processed but ID missing. Please check My Orders.");
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = `/user/order-confirmed/${orderId}`;
+                    }, 800);
+                }
+            }
+
+        } catch (err) {
+            console.error("Order Placement Error:", err);
+            const errorMessage = err.response?.data?.message || "Order placement failed. Please try again.";
+            notyf.error(errorMessage);
+
+            if (err.response?.data?.redirect) {
                 setTimeout(() => {
-                    window.location.href = `/user/order-confirmed/${orderId}`;
-                }, 800);
+                    window.location.href = err.response.data.redirect;
+                }, 2000);
             }
         }
-
-    } catch (err) {
-        console.error("Order Placement Error:", err);
-        const errorMessage = err.response?.data?.message || "Order placement failed. Please try again.";
-        notyf.error(errorMessage);
-        
-        if (err.response?.data?.redirect) {
-            setTimeout(() => {
-                window.location.href = err.response.data.redirect;
-            }, 2000);
-        }
     }
-}
 </script>

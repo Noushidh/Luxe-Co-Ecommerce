@@ -83,29 +83,39 @@
             </div>
 
             <!-- PRICE SUMMARY -->
-            <div class="border-t pt-4 space-y-2 text-sm text-stone-700">
-                <div class="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>
-                        <%= formatPrice(subTotal) %>
-                    </span>
-                </div>
+ <div class="border-t pt-4 space-y-2 text-sm text-stone-700">
+    <div class="flex justify-between">
+        <span>Subtotal (MRP)</span>
+        <span class="text-stone-900"><%= formatPrice(subTotal) %></span>
+    </div>
 
-                <div class="flex justify-between">
-                    <span>Shipping</span>
-                    <span>
-                        <%= shipping===0 ? "FREE" : formatPrice(shipping) %>
-                    </span>
-                </div>
-
-                <div class="flex justify-between font-bold text-base border-t pt-3">
-                    <span>Total</span>
-                    <span>
-                        <%= formatPrice(total) %>
-                    </span>
-                </div>
-            </div>
+    <% if (discount > 0) { %>
+        <div class="flex justify-between text-green-600">
+            <span>Total Offer Savings</span>
+            <span>- <%= formatPrice(discount) %></span>
         </div>
+    <% } %>
+
+    <div class="flex justify-between">
+        <span>Shipping</span>
+        <span class="<%= shipping === 0 ? 'text-green-600 font-medium' : '' %>">
+            <%= shipping === 0 ? "FREE" : formatPrice(shipping) %>
+        </span>
+    </div>
+
+    <div class="flex justify-between font-bold text-base border-t pt-3 text-stone-900">
+        <span>Total Amount Paid</span>
+        <span><%= formatPrice(total) %></span>
+    </div>
+</div>
+
+<% if (discount > 0) { %>
+    <div class="mt-4 p-3 bg-green-50 border border-green-100 rounded-xl text-center">
+        <p class="text-xs font-medium text-green-700 uppercase tracking-wider">
+            🎉 You saved a total of <span class="font-bold"><%= formatPrice(discount) %></span> on this order!
+        </p>
+    </div>
+<% } %>
 
 
         <!-- ===== ACTION BUTTONS ===== -->
