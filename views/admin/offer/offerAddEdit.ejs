@@ -26,14 +26,14 @@
                             class="mt-1 w-full border rounded-lg px-4 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none transition-all">
                     </div>
 
-                    <div>
+                   <input type="hidden" name="discountType" value="percentage">
+
+                     <div>
                         <label class="block text-sm font-bold text-stone-700">Discount Type</label>
-                        <select id="discountType" name="discountType" onchange="updateDiscountLabels()"
-                            class="mt-1 w-full border rounded-lg px-3 py-2.5 border-stone-200 bg-stone-50/50 focus:bg-white focus:ring-1 focus:ring-[#C8A97E] outline-none">
-                            <option value="percentage" <%= offer && offer.discountType === 'percentage' ? 'selected' : '' %>>Percentage (%)</option>
-                            <option value="fixedAmount" <%= offer && offer.discountType === 'fixedAmount' ? 'selected' : '' %>>Fixed Amount (₹)</option>
-                        </select>
-                    </div>
+                         <div class="mt-1 w-full border rounded-lg px-3 py-2.5 border-stone-200 bg-stone-100 text-stone-500 cursor-not-allowed">
+                          Percentage (%)
+                            </div>
+                         </div>
 
                     <div>
                         <label id="discountValueLabel" class="block text-sm font-bold text-stone-700">Discount Value *</label>
@@ -176,20 +176,6 @@
         }
     });
 
-    function updateDiscountLabels() {
-        const type = document.getElementById('discountType').value;
-        const label = document.getElementById('discountValueLabel');
-        const input = document.getElementById('discountValue');
-        if (type === 'percentage') {
-            label.textContent = 'Discount Percentage (%) *';
-            input.placeholder = 'e.g. 20';
-            input.max = 100;
-        } else {
-            label.textContent = 'Fixed Amount (₹) *';
-            input.placeholder = 'e.g. 500';
-            input.removeAttribute('max');
-        }
-    }
 
     function toggleScopeFields() {
         const appliesTo = document.getElementById('appliesTo').value;
@@ -247,41 +233,43 @@
         targetIdInput.value = (val === "all_in_category") ? "category_" + mainCat : val;
     }
 
-    async function saveOfferData() {
-        const form = document.getElementById('addOfferForm');
-        const offerId = document.getElementById('offerId').value;
+   async function saveOfferData() {
+    const form = document.getElementById('addOfferForm');
+    const offerId = document.getElementById('offerId').value;
+    const discountVal = parseFloat(document.getElementById('discountValue').value);
 
-        const data = {
-            offerTitle: form.offerTitle.value.trim(),
-            discountType: document.getElementById('discountType').value,
-            discountValue: parseFloat(document.getElementById('discountValue').value),
-            appliesTo: document.getElementById('appliesTo').value,
-            targetId: document.getElementById('targetId').value,
-            categoryScope: document.getElementById('categoryScope').value,
-            startDate: document.getElementById('startDate').value,
-            expiryDate: document.getElementById('expiryDate').value,
-            isActive: document.getElementById('isActiveToggle').checked
-        };
-
-        if (!data.offerTitle) return notyf.error("Offer title is required");
-        if (isNaN(data.discountValue) || data.discountValue <= 0) return notyf.error("Enter a valid discount");
-        if (!data.targetId || data.targetId === "none") return notyf.error("Select a Category or Product");
-        if (new Date(data.expiryDate) <= new Date(data.startDate)) return notyf.error("Expiry must be after Start date");
-
-        const url = offerId ? `/admin/offers/edit/${offerId}` : '/admin/offers/add';
-        const method = offerId ? 'patch' : 'post';
-
-        try {
-            const response = await axios({ method, url, data });
-
-            if (response.data.success) {
-                notyf.success(response.data.message);
-                setTimeout(() => window.location.href = '/admin/offers', 1500);
-            }
-        } catch (error) {
-            notyf.error(error.response?.data?.message || "Server Error");
-        }
+    if (isNaN(discountVal) || discountVal <= 0 || discountVal > 100) {
+        return notyf.error("Percentage must be between 1 and 100");
     }
+
+    const data = {
+        offerTitle: form.offerTitle.value.trim(),
+        discountValue: discountVal,
+        appliesTo: document.getElementById('appliesTo').value,
+        targetId: document.getElementById('targetId').value,
+        categoryScope: document.getElementById('categoryScope').value,
+        startDate: document.getElementById('startDate').value,
+        expiryDate: document.getElementById('expiryDate').value,
+        isActive: document.getElementById('isActiveToggle').checked
+    };
+
+    if (!data.offerTitle) return notyf.error("Offer title is required");
+    if (!data.targetId || data.targetId === "none") return notyf.error("Select a Category or Product");
+    if (new Date(data.expiryDate) <= new Date(data.startDate)) return notyf.error("Expiry must be after Start date");
+
+    const url = offerId ? `/admin/offers/edit/${offerId}` : '/admin/offers/add';
+    const method = offerId ? 'patch' : 'post';
+
+    try {
+        const response = await axios({ method, url, data });
+        if (response.data.success) {
+            notyf.success(response.data.message);
+            setTimeout(() => window.location.href = '/admin/offers', 1500);
+        }
+    } catch (error) {
+        notyf.error(error.response?.data?.message || "Server Error");
+    }
+}
 
     let debounceTimer;
     async function searchProducts(query) {
