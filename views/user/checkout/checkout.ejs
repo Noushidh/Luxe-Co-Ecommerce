@@ -293,7 +293,7 @@
     }
   </style>
   <script>
-    const notyf = new Notyf({ duration: 1000, position: { x: 'right', y: 'top' } });
+    const notyf = new Notyf({ duration: 1500, position: { x: 'right', y: 'top' } });
 
     async function processPayment() {
       const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
@@ -338,7 +338,6 @@
       const input = document.getElementById('couponInput');
       input.value = code;
       input.focus();
-      notyf.success("Code applied to input");
     }
 
     async function applyCoupon() {
@@ -349,9 +348,11 @@
        if(response.data.success){
         notyf.success(response.data.message);
         setTimeout(()=>location.reload(),1000)
+       }else{
+        notyf.error(response.data.message)
        }
       }catch(error){
-        notyf.error(err.response?.data?.message || "Error coupon Applied");
+        notyf.error(error.response?.data?.message || "Error coupon Applied");
       }
     }
 

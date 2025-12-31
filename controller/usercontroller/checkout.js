@@ -115,6 +115,10 @@ export const applyCoupen = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: `Minimum purchase of ₹${coupon.minPurchase} required` });
     }
 
+    if (coupon.limit !== null && coupon.usersUsed.length >= coupon.limit) {
+        return res.status(400).json({ success: false, message: "This coupon has reached its maximum usage limit." });
+    }
+
     let finalDiscountValue = 0;
 
     if (coupon.discountType === 'percentage') {
