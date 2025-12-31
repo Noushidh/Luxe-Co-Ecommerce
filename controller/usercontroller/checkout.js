@@ -2,6 +2,7 @@ import CartModel from "../../models/cartmodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import addressmodel from "../../models/addressmodel.js";
 import couponModel from "../../models/couponmodel.js";
+import { getBestOfferForProduct } from "../../utils/offerHelper.js"; // Import your utility
 
 export const load_checkout = asyncHandler(async (req, res) => {
     if (!req.session || !req.session.user) {
@@ -10,7 +11,8 @@ export const load_checkout = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
 
     const cart = await CartModel.findOne({ user: userId }).populate({
-        path: 'items.productId', populate: { path: 'subCategory_id', model: 'SubCategory' }
+        path: 'items.productId', 
+        populate: { path: 'subCategory_id', model: 'SubCategory' }
     });
 
     if (!cart || !cart.items || cart.items.length === 0) {
@@ -18,41 +20,55 @@ export const load_checkout = asyncHandler(async (req, res) => {
     }
 
     let originalTotal = 0;
-    let payableTotal = 0;
-    cart.items.forEach(item => {
-        originalTotal += (item.productId.price * item.quantity);
-        payableTotal += (item.price * item.quantity);
-    });
-    const subTotal = payableTotal
-    const productDiscount = originalTotal - payableTotal;
+    let totalOfferDiscount = 0;
 
-    const appliedCoupon = req.session.appliedCoupon || { discountValue: 0 };
+    const updatedItems = await Promise.all(cart.items.map(async (item) => {
+        const product = item.productId;
+        
+        const { finalPrice } = await getBestOfferForProduct(product);
+        
+        const itemOriginalTotal = product.price * item.quantity;
+        const itemOfferTotal = finalPrice * item.quantity;
+
+        originalTotal += itemOriginalTotal;
+        totalOfferDiscount += (itemOriginalTotal - itemOfferTotal);
+
+        return {...item.toObject(),currentOfferPrice: finalPrice, itemTotal: itemOfferTotal };
+        
+    }));
+
+    const payableAfterOffers = originalTotal - totalOfferDiscount;
+
+    const appliedCoupon = req.session.appliedCoupon || { discountValue: 0, code: null };
     const couponDiscount = appliedCoupon.discountValue;
 
+    const shipping = payableAfterOffers > 500 ? 0 : 50;
+    
+    const finalTotal = (payableAfterOffers - couponDiscount) + shipping;
+    const totalSavings = totalOfferDiscount + couponDiscount;
 
-    const shipping = subTotal > 500 ? 0 : 50;
-    const finalTotal = (originalTotal - productDiscount - couponDiscount) + shipping;
-    const totalSavings = productDiscount + couponDiscount;
     const addresses = await addressmodel.find({ userId: userId });
-
     const now = new Date();
     const AvailableCoupens = await couponModel.find({
-        isActive: true, startDate: { $lte: now }, expiryDate: { $gte: now }, usersUsed: { $ne: userId }
+        isActive: true, 
+        startDate: { $lte: now }, 
+        expiryDate: { $gte: now }, 
+        usersUsed: { $ne: userId }
     });
 
     return res.render("user/layout", {
         title: "Checkout",
         body: "user/checkout/checkout",
-        checkout: cart.items,
+        checkout: updatedItems,
         checkoutitemcount: cart.items.length,
         addresses: addresses,
-        subTotal: originalTotal,
-        productDiscount: productDiscount,
-        couponDiscount: couponDiscount,
-        totalDiscount: totalSavings,   
+        subTotal: originalTotal,        
+        offerDiscount: totalOfferDiscount, 
+        couponDiscount: couponDiscount,  
+        totalDiscount: totalSavings,     
         appliedCouponCode: appliedCoupon.code,
         shipping: shipping,
-        total: finalTotal,
+        total: finalTotal,               
         coupons: AvailableCoupens
     });
 });

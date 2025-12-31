@@ -1,67 +1,58 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import CartModel from "../../models/cartmodel.js";
 import ProductModel from "../../models/productmodel.js";
+import {getBestOfferForProduct} from "../../utils/offerHelper.js"
 
 export const load_cart = asyncHandler(async (req, res) => {
   const userId = req.session.user?._id;
   const cartDoc = await CartModel.findOne({ user: userId }).populate('items.productId');
 
-  let cart = [];
-  let subTotal = 0;       
   let grossSubTotal = 0;  
-  let productDiscount = 0; 
+  let subTotal = 0;       
+  let cartItemsWithOffers = [];
 
   if (cartDoc && cartDoc.items.length > 0) {
     let isModified = false;
 
-    cartDoc.items.forEach((item) => {
+    cartItemsWithOffers = await Promise.all(cartDoc.items.map(async (item) => {
       const product = item.productId;
       const currentVariant = product.variants.find((v) => v._id.toString() === item.variantId.toString());
 
       if (currentVariant) {
-        const freshPrice = product.price * (1 - (product.discount || 0) / 100);
+        const { finalPrice } = await getBestOfferForProduct(product);
         
-        if (item.price !== freshPrice) {
-          item.price = freshPrice;
-          isModified = true;
-        }
-
+        if (item.price !== finalPrice) { item.price = finalPrice; isModified = true; }
         if (item.color !== currentVariant.color) { item.color = currentVariant.color; isModified = true; }
         if (item.size !== currentVariant.size) { item.size = currentVariant.size; isModified = true; }
 
         grossSubTotal += (product.price * item.quantity); 
-        subTotal += (item.price * item.quantity);       
+        subTotal += (finalPrice * item.quantity);        
+
+        return {...item.toObject(),offerPrice: finalPrice, rowTotal: finalPrice * item.quantity };
       }
-    });
-
-    productDiscount = grossSubTotal - subTotal; 
-
-    if (cartDoc.subTotal !== subTotal) {
-      cartDoc.subTotal = subTotal;
-      isModified = true;
-    }
+      return item.toObject();
+    }));
 
     if (isModified) {
+      cartDoc.subTotal = subTotal;
       await cartDoc.save();
     }
-
-    cart = cartDoc.items;
   }
 
+  const productDiscount = grossSubTotal - subTotal;
   const shipping = (subTotal > 500 || subTotal === 0) ? 0 : 50;
-  
   const total = subTotal + shipping;
 
   res.render('user/layout', {
     title: "Cart",
     body: "user/cart/cart",
-    cart,
-    cartItemsCount: cart.length,
+    cart: cartItemsWithOffers, 
+    cartItemsCount: cartItemsWithOffers.length,
     shipping, 
     discount: productDiscount, 
-    total,                      
-    subTotal: grossSubTotal,    
-    actualPayable: subTotal,    
+    total, 
+    subTotal: grossSubTotal,
+    actualPayable: subTotal,
     couponCode: null,
     appliedCoupon: false
   });

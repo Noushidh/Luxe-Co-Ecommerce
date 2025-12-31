@@ -50,8 +50,10 @@
 
                     <div class="text-right">
                       <p class="font-bold text-lg">
-                        <%= formatPrice(item.price * item.quantity) %>
-                      </p>
+                       <%# Use itemTotal which already contains (finalPrice * quantity) %>
+                       <%= formatPrice(item.itemTotal) %>
+                    </p>
+                    
                     </div>
                   </div>
                   <% }) %>
@@ -226,10 +228,10 @@
                           </span>
                         </div>
 
-                        <% if (productDiscount> 0) { %>
+                        <% if (offerDiscount> 0) { %>
                           <div class="flex justify-between text-green-600 font-medium">
                             <span>Product Offer Savings</span>
-                            <span>- <%= formatPrice(productDiscount) %></span>
+                            <span>- <%= formatPrice(offerDiscount) %></span>
                           </div>
                           <% } %>
 
