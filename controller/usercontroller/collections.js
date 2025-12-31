@@ -2,6 +2,7 @@ import ProductModel from "../../models/productmodel.js";
 import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import offerModal from "../../models/offermodel.js"
+import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 
 const mapCategory = (cat) => {
     if (!cat) return "";
@@ -83,16 +84,21 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         sortCriteria.createdAt = -1;
     }
 
-    const totalDocuments = await ProductModel.countDocuments(filter);
-    const totalPages = Math.ceil(totalDocuments / limit);
-
-    const products = await ProductModel.find(filter)
+ const now = new Date();
+    const rawProducts = await ProductModel.find(filter)
         .populate("subCategory_id")
         .sort(sortCriteria)
         .skip(skip)
         .limit(limit)
         .lean();
 
+    const products = await Promise.all(rawProducts.map(async (p) => {
+        const offerData = await getBestOfferForProduct(p, now);
+        return { ...p, ...offerData };
+    }));
+
+    const totalDocuments = await ProductModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalDocuments / limit);
     const sizes = await ProductModel.distinct("variants.size");
 
 
@@ -116,7 +122,6 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
 
 export const ProductDetails = asyncHandler(async (req, res) => {
     const productId = req.params.id;
-    const now = new Date(); 
 
     const product = await ProductModel.findById(productId)
         .populate('subCategory_id')
@@ -127,49 +132,9 @@ export const ProductDetails = asyncHandler(async (req, res) => {
             title: "Not Found",
             body: "user/error-404"
         });
-}
-
-    const categoryName = product.subCategory_id ? product.subCategory_id.category : null;
-    const subId = product.subCategory_id ? product.subCategory_id._id : null;
-
-    let queryConditions = [
-        { appliesTo: 'all' } 
-    ];
-
-    if (categoryName) {
-        queryConditions.push({ categoryScope: categoryName });
-    }
-    
-    if (subId) {
-        queryConditions.push({ categoryId: subId }); 
     }
 
-    queryConditions.push({ productId: product._id }); 
-
-    const applicableOffers = await offerModal.find({
-        isActive: true,
-        startDate: { $lte: now },
-        expiryDate: { $gte: now },
-        $or: queryConditions
-    });
-
-    let bestDiscount = 0;
-
-    applicableOffers.forEach(offer => {
-        let currentDiscountValue = 0;
-        if (offer.discountType === 'percentage') {
-            currentDiscountValue = (product.price * offer.discountValue) / 100;
-        } else {
-            currentDiscountValue = offer.discountValue;
-        }
-
-        if (currentDiscountValue > bestDiscount) {
-            bestDiscount = currentDiscountValue;
-        }
-    });
-
-    const finalPrice = Math.max(0, product.price - bestDiscount);
-    const discountPercentage = product.price > 0 ? Math.round((bestDiscount / product.price) * 100) : 0;
+    const { finalPrice, discountPercentage } = await getBestOfferForProduct(product);
 
     const relProds = await ProductModel.find({ 
         subCategory_id: product.subCategory_id, 
@@ -180,8 +145,8 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         title: product.name,
         body: "user/collections/productDetails",
         product,
-        category: categoryName || 'All',
-        subcategoryName: product.subCategory_id ? product.subCategory_id.subcategory : null,
+        category: product.subCategory_id?.category || 'All',
+        subcategoryName: product.subCategory_id?.subcategory || null,
         relProds,
         finalPrice,
         discountPercentage
