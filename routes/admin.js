@@ -67,7 +67,7 @@ router.get('/offers/api/search-products',Offer.searchSpecificProduct)
 router.get('/offers/edit/:id',adminAuth.checkSession,Offer.load_editOffer)
 router.post('/offers/add',adminAuth.checkSession,Offer.addOrUpdateOffer)
 router.patch('/offers/edit/:id',adminAuth.checkSession,Offer.addOrUpdateOffer)
-
+router.delete('/offers/delete/:id',adminAuth.checkSession,Offer.deleteOffer)
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 

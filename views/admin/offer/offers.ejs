@@ -139,3 +139,36 @@
         </table>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+      const notyf = new Notyf({ position: { x: 'right', y: 'top' }, duration: 3000 });
+
+    async function deleteOffer(offerId) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#4b5563',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await axios.delete(`/admin/offers/delete/${offerId}`);
+
+                if (response.data.success) {
+                    notyf.success(response.data.message);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.log(error)
+                notyf.error(error.response?.data?.message || 'Something went wrong', 'error');
+            }
+        }
+    }
+</script>
