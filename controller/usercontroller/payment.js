@@ -3,6 +3,7 @@ import addressModel from "../../models/addressmodel.js";
 import CartModel from "../../models/cartmodel.js";
 import OrderModel from "../../models/ordermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import CouponModel from "../../models/couponmodel.js"
 import mongoose from "mongoose";
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 
@@ -137,7 +138,7 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
 
     if (appliedCoupon._id) {
         await CouponModel.findByIdAndUpdate(appliedCoupon._id, {
-            $addToSet: { usedBy: userId } 
+            $addToSet: { usersUsed: userId } 
         });
     }
 
