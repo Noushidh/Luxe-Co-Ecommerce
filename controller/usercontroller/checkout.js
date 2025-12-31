@@ -93,6 +93,10 @@ export const applyCoupen = asyncHandler(async (req, res) => {
     console.log(subTotal)
     const coupon = await couponModel.findOne({ code: code, isActive: true })
 
+     if (coupon.usersUsed.includes(userId)) {
+        return res.status(400).json({ success: false, message: "You have already used this coupon!" });
+    }
+
     let finalDiscountValue = coupon.discountType === 'percentage'
         ? (subTotal * coupon.discountValue) / 100 : coupon.discountValue;
 
@@ -100,9 +104,11 @@ export const applyCoupen = asyncHandler(async (req, res) => {
         finalDiscountValue = coupon.maxDiscount;
     }
     req.session.appliedCoupon = {
+        _id:coupon._id,
         code: coupon.code,
         discountValue: finalDiscountValue
     };
+
     console.log("finalDiscountValue", finalDiscountValue)
     res.status(200).json({ success: true, message: "Coupon applied!", discount: finalDiscountValue });
 })
