@@ -120,19 +120,12 @@ export const applyCoupen = asyncHandler(async (req, res) => {
     if (coupon.discountType === 'percentage' && coupon.maxDiscount && finalDiscountValue > coupon.maxDiscount) {
         finalDiscountValue = coupon.maxDiscount;
     }
-    
+
     if (coupon.usersUsed.includes(userId)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "You have already used this coupon once!" 
-        });
+        return res.status(400).json({ success: false, message: "You have already used this coupon once!" });
     }
 
-    req.session.appliedCoupon = {
-        _id:coupon._id,
-        code: coupon.code,
-        discountValue: finalDiscountValue
-    };
+    req.session.appliedCoupon = {_id:coupon._id,code: coupon.code,discountValue: finalDiscountValue};
 
     console.log("finalDiscountValue", finalDiscountValue)
     res.status(200).json({ success: true, message: "Coupon applied!", discount: finalDiscountValue });
