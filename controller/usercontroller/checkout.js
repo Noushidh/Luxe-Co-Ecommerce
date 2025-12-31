@@ -2,7 +2,7 @@ import CartModel from "../../models/cartmodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import addressmodel from "../../models/addressmodel.js";
 import couponModel from "../../models/couponmodel.js";
-import { getBestOfferForProduct } from "../../utils/offerHelper.js"; // Import your utility
+import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 
 export const load_checkout = asyncHandler(async (req, res) => {
     if (!req.session || !req.session.user) {
@@ -108,6 +108,7 @@ export const applyCoupen = asyncHandler(async (req, res) => {
     const subTotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     console.log(subTotal)
     const coupon = await couponModel.findOne({ code: code, isActive: true })
+    
 
     let finalDiscountValue = coupon.discountType === 'percentage'
         ? (subTotal * coupon.discountValue) / 100 : coupon.discountValue;

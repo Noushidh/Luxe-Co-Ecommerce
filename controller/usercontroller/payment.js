@@ -135,6 +135,12 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
 
     const saveOrder = await newOrder.save();
 
+    if (appliedCoupon._id) {
+        await CouponModel.findByIdAndUpdate(appliedCoupon._id, {
+            $addToSet: { usedBy: userId } 
+        });
+    }
+
     for (const item of cart.items) {
         await productModel.updateOne(
             { _id: item.productId._id, "variants.size": item.size, "variants.color": item.color },
