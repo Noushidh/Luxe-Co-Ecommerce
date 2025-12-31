@@ -49,34 +49,38 @@ export const searchSpecificProduct = asyncHandler(async (req, res) => {
 
 export const addOrUpdateOffer = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
     const { 
-        offerTitle, discountType, discountValue, appliesTo,
+        offerTitle, discountValue, appliesTo,
         targetId, startDate, expiryDate, categoryScope, isActive 
     } = req.body;
 
     const value = Number(discountValue);
-    if (value < 0) {
-        return res.status(400).json({ success: false, message: "Numbers must be greater than or equal to 0" });
-    }
 
-    if (discountType === "percentage" && (value <= 0 || value > 100)) {
-        return res.status(400).json({ success: false, message: "Percentage must be between 1 and 100" });
+    if (isNaN(value) || value <= 0 || value > 100) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "Discount Percentage must be between 1 and 100" 
+        });
     }
 
     if (new Date(expiryDate) <= new Date(startDate)) {
-        return res.status(400).json({ success: false, message: "Expiry date must be after start date" });
+        return res.status(400).json({ 
+            success: false, 
+            message: "Expiry date must be after start date" 
+        });
     }
 
     const offerData = {
         offerTitle,
-        discountType,
+        discountType: "percentage", 
         discountValue: value,
         appliesTo,
         categoryScope: appliesTo === 'category' ? categoryScope : 'none',
         targetId,
         startDate: new Date(startDate),
         expiryDate: new Date(expiryDate),
-        isActive: String(req.body.isActive) === 'true',
+        isActive: String(isActive) === 'true',
         productId: null,
         categoryId: null
     };
