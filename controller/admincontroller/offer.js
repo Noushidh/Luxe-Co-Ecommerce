@@ -105,3 +105,17 @@ export const addOrUpdateOffer = asyncHandler(async (req, res) => {
         return res.status(200).json({ success: true, message: "Offer created successfully" });
     }
 });
+
+export const deleteOffer =  asyncHandler(async(req,res)=>{
+    const {id}=req.params;
+
+    console.log(req.params.id)
+
+    const offer = await offerModal.findByIdAndDelete(id);
+
+    if(!offer){
+       return res.status(404).json({success:false,message:"Offer not found"})
+    }
+
+    res.status(200).json({success:true,message:"Offer deleted Successfully"})
+})
