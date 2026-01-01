@@ -13,6 +13,7 @@ import * as Checkout from "../controller/usercontroller/checkout.js"
 import * as Payment from "../controller/usercontroller/payment.js"
 import * as Orders from "../controller/usercontroller/orders.js";
 import * as Invoice from "../controller/usercontroller/invoice.js"
+import * as Wishlist from "../controller/usercontroller/wishlist.js"
 import { upload } from "../config/multer.js";
 
 
@@ -104,6 +105,9 @@ router.get('/order-return/:id',Orders.load_returnOrder)
 router.post('/order/return',Orders.returnOrder_details);
 //invoice
 router.get('/orders/invoice/:id',Invoice.load_Download_invoice);
+
+//
+router.get("/wishlist",userAuth.isAuthenticated,Wishlist.load_wishlist)
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

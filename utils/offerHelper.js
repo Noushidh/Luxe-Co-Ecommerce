@@ -9,19 +9,13 @@ export const getBestOfferForProduct = async (product, now = new Date()) => {
     if (subId) queryConditions.push({ categoryId: subId });
     queryConditions.push({ productId: product._id });
 
-    const applicableOffers = await offerModal.find({
-        isActive: true,
-        startDate: { $lte: now },
-        expiryDate: { $gte: now },
-        $or: queryConditions
-    });
+    const applicableOffers = await offerModal.find({isActive: true,startDate: { $lte: now },expiryDate: { $gte: now },$or: queryConditions});
 
     let bestDiscountValue = 0;
 
     applicableOffers.forEach(offer => {
         let currentDiscount = offer.discountType === 'percentage'
-            ? (product.price * offer.discountValue) / 100
-            : offer.discountValue;
+            ? (product.price * offer.discountValue) / 100 : offer.discountValue;
 
         if (currentDiscount > bestDiscountValue) {
             bestDiscountValue = currentDiscount;
@@ -30,8 +24,7 @@ export const getBestOfferForProduct = async (product, now = new Date()) => {
 
     const finalPrice = Math.max(0, product.price - bestDiscountValue);
     const discountPercentage = product.price > 0 
-        ? Math.round((bestDiscountValue / product.price) * 100) 
-        : 0;
+        ? Math.round((bestDiscountValue / product.price) * 100) : 0;
 
     return { finalPrice, discountPercentage };
-};
+};  
