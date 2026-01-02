@@ -107,7 +107,8 @@ router.post('/order/return',Orders.returnOrder_details);
 router.get('/orders/invoice/:id',Invoice.load_Download_invoice);
 
 //
-router.get("/wishlist",userAuth.isAuthenticated,Wishlist.load_wishlist)
+router.get('/wishlist',userAuth.isAuthenticated,Wishlist.load_wishlist);
+router.post('/wishlist/add',userAuth.isAuthenticated,Wishlist.product_add_wishlist)
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

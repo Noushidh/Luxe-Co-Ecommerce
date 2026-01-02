@@ -111,10 +111,7 @@
 
 <script>
     async function handlePlaceOrder() {
-        const notyf = new Notyf({
-            duration: 3000,
-            position: { x: 'right', y: 'top' }
-        });
+        const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
 
         const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
         if (!paymentMethodElement) {
