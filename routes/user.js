@@ -109,7 +109,8 @@ router.get('/orders/invoice/:id',Invoice.load_Download_invoice);
 //wislist
 router.get('/wishlist',userAuth.isAuthenticated,Wishlist.load_wishlist);
 router.post('/wishlist/add',userAuth.isAuthenticated,Wishlist.product_add_wishlist)
-router.patch('/wishlist/remove',Wishlist.removeFromWishlist)
+router.patch('/wishlist/remove',userAuth.isAuthenticated,Wishlist.removeFromWishlist)
+router.delete('/wishlist/clear',userAuth.isAuthenticated, Wishlist.clearWishlist);
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

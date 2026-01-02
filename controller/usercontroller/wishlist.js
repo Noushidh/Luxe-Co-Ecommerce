@@ -52,3 +52,14 @@ export const removeFromWishlist = asyncHandler(async (req, res) => {
 
     res.status(200).json({success: true,message: "Item removed from wishlist",wishlistCount: updatedWishlist.items.length});
 });
+
+export const clearWishlist = asyncHandler(async (req, res) => {
+    const userId = req.session.user?._id;
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Please log in" });
+    }
+    await wishlistModel.findOneAndUpdate({ userId: userId },{ $set: { items: [] } },{ new: true });
+
+    res.status(200).json({success: true,message: "Wishlist cleared successfully",wishlistCount: 0});
+});
