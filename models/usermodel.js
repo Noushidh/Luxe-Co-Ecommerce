@@ -55,7 +55,19 @@ const userSchema = new mongoose.Schema({
   otpExpires: {
     type: Date,
     default: null
-  }
+  },
+  referralCode: {
+        type: String,
+        unique: true
+    },
+    referredBy: {
+        type: String, 
+        default: null
+    },
+    redeemed: {
+        type: Boolean,
+        default: false
+    }
 
 }, { timestamps: true });
 

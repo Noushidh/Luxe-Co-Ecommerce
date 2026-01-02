@@ -5,12 +5,25 @@ import userModal from "../../models/usermodel.js";
 import cloudinary from "../../config/cloudinary.js";
 import bcrypt from "bcryptjs";
 import { sendEmailChangeVerification } from "../../utils/sendEmail.js"
+import { generateReferralCode } from "../../utils/referal.js"
 
 export const load_profile = asyncHandler(async (req, res) => {
-  const userData = await userModal
-    .findById(req.session.user._id)
-    .select("fullname email phone profilePic googleId referralCode")
-    .lean();
+  let user = await userModal.findById(req.session.user._id)
+
+  if (!user.referralCode) {
+    let uniqueCode = false;
+    let newCode;
+
+    while (!uniqueCode) {
+      newCode = generateReferralCode(user.fullname);
+      const existing = await userModal.findOne({ referralCode: newCode });
+      if (!existing) uniqueCode = true;
+    }
+    user.referralCode = newCode;
+    await user.save();
+  }
+
+  const userData = user.toObject();
 
   res.render("user/layout", {
     title: "Profile",
