@@ -12,8 +12,10 @@ import * as Cart from "../controller/usercontroller/cart.js"
 import * as Checkout from "../controller/usercontroller/checkout.js"
 import * as Payment from "../controller/usercontroller/payment.js"
 import * as Orders from "../controller/usercontroller/orders.js";
-import * as Invoice from "../controller/usercontroller/invoice.js"
-import * as Wishlist from "../controller/usercontroller/wishlist.js"
+import * as Invoice from "../controller/usercontroller/invoice.js";
+import * as Wishlist from "../controller/usercontroller/wishlist.js";
+import * as Wallet from "../controller/usercontroller/wallet.js"
+
 import { upload } from "../config/multer.js";
 
 
@@ -111,6 +113,9 @@ router.get('/wishlist',userAuth.isAuthenticated,Wishlist.load_wishlist);
 router.post('/wishlist/add',userAuth.isAuthenticated,Wishlist.product_add_wishlist)
 router.patch('/wishlist/remove',userAuth.isAuthenticated,Wishlist.removeFromWishlist)
 router.delete('/wishlist/clear',userAuth.isAuthenticated, Wishlist.clearWishlist);
+
+//wallet
+router.get("/wallet",Wallet.load_wallet)
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

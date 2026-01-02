@@ -1,0 +1,146 @@
+<div class="flex flex-col lg:flex-row gap-6 lg:gap-8 p-4 lg:p-8 bg-[#F5E9DA] min-h-screen font-['Inter'] w-full">
+
+    <aside class="w-full lg:w-[230px] shrink-0 lg:sticky lg:top-6">
+        <%- include("../../partials/user/sidebar") %>
+    </aside>
+
+    <div class="flex-1 bg-white rounded-[2rem] lg:rounded-[2.5rem] shadow-sm p-6 lg:p-12 border border-[#E5D9CA]/50">
+
+        <div class="mb-10">
+            <h1 class="text-4xl font-extrabold text-stone-800 tracking-tight">My Wallet</h1>
+            <p class="text-stone-400 text-lg mt-2 font-medium">Manage your Luxe & Co balance and transactions</p>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-8 mb-16">
+
+            <div
+                class="xl:col-span-3 bg-[#FAF7F2] p-10 rounded-[2.5rem] border border-[#E5D9CA]/50 shadow-[0_8px_30px_rgba(0,0,0,0.02)] relative overflow-hidden flex flex-col justify-between h-full">
+
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[#F5E9DA] rounded-full -mr-16 -mt-16 opacity-60"></div>
+
+                <div class="relative z-10">
+                    <span class="text-xs uppercase tracking-[0.2em] text-[#A6937C] font-bold">Available Balance</span>
+                    <div class="text-6xl font-black text-stone-800 mt-6 flex items-baseline">
+                        <span class="text-3xl mr-2 font-bold text-[#C8A97E]">₹</span>
+                        <%= walletData.balance.toFixed(2) %>
+                    </div>
+                </div>
+
+                <button
+                    class="relative z-10 mt-10 w-full bg-[#C8A97E] hover:bg-[#b89a6e] text-white py-5 px-8 rounded-2xl text-lg font-black tracking-widest transition-all shadow-xl shadow-[#C8A97E]/30 active:scale-[0.98] uppercase">
+                    Add Funds
+                </button>
+            </div>
+
+            <div
+                class="xl:col-span-2 bg-[#FAF7F2] p-10 rounded-[2.5rem] border-2 border-dashed border-[#D6C7B5] flex flex-col justify-between">
+                <div>
+                    <span class="text-xs uppercase tracking-[0.2em] text-[#A6937C] font-bold">Refer & Earn</span>
+                    <h3 class="text-2xl font-black text-stone-800 mt-2">Get ₹1000.00</h3>
+                </div>
+
+                <div
+                    class="mt-6 flex items-center justify-between bg-white p-5 rounded-2xl border border-[#E5D9CA] shadow-sm">
+                    <span id="referralCode" class="font-mono font-bold text-2xl text-stone-700 tracking-tighter">
+                        <%= userData.referralCode %>
+                    </span>
+                    <button onclick="copyReferralCode()"
+                        class="text-[10px] font-black text-[#C8A97E] hover:text-stone-800 uppercase tracking-widest transition-colors">
+                        Copy
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-stone-400 mt-6 leading-relaxed font-medium italic">
+                    Reward is credited instantly once your friend completes their first purchase.
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-black text-stone-800">Transaction History</h2>
+                <div class="px-4 py-1.5 bg-stone-50 rounded-full border border-stone-100">
+                    <span class="text-xs text-stone-500 font-bold tracking-wide">
+                        <%= walletData.transactions.length %> Activity Logs
+                    </span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-[1.5rem] border border-stone-100">
+                <table class="w-full text-left border-collapse bg-white">
+                    <thead>
+                        <tr class="bg-stone-50/80">
+                            <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] font-black text-stone-400">Date
+                            </th>
+                            <th class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] font-black text-stone-400">
+                                Description</th>
+                            <th
+                                class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] font-black text-stone-400 text-right">
+                                Amount</th>
+                            <th
+                                class="py-6 px-8 text-[10px] uppercase tracking-[0.2em] font-black text-stone-400 text-right">
+                                Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-50">
+                        <% if (walletData.transactions && walletData.transactions.length> 0) { %>
+                            <% walletData.transactions.reverse().forEach(txn=> { %>
+                                <tr class="group hover:bg-[#F5E9DA]/10 transition-colors">
+                                    <td class="py-6 px-8 text-sm text-stone-500 font-bold">
+                                        <%= new Date(txn.createdAt).toLocaleDateString('en-GB', { day: '2-digit' ,
+                                            month: 'short' , year: 'numeric' }) %>
+                                    </td>
+                                    <td class="py-6 px-8">
+                                        <div
+                                            class="text-sm font-bold text-stone-800 group-hover:text-black transition-colors">
+                                            <%= txn.description %>
+                                        </div>
+                                        <div class="text-[9px] text-stone-300 font-mono mt-1 tracking-widest lowercase">
+                                            <%= txn.transactionId %>
+                                        </div>
+                                    </td>
+                                    <td
+                                        class="py-6 px-8 text-sm font-black text-right <%= txn.type === 'credit' ? 'text-emerald-500' : 'text-rose-400' %>">
+                                        <%= txn.type==='credit' ? '+' : '-' %>₹<%= txn.amount.toFixed(2) %>
+                                    </td>
+                                    <td class="py-6 px-8 text-right">
+                                        <span
+                                            class="text-[9px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-lg <%= txn.status === 'Success' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-50 text-stone-400' %>">
+                                            <%= txn.status %>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="4" class="py-24 text-center">
+                                                <p class="text-stone-300 font-bold text-sm tracking-wide">No
+                                                    transactions recorded yet.</p>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function copyReferralCode() {
+        const code = document.getElementById('referralCode').innerText;
+        navigator.clipboard.writeText(code);
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: '#FAF7F2',
+            icon: 'success',
+            title: 'Referral Code Copied'
+        });
+    }
+</script>
