@@ -26,10 +26,29 @@ export const product_add_wishlist = asyncHandler(async(req,res)=>{
 export const load_wishlist = asyncHandler(async(req,res)=>{
     const userId = req.session.user._id;
     const userWishlist = await wishlistModel.findOne({userId}).populate("items.productId");
+    const cartData = await CartModel.findOne({ user: userId });
     res.render("user/layout",{
         title:"Wislist",
         body:"user/wishlist/wishlist",
         userData:userId,
         wishlist: userWishlist ? userWishlist.items : [],
+        cart: cartData || { items: [] }
     })
 })
+
+export const removeFromWishlist = asyncHandler(async (req, res) => {
+    const { variantId } = req.body;
+    const userId = req.session.user._id;
+
+    const updatedWishlist = await wishlistModel.findOneAndUpdate(
+        { userId: userId }, 
+        { $pull: { items: { variantId: variantId } } },
+        { new: true } 
+    );
+
+    if (!updatedWishlist) {
+        return res.status(404).json({success: false,message: "Wishlist not found"});
+    }
+
+    res.status(200).json({success: true,message: "Item removed from wishlist",wishlistCount: updatedWishlist.items.length});
+});
