@@ -595,14 +595,14 @@ document.addEventListener('DOMContentLoaded', () => {
 async function toggleWishlist() {
     const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
     const variantInput = document.getElementById('selectedVariantId');
+    const productId = window.productData._id;
     const variantId = variantInput ? variantInput.value : null;
-    console.log(variantId)
     if (!variantId || variantId === "undefined") {
         return notyf.error("Please select a valid size and color first.");
     }
 
     try {
-        const response = await axios.post('/user/wishlist/add', { variantId });
+        const response = await axios.post('/user/wishlist/add', { variantId,productId});
         if (response.data.success) {
             notyf.success(response.data.message);
         }
@@ -610,4 +610,24 @@ async function toggleWishlist() {
         notyf.error(err.response?.data?.message || "Error adding to wishlist");
     }
 }
+
+/* ===================== SELECT BY ID ===================== */
+window.selectVariantById = function(variantId) {
+    const variant = productData.variants.find(v => v._id.toString() === variantId.toString());
+    
+    if (variant) {
+        selectColor(variant.color);
+        selectSize(variant.size);
+            } else {
+        console.warn("Variant ID not found in product data:", variantId);
+    }
+};
+
+document.addEventListener("DOMContentLoaded", function() {
+    const targetVariantId = "<%= initialVariantId %>";
+
+    if (targetVariantId && targetVariantId !== "null" && targetVariantId !== "") {
+            selectVariantById(targetVariantId);
+    }
+});
 </script>

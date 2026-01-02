@@ -66,15 +66,15 @@ function finalUnitPrice(price, discount) {
 }
 
 export const addtocart = asyncHandler(async (req, res) => {
-  const { productId, size, color } = req.body;
-  const quantity = Number(req.body.quantity);
+  const { productId, size, color ,variantId} = req.body;
+  const quantity = Number(req.body.quantity)||1;
   const userId = req.session.user?._id;
-
+  
   if (!userId) {
     return res.status(401).json({ success: false, message: "Please log in to add items to your cart." });
   }
-
-  if (!productId || !size || !color || !Number.isInteger(quantity) || quantity < 1) {
+  const hasVariantIdentifier = variantId || (size && color);
+  if (!productId ||!hasVariantIdentifier  || !Number.isInteger(quantity) || quantity < 1) {
     return res.status(400).json({ success: false, message: "Invalid product data or quantity" });
   }
 
@@ -82,8 +82,14 @@ export const addtocart = asyncHandler(async (req, res) => {
   if (!product || product.isBlocked) {
     return res.status(404).json({ success: false, message: "Product not available" });
   }
+  
+  let variant;
+  if(variantId){
+    variant = product.variants.find(v=>v._id.toString()===variantId.toString())
+  }else{
+   variant = product.variants.find(v => v.size === size && v.color === color);
 
-  const variant = product.variants.find(v => v.size === size && v.color === color);
+  }
 
   if (!variant || variant.isBlocked) {
     return res.status(400).json({ success: false, message: "Invalid or blocked variant" });
@@ -114,7 +120,7 @@ export const addtocart = asyncHandler(async (req, res) => {
     cart.items[itemIndex].quantity = newQty;
     action = "updated";
   } else {
-    cart.items.push({ productId, variantId: variant._id, size, color, price: finalPrice, quantity, image: variant.images?.[0] || "" });
+    cart.items.push({ productId, variantId: variant._id, size:variant.size , color:variant.color, price: finalPrice, quantity, image: variant.images?.[0] || "" });
   }
 
   cart.subTotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);

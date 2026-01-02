@@ -141,6 +141,9 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         _id: { $ne: product._id } 
     }).limit(4).lean();
 
+    const selectedVariantId = req.query.variantId;
+
+
     res.render("user/layout", {
         title: product.name,
         body: "user/collections/productDetails",
@@ -149,6 +152,7 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         subcategoryName: product.subCategory_id?.subcategory || null,
         relProds,
         finalPrice,
-        discountPercentage
+        discountPercentage,
+       initialVariantId: selectedVariantId || null
     });
 });
