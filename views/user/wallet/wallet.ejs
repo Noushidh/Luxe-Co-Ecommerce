@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <button
+                <button onclick="addFunds()"
                     class="relative z-10 mt-10 w-full bg-[#C8A97E] hover:bg-[#b89a6e] text-white py-5 px-8 rounded-2xl text-lg font-black tracking-widest transition-all shadow-xl shadow-[#C8A97E]/30 active:scale-[0.98] uppercase">
                     Add Funds
                 </button>
@@ -142,5 +142,68 @@
             icon: 'success',
             title: 'Referral Code Copied'
         });
+    }
+    async function addFunds() {
+const { value: amount } = await Swal.fire({
+        title: 'Add Funds to Wallet',
+        html: `
+            <p class="text-stone-400 text-sm mb-4">Select a quick amount or enter your own</p>
+            <div class="flex gap-2 justify-center mb-4">
+                <button type="button" class="preset-btn px-4 py-2 bg-stone-100 rounded-lg font-bold hover:bg-[#C8A97E] hover:text-white transition-colors" onclick="document.querySelector('.swal2-input').value = 100">₹100</button>
+                <button type="button" class="preset-btn px-4 py-2 bg-stone-100 rounded-lg font-bold hover:bg-[#C8A97E] hover:text-white transition-colors" onclick="document.querySelector('.swal2-input').value = 500">₹500</button>
+                <button type="button" class="preset-btn px-4 py-2 bg-stone-100 rounded-lg font-bold hover:bg-[#C8A97E] hover:text-white transition-colors" onclick="document.querySelector('.swal2-input').value = 1000">₹1000</button>
+            </div>
+        `,
+        input: 'number',
+        inputLabel: 'Enter amount (₹)',
+        inputPlaceholder: 'e.g. 1000',
+        showCancelButton: true,
+        reverseButtons: true,
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#C8A97E',
+        cancelButtonColor: '#d33',
+        customClass: {
+            input: 'text-center font-bold text-xl rounded-xl border-stone-200'
+        },
+        inputValidator: (value) => {
+            if (!value || value <= 0) {
+                return 'Please enter a valid amount!'
+            }
+        }
+    })
+
+        if (amount) {
+            Swal.fire({
+                title: 'Processing Payment',
+                text: 'Please wait while we update your wallet...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            }); console.log("User wants to add:", amount);
+
+           try {
+            const response = await axios.post('/user/wallet/add-money-mock', {amount: parseFloat(amount)});
+
+            if (response.data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Funds Added!',
+                    text: `₹${amount} has been added to your Luxe & Co wallet.`,
+                    confirmButtonColor: '#C8A97E'
+                });
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error("Payment Error:", error);
+            
+            let errorMessage = 'Payment failed. Please try again.';
+            
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            }
+
+            Swal.fire('Error', errorMessage, 'error');
+        }
+    }
     }
 </script>
