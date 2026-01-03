@@ -23,7 +23,27 @@ window.togglePassword=function togglePassword(button) {
   const RegisterForm = document.getElementById("RegisterForm");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
-  const confirmPasswordInput = document.getElementById("confirm-password")
+  const confirmPasswordInput = document.getElementById("confirm-password");
+
+  // --- Referral Code Toggle Logic ---
+const showReferralBtn = document.getElementById("show-referral-btn");
+const referralInputGroup = document.getElementById("referral-input-group");
+const removeReferralBtn = document.getElementById("remove-referral");
+const referralInput = document.getElementById("referredByCode");
+
+// Click to show input
+showReferralBtn.addEventListener("click", () => {
+    showReferralBtn.style.display = "none";
+    referralInputGroup.style.display = "block";
+    referralInput.focus();
+});
+
+// Click to hide and clear input
+removeReferralBtn.addEventListener("click", () => {
+    referralInputGroup.style.display = "none";
+    showReferralBtn.style.display = "block";
+    referralInput.value = ""; // Clear the input
+});
 
   RegisterForm.addEventListener("submit",function(e){
     let valid = true;

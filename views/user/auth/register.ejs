@@ -44,8 +44,7 @@
                             <!-- Full Name -->
                             <div class="form-group">
                                 <label class="form-label" for="full-name">Full Name</label>
-                                <input type="text" id="name" class="form-input" name="name"
-                                    placeholder="John Doe" />
+                                <input type="text" id="name" class="form-input" name="name" placeholder="John Doe" />
                             </div>
 
                             <!-- Email Address -->
@@ -94,7 +93,31 @@
                             </div>
 
                             <!-- Referral Code Button -->
-                            <button class="secondary-button-alt" type="button">Apply Referral Code (optional)</button>
+                            <div class="referral-wrapper" style="margin: 15px 0;">
+                                <div id="referral-toggle-container">
+                                    <span style="color: #666; font-size: 0.9rem;">Have a friend's code? </span>
+                                    <button type="button" id="show-referral-btn"
+                                        style="background: none; border: none; color: #C8A97E; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
+                                        Apply Referral
+                                    </button>
+                                </div>
+
+                                <div id="referral-input-group" style="display: none; animation: fadeIn 0.3s ease;">
+                                    <div style="position: relative; display: flex; align-items: center;">
+                                        <input type="text" id="referredByCode" name="referredByCode" class="form-input"
+                                            placeholder="Enter Referral Code"
+                                            style="padding-right: 40px; border-bottom: 2px solid #C8A97E !important;">
+                                        <button type="button" id="remove-referral"
+                                            style="position: absolute; right: 10px; background: none; border: none; color: #999; font-size: 1.2rem; cursor: pointer;">
+                                            &times;
+                                        </button>
+                                    </div>
+                                    <p id="referral-note"
+                                        style="font-size: 0.75rem; color: #C8A97E; margin-top: 5px; font-weight: 500;">
+                                        * You'll receive a ₹500 bonus after verification.
+                                    </p>
+                                </div>
+                            </div>
 
                             <!-- Sign Up Button -->
                             <button class="login-btn" type="submit">Sign Up</button>
@@ -119,8 +142,8 @@
             </div>
 
             <script type="module" src="/script/userjs/register.js"></script>
-            <script>function handleGoogleLogin() {window.location.href = "/user/google";}
-</script>
+            <script>function handleGoogleLogin() { window.location.href = "/user/google"; }
+            </script>
 </body>
 
 </html>

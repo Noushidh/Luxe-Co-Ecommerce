@@ -63,8 +63,8 @@ export const login = asyncHandler(async (req, res, next) => {
 
 // ---------- REGISTER ----------
 export const register = asyncHandler(async (req, res, next) => {
-    const { name, email, password, confirmPassword } = req.body;
-
+    const { name, email, password, confirmPassword ,referredByCode} = req.body;
+     console.log("refferedByCode",referredByCode)
     if (!name || !email || !password || !confirmPassword) {
         req.flash('error', 'All fields are required');
         return res.redirect('/user/register');
@@ -100,8 +100,8 @@ export const register = asyncHandler(async (req, res, next) => {
 
     req.session.otp = otp;
     req.session.otpExpires = Date.now() + 60 * 1000;
-    req.session.userData = { name, email, password ,referralCode: newCode };
-
+    req.session.userData = { name, email, password ,referralCode: newCode ,referredByCode};
+    
     req.flash('success', 'Send a otp in Your Email');
     console.log("OTP Sent", otp);
 
@@ -128,7 +128,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
 
     // Registration flow
     if (req.session.userData) {
-        const { name, email, password ,referralCode} = req.session.userData;
+        const { name, email, password ,referralCode ,referredByCode} = req.session.userData;
 
         const hashedPassword = await bcrypt.hash(password, saltround);
         const newUser = new User({
@@ -138,6 +138,17 @@ export const Verifyotp = asyncHandler(async (req, res) => {
             referralCode,
             isVerified: true
         });
+
+        if (referredByCode) {
+            const referrer = await User.findOne({ referralCode: referredByCode });
+            if (referrer) {
+                // Link the new user to the person who invited them
+                newUser.referredBy = referrer._id;
+                console.log("Success: Linked to referrer", referrer.fullname);
+                
+                // Optional: Add logic here to credit wallets
+            }
+        }
 
         await newUser.save();
 
