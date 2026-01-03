@@ -15,14 +15,12 @@ export const load_wallet = asyncHandler(async (req, res) => {
         });
     }
 
-    // 2. Also get userData for the referral code
     const userData = await userModal.findById(userId).select("referralCode");
 
-    // 3. Render and PASS the variables
     res.render("user/layout", {
         title: "My Wallet",
-        body: "user/wallet/wallet", // Path to your wallet EJS
-        walletData: wallet,          // This fixes the 'undefined' error
+        body: "user/wallet/wallet", 
+        walletData: wallet,         
         userData,
         currentPath: '/user/wallet'
     });
