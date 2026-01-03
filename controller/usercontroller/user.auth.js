@@ -2,6 +2,7 @@ import User from "../../models/usermodel.js";
 import bcrypt from "bcryptjs";
 import sendverificationEmail from "../../config/nodemailer.js";
 import { generateOtp } from "../../utils/otp.js";
+import { generateReferralCode } from "../../utils/referal.js"
 import asyncHandler from "../../utils/asynHandler.js";
 const saltround = 10;
 
@@ -88,9 +89,18 @@ export const register = asyncHandler(async (req, res, next) => {
         return res.redirect('/user/register');
     }
 
+   let uniqueCode = false;
+    let newCode;
+
+    while (!uniqueCode) {
+        newCode = generateReferralCode(name); 
+        const existing = await User.findOne({ referralCode: newCode });
+        if (!existing) uniqueCode = true;
+    }
+
     req.session.otp = otp;
     req.session.otpExpires = Date.now() + 60 * 1000;
-    req.session.userData = { name, email, password };
+    req.session.userData = { name, email, password ,referralCode: newCode };
 
     req.flash('success', 'Send a otp in Your Email');
     console.log("OTP Sent", otp);
@@ -118,13 +128,14 @@ export const Verifyotp = asyncHandler(async (req, res) => {
 
     // Registration flow
     if (req.session.userData) {
-        const { name, email, password } = req.session.userData;
+        const { name, email, password ,referralCode} = req.session.userData;
 
         const hashedPassword = await bcrypt.hash(password, saltround);
         const newUser = new User({
             fullname: name,
             email: email,
             password_hash: hashedPassword,
+            referralCode,
             isVerified: true
         });
 
