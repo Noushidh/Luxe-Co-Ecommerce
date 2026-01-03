@@ -4,6 +4,7 @@ import sendverificationEmail from "../../config/nodemailer.js";
 import { generateOtp } from "../../utils/otp.js";
 import { generateReferralCode } from "../../utils/referal.js"
 import asyncHandler from "../../utils/asynHandler.js";
+import walletModel from "../../models/walletmodel.js"
 const saltround = 10;
 
 export const loadlogin = (req, res) => {
@@ -57,14 +58,14 @@ export const login = asyncHandler(async (req, res, next) => {
     };
     req.flash("success", "Login successful!");
     req.session.save(() => {
-    res.redirect("/user");
+        res.redirect("/user");
     })
 });
 
 // ---------- REGISTER ----------
 export const register = asyncHandler(async (req, res, next) => {
-    const { name, email, password, confirmPassword ,referredByCode} = req.body;
-     console.log("refferedByCode",referredByCode)
+    const { name, email, password, confirmPassword, referredByCode } = req.body;
+    console.log("refferedByCode", referredByCode)
     if (!name || !email || !password || !confirmPassword) {
         req.flash('error', 'All fields are required');
         return res.redirect('/user/register');
@@ -89,19 +90,19 @@ export const register = asyncHandler(async (req, res, next) => {
         return res.redirect('/user/register');
     }
 
-   let uniqueCode = false;
+    let uniqueCode = false;
     let newCode;
 
     while (!uniqueCode) {
-        newCode = generateReferralCode(name); 
+        newCode = generateReferralCode(name);
         const existing = await User.findOne({ referralCode: newCode });
         if (!existing) uniqueCode = true;
     }
 
     req.session.otp = otp;
     req.session.otpExpires = Date.now() + 60 * 1000;
-    req.session.userData = { name, email, password ,referralCode: newCode ,referredByCode};
-    
+    req.session.userData = { name, email, password, referralCode: newCode, referredByCode };
+
     req.flash('success', 'Send a otp in Your Email');
     console.log("OTP Sent", otp);
 
@@ -128,7 +129,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
 
     // Registration flow
     if (req.session.userData) {
-        const { name, email, password ,referralCode ,referredByCode} = req.session.userData;
+        const { name, email, password, referralCode, referredByCode } = req.session.userData;
 
         const hashedPassword = await bcrypt.hash(password, saltround);
         const newUser = new User({
@@ -139,18 +140,50 @@ export const Verifyotp = asyncHandler(async (req, res) => {
             isVerified: true
         });
 
+        const newUserWallet = new walletModel({
+            userId: newUser._id,
+            balance: 0,
+            transactions: []
+        });
+
         if (referredByCode) {
             const referrer = await User.findOne({ referralCode: referredByCode });
+
             if (referrer) {
-                // Link the new user to the person who invited them
                 newUser.referredBy = referrer._id;
                 console.log("Success: Linked to referrer", referrer.fullname);
-                
-                // Optional: Add logic here to credit wallets
+
+
+                let referrerWallet = await walletModel.findOne({ userId: referrer._id });
+
+                if (referrerWallet) {
+                    referrerWallet.balance += 1000;
+                    referrerWallet.transactions.push({
+                        transactionId: `REF-${Date.now()}`,
+                        amount: 1000,
+                        type: "credit",
+                        description: `Referral reward for inviting ${newUser.fullname}`,
+                        status: "Success"
+                    });
+                    await referrerWallet.save();
+                     console.log("referer wallet",referrerWallet)
+                }
+
+                newUserWallet.balance = 500;
+                newUserWallet.transactions.push({
+                    transactionId: `WLC-${Date.now()}`,
+                    amount: 500,
+                    type: "credit",
+                    description: `Welcome bonus for joining Luxe & Co`,
+                    status: "Success"
+                });
             }
         }
 
         await newUser.save();
+        await newUserWallet.save();
+        console.log("newUser wallet",newUserWallet)
+
 
         req.session.user = {
             _id: newUser._id,
@@ -216,7 +249,7 @@ export const fogotPassword = asyncHandler(async (req, res) => {
     req.session.otpExpires = Date.now() + 60 * 1000;
 
     await sendverificationEmail(email, otp);
-    console.log("    password OTP:", otp);
+    console.log("password OTP:", otp);
 
     return res.json({ success: true, message: "OTP Sent Successfully", redirect: "/user/otp" });
 });
@@ -255,6 +288,6 @@ export const isLogout = asyncHandler(async (req, res) => {
             return res.status(500).json({ success: false });
         }
         res.clearCookie("connect.sid");
-        return res.json({ success: true });
+        return res.json({ success: true})
     });
 });
