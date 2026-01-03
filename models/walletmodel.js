@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const walletSchema = new mongoose.Schema({
     userId: {
@@ -10,33 +10,37 @@ const walletSchema = new mongoose.Schema({
     balance: {
         type: Number,
         default: 0,
-        min: 0 
+        min: 0
     },
     transactions: [{
-        amount: { type: Number, required: true },
-        type: { 
-            type: String, 
-            enum: ['credit', 'debit'], 
-            required: true 
+        transactionId: {
+            type: String,
+            required: true
         },
-        description: { type: String }, 
-        orderId: { 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Order',
-            default: null 
+        amount: {
+            type: Number,
+            required: true
         },
-        transactionId: { 
-            type: String, 
-            default: () => `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}` 
+        type: {
+            type: String,
+            enum: ['credit', 'debit'],
+            required: true
+        },
+        description: {
+            type: String,
+            required: true
         },
         status: {
             type: String,
-            enum: ['Success', 'Pending', 'Failed'],
+            enum: ['Pending', 'Success', 'Failed'],
             default: 'Success'
         },
-        createdAt: { type: Date, default: Date.now }
+        date: {
+            type: Date,
+            default: Date.now
+        }
     }]
 }, { timestamps: true });
 
-const Wallet = mongoose.models.Wallet || mongoose.model('Wallet', walletSchema);
+const Wallet = mongoose.model('Wallet', walletSchema);
 export default Wallet;
