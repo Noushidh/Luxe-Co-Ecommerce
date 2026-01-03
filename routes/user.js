@@ -14,7 +14,9 @@ import * as Payment from "../controller/usercontroller/payment.js"
 import * as Orders from "../controller/usercontroller/orders.js";
 import * as Invoice from "../controller/usercontroller/invoice.js"
 import * as Wishlist from "../controller/usercontroller/wishlist.js"
+import * as Razorpay from "../controller/usercontroller/razorpay.js"
 import { upload } from "../config/multer.js";
+
 
 
 router
@@ -95,6 +97,9 @@ router.post('/apply-coupon',userAuth.isAuthenticated,Checkout.applyCoupen)
 router.get('/payment',userAuth.isAuthenticated,Payment.load_payment)
 router.post('/order/cashOnDelivery',userAuth.isAuthenticated,Payment.cashOnDeliveryChecking)
 router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderConfirmed)
+
+//razorpay
+router.post('/order/razorpay',userAuth.isAuthenticated,Razorpay.razorpayPayment)
 
 router.patch('/order-cancelled/:id',Payment.orderCancel)
 

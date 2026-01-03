@@ -1,5 +1,4 @@
 import asyncHandler from "../../utils/asynHandler.js";
-import ProductModel from "../../models/productmodel.js";
 import wishlistModel from "../../models/wishlistmodel.js";
 import CartModel from "../../models/cartmodel.js";
 
