@@ -2,6 +2,8 @@
 import CartModel from "../models/cartmodel.js";
 import OrderModel from "../models/ordermodel.js";
 import ProductModel from "../models/productmodel.js";
+import CouponModel from "../models/couponmodel.js";
+
 
 export const finalizeOrder = async ({ userId, cart, address, appliedCoupon, paymentMethod, paymentStatus,razorpayPaymentId }) => {
     const subtotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -46,11 +48,16 @@ export const finalizeOrder = async ({ userId, cart, address, appliedCoupon, paym
     const savedOrder = await newOrder.save();
 
 for (const item of cart.items) {
-    const result =  await ProductModel.updateOne(
+            await ProductModel.updateOne(
             { _id: item.productId._id, "variants.size": item.size, "variants.color": item.color },
             { $inc: { "variants.$.stock": -item.quantity } }
         );
-        console.log("jdfodjsfiojdfiojdoifjdsoifj",result)
+    }
+
+    if (appliedCoupon?._id) {
+        await CouponModel.findByIdAndUpdate(appliedCoupon._id, {
+            $addToSet: { usersUsed: userId } 
+        });
     }
 
     await CartModel.deleteOne({ user: userId });

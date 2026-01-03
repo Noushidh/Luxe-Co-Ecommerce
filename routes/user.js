@@ -12,16 +12,10 @@ import * as Cart from "../controller/usercontroller/cart.js"
 import * as Checkout from "../controller/usercontroller/checkout.js"
 import * as Payment from "../controller/usercontroller/payment.js"
 import * as Orders from "../controller/usercontroller/orders.js";
-<<<<<<< HEAD
 import * as Invoice from "../controller/usercontroller/invoice.js";
 import * as Wishlist from "../controller/usercontroller/wishlist.js";
 import * as Wallet from "../controller/usercontroller/wallet.js"
-
-=======
-import * as Invoice from "../controller/usercontroller/invoice.js"
-import * as Wishlist from "../controller/usercontroller/wishlist.js"
 import * as Razorpay from "../controller/usercontroller/razorpay.js"
->>>>>>> razorpay
 import { upload } from "../config/multer.js";
 
 
