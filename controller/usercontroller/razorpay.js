@@ -1,8 +1,9 @@
 import asyncHandler from '../../utils/asynHandler.js';
 import CartModel from '../../models/cartmodel.js';
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
+import {finalizeOrder} from "../../utils/orderHelper.js"
 import Razorpay from 'razorpay';
-
+import crypto from "crypto";
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -47,4 +48,32 @@ export const razorpayPayment = asyncHandler(async (req, res) => {
         console.error("Razorpay Order Error:", error);
         res.status(500).json({ success: false, message: "Could not initiate payment" });
     }
+});
+
+
+export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
+    console.log(req.body)
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, addressDetails } = req.body;
+    const userId = req.session.user._id;
+    const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+    hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+    if (hmac.digest("hex") !== razorpay_signature) {
+        return res.status(400).json({ success: false, message: "Invalid signature" });
+    }
+
+    const cart = await CartModel.findOne({ user: userId }).populate("items.productId");
+    const appliedCoupon = req.session.appliedCoupon || { discountValue: 0 };
+
+    const savedOrder = await finalizeOrder({
+        userId: userId,
+        cart,
+        address: addressDetails,
+        appliedCoupon,
+        paymentMethod: "razorpay",
+        paymentStatus: "Paid",
+        razorpayPaymentId: razorpay_payment_id
+    });
+     console.log(savedOrder);
+    delete req.session.appliedCoupon;
+    res.json({ success: true, orderId: savedOrder._id });
 });

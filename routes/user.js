@@ -100,6 +100,7 @@ router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderCon
 
 //razorpay
 router.post('/order/razorpay',userAuth.isAuthenticated,Razorpay.razorpayPayment)
+router.post('/order/verify-razorpay',userAuth.isAuthenticated,Razorpay.verifyRazorpayPayment)
 
 router.patch('/order-cancelled/:id',Payment.orderCancel)
 

@@ -108,7 +108,7 @@
         </div>
     </div>
 </div>
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     async function handlePlaceOrder() {
         const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
@@ -145,7 +145,7 @@
 
             if (res.data.success) {
                 if (paymentMethod === "Razorpay") {
-                    openRazorpay(res.data.order);
+                    openRazorpay(res.data.razorpayOrder,addressDetails);
                 } else {
                     notyf.success(res.data.message || "Order placed successfully!");
 
@@ -173,4 +173,40 @@
             }
         }
     }
+
+    function openRazorpay(orderData,addressDetails) {
+    const options = {
+        "key": "<%= razorpayKey %>", 
+        "amount": orderData.amount, 
+        "currency": "INR",
+        "name": "Luxe & Co",
+        "description": "Purchase Payment",
+        "order_id": orderData.id, 
+        "handler": async function (response) {
+            try {
+                const verifyRes = await axios.post("/user/order/verify-razorpay", {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    addressDetails: addressDetails
+                });
+
+                if (verifyRes.data.success) {
+                    window.location.href = `/user/order-confirmed/${verifyRes.data.orderId}`;
+                }
+            } catch (err) {
+                console.error("Verification Error:", err);
+                alert("Payment verified failed, but money might be deducted. Please contact support.");
+            }
+        },
+        "prefill": {
+            "name": "<%= user.name %>",
+            "email": "<%= user.email %>"
+        },
+        "theme": { "color": "#1c1917" } 
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
 </script>
