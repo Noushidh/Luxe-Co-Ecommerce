@@ -51,7 +51,8 @@ export const load_payment = asyncHandler(async (req, res) => {
         subTotal: grossSubTotal,         
         discount: totalSavings,         
         shipping: shipping,
-        total: finalTotal              
+        total: finalTotal,
+        razorpayKey: process.env.RAZORPAY_KEY_ID              
     });
 });
 
