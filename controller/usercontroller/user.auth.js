@@ -130,11 +130,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
 
         await newUser.save();
 
-        req.session.user = {
-            _id: newUser._id,
-            email: newUser.email,
-            name: newUser.fullname
-        };
+        req.session.user = {_id: newUser._id,email: newUser.email,name: newUser.fullname};
 
         req.session.otp = null;
         req.session.otpExpires = null;
