@@ -77,3 +77,14 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
     delete req.session.appliedCoupon;
     res.json({ success: true, orderId: savedOrder._id });
 });
+
+//payment failed page
+export const load_paymentFailed = asyncHandler(async (req, res) => {
+    const reason = req.query.reason || "Your payment could not be processed.";
+    
+    res.render("user/layout", {
+        title: "Payment Failed",
+        body: "user/payment/payment-failed", 
+        reason: reason
+    });
+});

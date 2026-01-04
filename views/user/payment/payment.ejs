@@ -196,17 +196,26 @@
                 }
             } catch (err) {
                 console.error("Verification Error:", err);
-                alert("Payment verified failed, but money might be deducted. Please contact support.");
+                window.location.href = `/user/payment-failed?reason=Verification failed`;
             }
         },
         "prefill": {
             "name": "<%= user.name %>",
             "email": "<%= user.email %>"
         },
-        "theme": { "color": "#1c1917" } 
+        "theme": { "color": "#1c1917" } ,
+        "modal": {
+            "ondismiss": function() {
+                console.log("Checkout modal closed by user");
+                window.location.href = "/user/payment-failed?reason=Payment cancelled by user";
+            }
+        }  
     };
+const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (response) {        
+        window.location.href = `/user/payment-failed?reason=${encodeURIComponent(response.error.description)}`;
+    });
 
-    const rzp = new Razorpay(options);
     rzp.open();
 }
 </script>
