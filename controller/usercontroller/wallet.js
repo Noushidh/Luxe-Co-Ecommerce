@@ -24,7 +24,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
 
 export const walletPayment = asyncHandler(async(req,res)=>{
     const {address}=req.body;
+    console.log(address)
     const userId = req.session.userId;
-    const cart = await CartModel.findOne({user:userId}).populate("items.productId");
-    const wallet = await walletModel.findOne({userId})
+
 })

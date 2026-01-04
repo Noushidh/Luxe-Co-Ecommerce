@@ -15,8 +15,9 @@ import * as Orders from "../controller/usercontroller/orders.js";
 import * as Invoice from "../controller/usercontroller/invoice.js";
 import * as Wishlist from "../controller/usercontroller/wishlist.js";
 import * as Wallet from "../controller/usercontroller/wallet.js"
-
+import * as Razorpay from "../controller/usercontroller/razorpay.js"
 import { upload } from "../config/multer.js";
+
 
 
 router
@@ -98,6 +99,10 @@ router.get('/payment',userAuth.isAuthenticated,Payment.load_payment)
 router.post('/order/cashOnDelivery',userAuth.isAuthenticated,Payment.cashOnDeliveryChecking)
 router.get('/order-confirmed/:id',userAuth.isAuthenticated,Payment.load_orderConfirmed)
 
+//razorpay
+router.post('/order/razorpay',userAuth.isAuthenticated,Razorpay.razorpayPayment)
+router.post('/order/verify-razorpay',userAuth.isAuthenticated,Razorpay.verifyRazorpayPayment)
+router.get('/payment-failed',userAuth.isAuthenticated,Razorpay.load_paymentFailed);
 router.patch('/order-cancelled/:id',Payment.orderCancel)
 
 //Orders
@@ -115,8 +120,8 @@ router.patch('/wishlist/remove',userAuth.isAuthenticated,Wishlist.removeFromWish
 router.delete('/wishlist/clear',userAuth.isAuthenticated, Wishlist.clearWishlist);
 
 //wallet
-router.get("/wallet",Wallet.load_wallet)
-router.post("/order/wallet",userAuth.isAuthenticated,Wallet.walletPayment)
+router.get("/wallet",userAuth.isAuthenticated,Wallet.load_wallet)
+router.post('/order/wallet',userAuth.isAuthenticated,Wallet.walletPayment)
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 

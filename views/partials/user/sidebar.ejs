@@ -100,7 +100,8 @@
 
       <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
       <script>
-        function toggleSecurity() {
+           const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
+           function toggleSecurity() {
           const options = document.getElementById("securityOptions");
           const arrow = document.getElementById("securityArrow");
 
