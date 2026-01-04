@@ -100,8 +100,10 @@
                                         </div>
                                     </td>
                                     <td
-                                        class="py-6 px-8 text-sm font-black text-right <%= txn.type === 'credit' ? 'text-emerald-500' : 'text-rose-400' %>">
-                                        <%= txn.type==='credit' ? '+' : '-' %>₹<%= txn.amount.toFixed(2) %>
+                                        class="py-6 px-8 text-sm font-black text-right <%= txn.type.toLowerCase() === 'credit' ? 'text-emerald-500' : 'text-rose-400' %>">
+
+                                        <%= txn.type.toLowerCase()==='credit' ? '+' : '-' %>₹<%= txn.amount.toFixed(2)
+                                                %>
                                     </td>
                                     <td class="py-6 px-8 text-right">
                                         <span

@@ -173,7 +173,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
                 newUserWallet.transactions.push({
                     transactionId: `WLC-${Date.now()}`,
                     amount: 500,
-                    type: "credit",
+                    type: "Credit",
                     description: `Welcome bonus for joining Luxe & Co`,
                     status: "Success"
                 });
