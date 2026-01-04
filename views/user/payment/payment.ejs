@@ -45,11 +45,27 @@
 
                         <!-- Wallet -->
                         <label
-                            class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-stone-50 transition">
-                            <input type="radio" name="paymentMethod" value="Wallet" class="w-5 h-5 text-[#C8A97E]">
+                            class="flex items-center gap-4 p-4 border rounded-lg transition 
+                         <%= (!wallet || wallet.balance < total) ? 'opacity-50 cursor-not-allowed bg-stone-100' : 'cursor-pointer hover:bg-stone-50' %>">
+
+                            <input type="radio" name="paymentMethod" value="Wallet" class="w-5 h-5 text-[#C8A97E]"
+                                <%=(!wallet || wallet.balance < total) ? 'disabled' : '' %>>
+
                             <div class="flex flex-col">
-                                <span class="font-medium text-stone-700">Wallet</span>
-                                <span class="text-xs text-stone-500">Pay using your wallet balance</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-stone-700">Wallet</span>
+                                    <span
+                                        class="text-sm font-bold <%= (wallet && wallet.balance >= total) ? 'text-green-600' : 'text-red-500' %>">
+                                        (₹<%= wallet ? wallet.balance : 0 %>)
+                                    </span>
+                                </div>
+                                <span class="text-xs text-stone-500">
+                                    <% if (!wallet || wallet.balance < total) { %>
+                                        Insufficient balance to place this order
+                                        <% } else { %>
+                                            Pay using your wallet balance
+                                            <% } %>
+                                </span>
                             </div>
                         </label>
 
@@ -111,7 +127,7 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     async function handlePlaceOrder() {
-        const notyf = new Notyf({duration: 3000,position: { x: 'right', y: 'top' }});
+        const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
 
         const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
         if (!paymentMethodElement) {
@@ -142,28 +158,26 @@
             } else {
                 throw new Error("Invalid payment method selected");
             }
-
             if (res.data.success) {
                 if (paymentMethod === "Razorpay") {
-                    openRazorpay(res.data.razorpayOrder,addressDetails);
+                    openRazorpay(res.data.razorpayOrder, addressDetails);
                 } else {
                     notyf.success(res.data.message || "Order placed successfully!");
 
                     const orderId = res.data.orderId;
                     if (!orderId) {
-                        console.error("Critical Error: No orderId returned from server");
-                        return notyf.error("Order processed but ID missing. Please check My Orders.");
+                        console.error("Critical Error: No orderId returned");
+                        return notyf.error("Order placed but ID missing. Check My Orders.");
                     }
-
                     setTimeout(() => {
                         window.location.href = `/user/order-confirmed/${orderId}`;
-                    }, 800);
+                    }, 1000);
                 }
             }
 
         } catch (err) {
             console.error("Order Placement Error:", err);
-            const errorMessage = err.response?.data?.message || "Order placement failed. Please try again.";
+            const errorMessage = err.response?.data?.message || "Order placement failed.";
             notyf.error(errorMessage);
 
             if (err.response?.data?.redirect) {
@@ -174,48 +188,48 @@
         }
     }
 
-    function openRazorpay(orderData,addressDetails) {
-    const options = {
-        "key": "<%= razorpayKey %>", 
-        "amount": orderData.amount, 
-        "currency": "INR",
-        "name": "Luxe & Co",
-        "description": "Purchase Payment",
-        "order_id": orderData.id, 
-        "handler": async function (response) {
-            try {
-                const verifyRes = await axios.post("/user/order/verify-razorpay", {
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    addressDetails: addressDetails
-                });
+    function openRazorpay(orderData, addressDetails) {
+        const options = {
+            "key": "<%= razorpayKey %>",
+            "amount": orderData.amount,
+            "currency": "INR",
+            "name": "Luxe & Co",
+            "description": "Purchase Payment",
+            "order_id": orderData.id,
+            "handler": async function (response) {
+                try {
+                    const verifyRes = await axios.post("/user/order/verify-razorpay", {
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        addressDetails: addressDetails
+                    });
 
-                if (verifyRes.data.success) {
-                    window.location.href = `/user/order-confirmed/${verifyRes.data.orderId}`;
+                    if (verifyRes.data.success) {
+                        window.location.href = `/user/order-confirmed/${verifyRes.data.orderId}`;
+                    }
+                } catch (err) {
+                    console.error("Verification Error:", err);
+                    window.location.href = `/user/payment-failed?reason=Verification failed`;
                 }
-            } catch (err) {
-                console.error("Verification Error:", err);
-                window.location.href = `/user/payment-failed?reason=Verification failed`;
+            },
+            "prefill": {
+                "name": "<%= user.name %>",
+                "email": "<%= user.email %>"
+            },
+            "theme": { "color": "#1c1917" },
+            "modal": {
+                "ondismiss": function () {
+                    console.log("Checkout modal closed by user");
+                    window.location.href = "/user/payment-failed?reason=Payment cancelled by user";
+                }
             }
-        },
-        "prefill": {
-            "name": "<%= user.name %>",
-            "email": "<%= user.email %>"
-        },
-        "theme": { "color": "#1c1917" } ,
-        "modal": {
-            "ondismiss": function() {
-                console.log("Checkout modal closed by user");
-                window.location.href = "/user/payment-failed?reason=Payment cancelled by user";
-            }
-        }  
-    };
-const rzp = new Razorpay(options);
-    rzp.on('payment.failed', function (response) {        
-        window.location.href = `/user/payment-failed?reason=${encodeURIComponent(response.error.description)}`;
-    });
+        };
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+            window.location.href = `/user/payment-failed?reason=${encodeURIComponent(response.error.description)}`;
+        });
 
-    rzp.open();
-}
+        rzp.open();
+    }
 </script>

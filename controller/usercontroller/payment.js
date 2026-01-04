@@ -3,6 +3,7 @@ import addressModel from "../../models/addressmodel.js";
 import CartModel from "../../models/cartmodel.js";
 import OrderModel from "../../models/ordermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import walletModel from "../../models/walletmodel.js"
 import mongoose from "mongoose";
 import { finalizeOrder } from "../../utils/orderHelper.js"
 import { calculateOrderPrices } from "../../utils/orderHelper.js";
@@ -22,11 +23,12 @@ export const load_payment = asyncHandler(async (req, res) => {
     }
 
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
-
+    const wallet = await walletModel.findOne({userId})
     res.render("user/layout", {
         title: "Payment",
         body: "user/payment/payment",
         address,
+        wallet,
         subTotal: prices.grossSubTotal,  
         discount: prices.totalSavings,  
         shipping: prices.shipping,      

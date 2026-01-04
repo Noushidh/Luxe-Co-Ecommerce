@@ -161,7 +161,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
                     referrerWallet.transactions.push({
                         transactionId: `REF-${Date.now()}`,
                         amount: 1000,
-                        type: "credit",
+                        type: "Credit",
                         description: `Referral reward for inviting ${newUser.fullname}`,
                         status: "Success"
                     });
