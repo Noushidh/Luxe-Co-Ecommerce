@@ -1,8 +1,15 @@
+import Razorpay from 'razorpay';
+import crypto from "crypto";
 import asyncHandler from "../../utils/asynHandler.js";
 import userModal from "../../models/usermodel.js"
 import walletModel from "../../models/walletmodel.js"
 import CartModel from "../../models/cartmodel.js";
 import { calculateOrderPrices, finalizeOrder } from "../../utils/orderHelper.js";
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 export const load_wallet = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
@@ -20,6 +27,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
         body: "user/wallet/wallet",
         walletData:wallet,
         userData,
+        razorpayKey: process.env.RAZORPAY_KEY_ID,
         currentPath: '/user/wallet'
     });
 });
@@ -86,3 +94,51 @@ export const walletPayment = asyncHandler(async (req, res) => {
         res.status(500).json({ success: false, message: "Order failed. Money refunded to wallet" });
     }
 })
+
+//add money to wallet 
+export const addMoneyToWallet = asyncHandler(async (req, res) => {
+    const { amount } = req.body;
+    
+    const options = {
+        amount: Math.round(amount * 100), 
+        currency: "INR",
+        receipt: `wallet_rcg_${Date.now()}`
+    };
+
+    const razorpayOrder = await razorpay.orders.create(options);
+    res.json({ success: true, razorpayOrder });
+});
+
+
+export const verifyWalletPayment = asyncHandler(async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body;
+    const userId = req.session.user._id;
+
+    const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+    hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+    const generated_signature = hmac.digest("hex");
+
+    if (generated_signature !== razorpay_signature) {
+        return res.status(400).json({ success: false, message: "Payment verification failed" });
+    }
+
+    const wallet = await walletModel.findOne({ userId });
+    
+    if (!wallet) {
+        return res.status(404).json({ success: false, message: "Wallet not found" });
+    }
+
+    wallet.balance += Number(amount); 
+    wallet.transactions.push({
+        transactionId: razorpay_payment_id,
+        amount: Number(amount), 
+        type: "Credit",
+        description: "Wallet Recharge via Razorpay",
+        status: "Success",
+        date: new Date(),
+    });
+
+    await wallet.save(); 
+
+    res.json({ success: true, message: "Amount added to wallet successfully", newBalance: wallet.balance });
+});
