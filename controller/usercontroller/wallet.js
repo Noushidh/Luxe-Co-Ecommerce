@@ -8,11 +8,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
     let wallet = await walletModel.findOne({ userId });
 
     if (!wallet) {
-        wallet = await walletModel.create({ 
-            userId, 
-            balance: 0, 
-            transactions: [] 
-        });
+        wallet = await walletModel.create({ userId, balance: 0, transactions: [] });
     }
 
     const userData = await userModal.findById(userId).select("referralCode");
@@ -25,3 +21,10 @@ export const load_wallet = asyncHandler(async (req, res) => {
         currentPath: '/user/wallet'
     });
 });
+
+export const walletPayment = asyncHandler(async(req,res)=>{
+    const {address}=req.body;
+    const userId = req.session.userId;
+    const cart = await CartModel.findOne({user:userId}).populate("items.productId");
+    const wallet = await walletModel.findOne({userId})
+})

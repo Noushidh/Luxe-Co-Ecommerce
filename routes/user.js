@@ -116,6 +116,7 @@ router.delete('/wishlist/clear',userAuth.isAuthenticated, Wishlist.clearWishlist
 
 //wallet
 router.get("/wallet",Wallet.load_wallet)
+router.post("/order/wallet",userAuth.isAuthenticated,Wallet.walletPayment)
 
 router.get('/logout',userAuth.isAuthenticated,usercontroller.isLogout);
 
