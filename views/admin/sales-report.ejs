@@ -7,49 +7,88 @@
                     <h1 class="text-2xl font-bold text-stone-700">Sales Report & Performance Overview</h1>
                     <p class="text-stone-500 text-sm mt-1">Analyze sales trends and revenue metrics.</p>
                 </div>
-                <button onclick="exportReport()"
-                    class="flex items-center gap-2 px-6 py-2.5 bg-stone-500 hover:bg-stone-600 text-white rounded-md transition-colors shadow-sm">
-                    <i class="fas fa-download text-xs"></i>
-                    <span class="text-sm font-medium">Export Report</span>
-                </button>
+          
+<div class="relative inline-block text-left">
+    <button onclick="toggleExportMenu()" id="exportBtn"
+        class="flex items-center gap-2 px-6 py-2.5 bg-stone-500 hover:bg-stone-600 text-white rounded-md transition-colors shadow-sm focus:outline-none">
+        <i class="fas fa-download text-xs"></i>
+        <span class="text-sm font-medium">Export Report</span>
+        <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+    </button>
+
+    <div id="exportMenu" class="hidden absolute right-0 mt-2 w-40 bg-white border border-stone-200 rounded-lg shadow-xl z-50 overflow-hidden">
+        <button onclick="downloadReport('pdf')" 
+            class="flex items-center gap-3 w-full px-4 py-3 text-sm text-stone-600 hover:bg-stone-50 transition-colors border-b border-stone-100">
+            <i class="fas fa-file-pdf text-rose-500"></i>
+            <span>PDF Document</span>
+        </button>
+        <button onclick="downloadReport('excel')" 
+            class="flex items-center gap-3 w-full px-4 py-3 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
+            <i class="fas fa-file-excel text-emerald-500"></i>
+            <span>Excel Sheet</span>
+        </button>
+    </div>
+</div>
+
+
             </div>
 
-            <div class="mt-8 flex flex-wrap items-center gap-4 border-t pt-6">
-                <div class="flex bg-stone-100 p-1 rounded-lg border border-stone-200" id="rangeToggles">
-                    <button onclick="setDateRange('day', this)"
-                        class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all bg-white shadow-sm">1
-                        Day</button>
-                    <button onclick="setDateRange('week', this)"
-                        class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">Week</button>
-                    <button onclick="setDateRange('month', this)"
-                        class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">Month</button>
-                </div>
+<div class="mt-8 flex flex-wrap items-center gap-4 border-t pt-6">
+    <div class="flex bg-stone-100 p-1 rounded-lg border border-stone-200" id="rangeToggles">
+        <button onclick="setDateRange('day', this)"
+            class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">1 Day</button>
+        <button onclick="setDateRange('week', this)"
+            class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">Week</button>
+        <button onclick="setDateRange('month', this)"
+            class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">Month</button>
+    </div>
 
-                <form id="filterForm" class="flex flex-wrap items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <div class="relative">
-                            <label
-                                class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">From</label>
-                            <input type="date" name="startDate" id="startDate" value="<%= startDate || '' %>"
-                                onchange="applyFilters()"
-                                class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none">
-                        </div>
-                        <span class="text-stone-400 mt-2">—</span>
-                        <div class="relative">
-                            <label
-                                class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">To</label>
-                            <input type="date" name="endDate" id="endDate" value="<%= endDate || '' %>"
-                                onchange="applyFilters()"
-                                class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none">
-                        </div>
-                    </div>
-
-                    <button type="button" onclick="resetFilters()"
-                        class="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-300 transition-colors">
-                        Reset
-                    </button>
-                </form>
+    <form id="filterForm" class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+            <div class="relative">
+                <label class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">From</label>
+                <input type="date" name="startDate" id="startDate" value="<%= startDate || '' %>"
+                    onchange="applyFilters()"
+                    class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none bg-white">
             </div>
+            <span class="text-stone-400 mt-2">—</span>
+            <div class="relative">
+                <label class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">To</label>
+                <input type="date" name="endDate" id="endDate" value="<%= endDate || '' %>"
+                    onchange="applyFilters()"
+                    class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none bg-white">
+            </div>
+        </div>
+
+        <div class="relative">
+            <label class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">Payment</label>
+            <select name="paymentMethod" onchange="applyFilters()" 
+                class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none bg-white min-w-[140px]">
+                <option value="">All Payments</option>
+                <option value="cashOnDelivery" <%= paymentMethod === 'cashOnDelivery' ? 'selected' : '' %>>Cash on Delivery</option>
+                <option value="wallet" <%= paymentMethod === 'wallet' ? 'selected' : '' %>>Wallet</option>
+                <option value="razorpay" <%= paymentMethod === 'razorpay' ? 'selected' : '' %>>Razorpay</option>
+            </select>
+        </div>
+
+        <div class="relative">
+            <label class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">Status</label>
+            <select name="status" onchange="applyFilters()" 
+                class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none bg-white min-w-[140px]">
+                <option value="">All Statuses</option>
+                <% const statuses = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected"]; %>
+                <% statuses.forEach(s => { %>
+                    <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option>
+                <% }) %>
+            </select>
+        </div>
+
+        <button type="button" onclick="resetFilters()"
+            class="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-300 transition-colors">
+            Reset
+        </button>
+    </form>
+</div>
         </div>
 
     <% 
@@ -94,6 +133,7 @@
                             <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Customer</th>
                             <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Date</th>
                             <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Payment</th>
+                            <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Status</th>
                             <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Applied Coupon</th>
                             <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Offer Discount</th>
                             <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase text-right">Final Total</th>
@@ -118,7 +158,12 @@
                                             <%= order.paymentMethod %>
                                         </span>
                                     </td>
-
+                                    <td class="px-6 py-4 text-sm">
+                                        <span
+                                            class="px-2 py-0.5 bg-emerald-50 borderborder-emerald-100 text-emerald-700 text-[10px] font-bold uppercase rounded">
+                                            <%= order.status %>
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4 text-sm">
                                         <% if(order.discount> 0) { %>
                                             <div class="flex flex-col gap-1">
@@ -170,6 +215,7 @@
 
     </div>
 </div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -234,17 +280,21 @@ function setDateRange(range, btn) {
     startInput.value = formatDate(startDate);
     endInput.value = formatDate(today);
 
-    // Trigger the page reload with new dates
+    // After setting the dates, apply all filters including dropdowns
     applyFilters();
 }
 
 function applyFilters() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
     const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
+    
+    // This loop automatically grabs startDate, endDate, paymentMethod, and status
+    for (const [key, value] of formData.entries()) {
+        if (value) {
+            params.append(key, value);
+        }
+    }
 
     window.location.href = `/admin/sales-report?${params.toString()}`;
 }
