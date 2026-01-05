@@ -155,10 +155,33 @@ export const orderCancel = asyncHandler(async (req, res) => {
         }
     }
 
+if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus === "Paid") {
+        const refundAmount = order.total;
+
+        await walletModel.findOneAndUpdate(
+            { userId: userId },
+            {
+                $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        transactionId: `CAN-${order._id.toString().slice(-6)}`,
+                        amount: refundAmount,
+                        type: 'Credit',
+                        description: `Refund for cancelled order: ${order._id}`,
+                        status: "Success",
+                        date: new Date()
+                    }
+                }
+            },
+            { upsert: true }
+        );
+    }
+
     order.status = "Cancelled";
+    order.items.forEach(item => item.status = "Cancelled");
     await order.save();
 
-    res.status(200).json({ success: true, message: "Order cancelled and stock restored!" });
+    res.status(200).json({ success: true, message: "Order cancelled and and refund processed if applicable" });
 });
 
 

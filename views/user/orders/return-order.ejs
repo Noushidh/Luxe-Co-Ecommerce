@@ -162,7 +162,7 @@
                                 </p>
                             </div>
                             <% } else { %>
-                                <button type="submit" onclick="handleReturnRequest()"
+                                <button type="button" onclick="handleReturnRequest(event)"
                                     class="flex-1 px-8 py-4 rounded-lg text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
                                     style="background-color: #C8A97E;">
                                     SUBMIT RETURN REQUEST
@@ -180,8 +180,13 @@
     </div>
 
     <script>
-        const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
-        async function handleReturnRequest() {
+if (typeof window.notyf === 'undefined') {
+        window.notyf = new Notyf({ 
+            duration: 2000, 
+            position: { x: 'right', y: 'top' } 
+        });
+    }  
+         async function handleReturnRequest() {
             if (event) event.preventDefault();
 
             try {
@@ -195,12 +200,14 @@
 
 
                 const data = { orderId: "<%= order._id %>", itemId: "<%= item._id %>", reason: reason, refundMode: refundMode, comments: comments, addressId: selectedAddress.value };
-
+                console.log("Sending data to backend:", data); 
                 const response = await axios.post('/user/order/return', data);
 
                 if (response.data.success) {
                     notyf.success("Return request submitted successfully!");
                     setTimeout(() => { window.location.href = "/user/orders" }, 2000);
+                }else{
+                    notyf.error("eroor")
                 }
             } catch (error) {
                 console.error(error);

@@ -51,7 +51,11 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
     const { id } = req.params; 
     const productIdFromQuery = req.query.productId; 
     const userId = req.session.user._id;
-
+    
+    if (!productIdFromQuery) {
+        console.error("No Product ID provided in URL");
+        return res.redirect('/user/orders');
+    }
     const order = await orderModel.findOne({ _id: id, userId }).populate('items.productId');
     const addresses = await addressModel.find({ userId: userId });
 
@@ -77,7 +81,8 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
         order: order,
         userData: req.session.user,
         item: itemToReturn, 
-        addresses: addresses
+        addresses: addresses,
+        razorpayKey: process.env.RAZORPAY_KEY_ID,
     });
 });
 

@@ -1,7 +1,8 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import orderModel from "../../models/ordermodel.js";
 import productModel from "../../models/productmodel.js"
-import returnModel from "../../models/returnmodel.js"
+import returnModel from "../../models/returnmodel.js";
+import walletModel from "../../models/walletmodel.js"
 
 export const load_orders = asyncHandler(async (req, res) => {
     const { page = 1, search = "", status = "", payment = "", Date: dateSort = "" } = req.query;
@@ -122,6 +123,23 @@ export const approveReturn = asyncHandler(async (req, res) => {
             { $inc: { "variants.$.stock": returnedItem.quantity } }
         );
     }
+    const refundAmount = returnedItem.price * returnedItem.quantity;
+    console.log("refundAmount",refundAmount)
+    await walletModel.findOneAndUpdate({userId:updatedOrder.userId},
+        {
+            $inc:{balance:refundAmount},
+            $push:{
+                transactions:{
+                    transactionId:`REF-${returnId.toString().slice(-6)}`,
+                    amount:refundAmount,
+                    type: 'Credit', 
+                    description: `Refund for returned product: ${returnedItem.name || 'Product'}`,
+                    status: "Success",
+                    date: new Date()
+                }
+            }
+       },{ upsert: true })
+
     await returnModel.findByIdAndUpdate(returnId, { status: "Approved" });
     res.status(200).json({ success: true, message: "Return approved and order status updated"});
 });
