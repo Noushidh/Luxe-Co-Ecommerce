@@ -73,6 +73,7 @@ router.delete('/offers/delete/:id',adminAuth.checkSession,Offer.deleteOffer)
 
 //sales report
 router.get('/sales-report',adminAuth.checkSession,Sales.load_sales_report)
+router.get('/sales-report/download/:format',adminAuth.checkSession,Sales.download_sales_report);
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 
