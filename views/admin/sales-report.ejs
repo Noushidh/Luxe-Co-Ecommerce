@@ -1,0 +1,201 @@
+<div class="min-h-screen bg-stone-100 p-4 md:p-8 font-['Inter']">
+    <div class="max-w-7xl mx-auto">
+        
+        <div class="bg-white rounded-lg shadow-sm border border-stone-200 p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-stone-700">Sales Report & Performance Overview</h1>
+                    <p class="text-stone-500 text-sm mt-1">Analyze sales trends and revenue metrics.</p>
+                </div>
+                <button onclick="exportReport()" class="flex items-center gap-2 px-6 py-2.5 bg-stone-500 hover:bg-stone-600 text-white rounded-md transition-colors shadow-sm">
+                    <i class="fas fa-download text-xs"></i>
+                    <span class="text-sm font-medium">Export Report</span>
+                </button>
+            </div>
+
+            <div class="mt-8 flex flex-wrap items-center gap-4 border-t pt-6">
+                <div class="flex bg-stone-100 p-1 rounded-lg border border-stone-200" id="rangeToggles">
+                    <button onclick="setDateRange('day', this)" class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all bg-white shadow-sm">1 Day</button>
+                    <button onclick="setDateRange('week', this)" class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">Week</button>
+                    <button onclick="setDateRange('month', this)" class="range-btn px-4 py-1.5 text-xs font-semibold rounded-md transition-all text-stone-600">Month</button>
+                </div>
+
+                <form id="filterForm" class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <label class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">From</label>
+                            <input type="date" name="startDate" id="startDate" value="<%= startDate || '' %>" onchange="applyFilters()" class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none">
+                        </div>
+                        <span class="text-stone-400 mt-2">—</span>
+                        <div class="relative">
+                            <label class="absolute -top-5 left-1 text-[10px] font-bold text-stone-500 uppercase">To</label>
+                            <input type="date" name="endDate" id="endDate" value="<%= endDate || '' %>" onchange="applyFilters()" class="px-3 py-2 border border-stone-300 rounded-lg text-sm outline-none">
+                        </div>
+                    </div>
+
+                    <div class="relative w-full md:w-64">
+                        <input type="text" name="search" value="<%= search || '' %>" placeholder="Search orders..." 
+                               class="w-full pl-4 pr-4 py-2 bg-stone-50 border border-stone-300 rounded-lg text-sm focus:ring-1 focus:ring-stone-400 outline-none" 
+                               oninput="autoSearch()">
+                    </div>
+
+                    <button type="button" onclick="resetFilters()" class="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-300 transition-colors">
+                        Reset
+                    </button>
+                </form>
+            </div>
+        </div>
+
+   <% 
+    const stats = [
+        { label: 'Total Sales Count', value: totalOrders, color: 'text-stone-700', bg: 'bg-white' },
+        { label: 'Gross Sales', value: '₹' + (totalAmount + totalDiscount).toLocaleString(), color: 'text-stone-700', bg: 'bg-white' },
+        { label: 'Coupons Deducted', value: '₹' + totalDiscount.toLocaleString(), color: 'text-red-500', bg: 'bg-white' },
+        { label: 'Net Revenue', value: '₹' + totalAmount.toLocaleString(), color: 'text-white', bg: 'bg-stone-800' }
+    ];
+  %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <% stats.forEach(stat => { %>
+                <div class="<%= stat.bg %> p-6 rounded-xl border border-stone-200 shadow-sm relative overflow-hidden transition-transform hover:scale-[1.02]">
+                    <p class="<%= stat.bg === 'bg-stone-800' ? 'text-stone-400' : 'text-stone-500' %> text-xs font-medium uppercase tracking-wider">
+                        <%= stat.label %>
+                    </p>
+                    <h3 class="text-2xl font-bold <%= stat.color %> mt-2"><%= stat.value %></h3>
+                    <% if (stat.icon) { %>
+                        <div class="absolute right-4 top-6 bg-stone-100 p-2 rounded-full">
+                            <i class="fas <%= stat.icon %> text-stone-400"></i>
+                        </div>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+    <div class="p-6 border-b border-stone-100">
+        <h2 class="text-lg font-bold text-stone-700">Detailed Sales Report</h2>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-stone-50 border-b border-stone-200">
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Order ID</th>
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Customer</th>
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Date</th>
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Payment</th>
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Applied Coupon</th>
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase">Offer Discount</th>
+                    <th class="px-6 py-4 text-xs font-bold text-stone-500 uppercase text-right">Final Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+                <% if(orders && orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                        <tr class="hover:bg-stone-50/50 transition-colors">
+                            <td class="px-6 py-4 text-sm font-bold text-stone-700">
+                                #<%= order.orderId || order._id.toString().slice(-6).toUpperCase() %>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-stone-600">
+                                <%= order.userId?.fullname || 'Guest' %>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-stone-500">
+                                <%= new Date(order.createdAt).toLocaleDateString('en-IN') %>
+                            </td>
+                            <td class="px-6 py-4 text-sm">
+<span class="px-2 py-0.5 bg-emerald-50 borderborder-emerald-100 text-emerald-700 text-[10px] font-bold uppercase rounded">                               <%= order.paymentMethod %>
+                                </span>
+                            </td>
+
+<td class="px-6 py-4 text-sm">
+    <% if(order.discount > 0) { %>
+        <div class="flex flex-col gap-1">
+            <div>
+                <span class="inline-block px-2 py-0.5 bg-stone-100 border border-stone-200 text-indigo-600 text-[10px] font-bold uppercase tracking-wide rounded">
+                    <%= order.couponId?.code || 'COUPON' %>
+                </span>
+            </div>
+            <span class="text-blue-600 font-medium">
+                -₹<%= order.discount.toLocaleString('en-IN') %>
+            </span>
+        </div>
+    <% } else { %>
+        <span class="text-stone-300">—</span>
+    <% } %>
+</td>
+
+                            <td class="px-6 py-4 text-sm">
+                                <div class="flex flex-col">
+                                    <% if(order.offerDiscount > 0) { %>
+                                        <span class="text-orange-600 font-medium">-₹<%= order.offerDiscount.toLocaleString('en-IN') %></span>
+                                        <span class="text-[9px] text-stone-400 uppercase">Product Offer</span>
+                                    <% } else { %>
+                                        <span class="text-stone-300">₹0</span>
+                                    <% } %>
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4 text-sm text-stone-800 text-right font-bold">
+                                ₹<%= order.total.toLocaleString('en-IN') %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" class="p-10 text-center text-stone-400">
+                            <div class="flex flex-col items-center gap-2">
+                                <i class="fas fa-folder-open text-2xl"></i>
+                                <span>No records found for the selected criteria</span>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+    </div>
+</div>
+
+<script>
+    function setDateRange(range, btn) {
+        const startInput = document.getElementById('startDate');
+        const endInput = document.getElementById('endDate');
+        const today = new Date();
+        let startDate = new Date();
+
+        if (range === 'day') {
+            startDate = today;
+        } else if (range === 'week') {
+            startDate.setDate(today.getDate() - 7);
+        } else if (range === 'month') {
+            startDate.setMonth(today.getMonth() - 1);
+        }
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+        
+        startInput.value = formatDate(startDate);
+        endInput.value = formatDate(today);
+
+        document.querySelectorAll('.range-btn').forEach(b => {
+            b.classList.remove('bg-white', 'shadow-sm');
+            b.classList.add('text-stone-600');
+        });
+        btn.classList.add('bg-white', 'shadow-sm');
+        btn.classList.remove('text-stone-600');
+
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const form = document.getElementById('filterForm');
+        const params = new URLSearchParams(new FormData(form));
+        window.location.href = `/admin/sales-report?${params.toString()}`;
+    }
+
+    function resetFilters() {
+        window.location.href = '/admin/sales-report';
+    }
+</script>
