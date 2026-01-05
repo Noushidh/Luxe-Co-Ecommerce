@@ -5,6 +5,10 @@ import asyncHandler from "../../utils/asynHandler.js";
 import orderModel from "../../models/ordermodel.js"
 
 export const load_sales_report = asyncHandler(async(req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10; 
+    const skip = (page - 1) * limit;
+    
     const { startDate, endDate, paymentMethod, status } = req.query;
 
     let filter = {};
@@ -14,14 +18,8 @@ export const load_sales_report = asyncHandler(async(req, res) => {
             $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
         };
     }
-
-    if (paymentMethod) {
-        filter.paymentMethod = paymentMethod;
-    }
-
-    if (status) {
-        filter.status = status;
-    }
+    if (paymentMethod) filter.paymentMethod = paymentMethod;
+    if (status) filter.status = status;
 
     const stats = await orderModel.aggregate([
         { $match: filter },
@@ -40,7 +38,15 @@ export const load_sales_report = asyncHandler(async(req, res) => {
     const orders = await orderModel.find(filter)
         .populate('userId', 'fullname email')
         .populate('couponId', 'code')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const totalPages = Math.ceil(reportStats.totalOrders / limit);
+
+    const queryParams = new URLSearchParams(req.query);
+    queryParams.delete('page'); 
+    const qs = queryParams.toString();
 
     res.render("admin/layout", {
         title: "Sales Report",
@@ -52,7 +58,10 @@ export const load_sales_report = asyncHandler(async(req, res) => {
         startDate,
         endDate,
         paymentMethod, 
-        status         
+        status,
+        currentPage: page,
+        totalPages,
+        qs 
     });
 });
 

@@ -248,6 +248,43 @@
         </div>
 
     </div>
+
+  <div class="flex justify-center items-center gap-3 mt-12 mb-10">
+    <% if (currentPage > 1) { %>
+        <a href="?<%= qs %>&page=<%= currentPage - 1 %>"
+           class="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50/80 text-stone-600 hover:bg-white hover:shadow-md transition-all">
+            <span class="text-lg">«</span>
+        </a>
+    <% } else { %>
+        <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-100/50 text-stone-300 cursor-not-allowed">
+            <span class="text-lg">«</span>
+        </span>
+    <% } %>
+
+    <div class="flex items-center gap-2.5">
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?<%= qs %>&page=<%= i %>"
+               class="w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all
+                <%= i === currentPage 
+                    ? 'bg-[#C8A97E] text-white shadow-lg shadow-[#C8A97E]/20 scale-105' 
+                    : 'bg-stone-50/80 text-stone-600 hover:bg-white hover:shadow-md' 
+                %>">
+                <%= i %>
+            </a>
+        <% } %>
+    </div>
+
+    <% if (currentPage < totalPages) { %>
+        <a href="?<%= qs %>&page=<%= currentPage + 1 %>"
+           class="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-50/80 text-stone-600 hover:bg-white hover:shadow-md transition-all">
+            <span class="text-lg">»</span>
+        </a>
+    <% } else { %>
+        <span class="w-10 h-10 flex items-center justify-center rounded-xl bg-stone-100/50 text-stone-300 cursor-not-allowed">
+            <span class="text-lg">»</span>
+        </span>
+    <% } %>
+</div>
 </div>
 
 
