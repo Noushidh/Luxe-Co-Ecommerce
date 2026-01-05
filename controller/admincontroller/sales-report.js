@@ -2,15 +2,11 @@ import asyncHandler from "../../utils/asynHandler.js";
 import orderModel from "../../models/ordermodel.js"
 
 export const load_sales_report = asyncHandler(async(req,res)=>{
-const { startDate, endDate, search } = req.query;
-    const userId = req.session.user?._id;
+const { startDate, endDate} = req.query;
 
     let filter = {};
     if (startDate && endDate) {
-        filter.createdAt = { 
-            $gte: new Date(startDate), 
-            $lte: new Date(new Date(endDate).setHours(23, 59, 59)) 
-        };
+        filter.createdAt = { $gte: new Date(startDate), $lte: new Date(new Date(endDate).setHours(23, 59, 59))};
     }
 
     const stats = await orderModel.aggregate([
@@ -40,6 +36,5 @@ const { startDate, endDate, search } = req.query;
         totalDiscount: reportStats.totalDiscount,
         startDate,
         endDate,
-        search
     });
 })
