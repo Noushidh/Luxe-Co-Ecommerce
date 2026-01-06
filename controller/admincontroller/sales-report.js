@@ -8,7 +8,6 @@ export const load_sales_report = asyncHandler(async(req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10; 
     const skip = (page - 1) * limit;
-    
     const { startDate, endDate, paymentMethod, status } = req.query;
 
     let filter = {};
@@ -29,15 +28,12 @@ export const load_sales_report = asyncHandler(async(req, res) => {
             }
         }
     ]);
-
     const reportStats = stats[0] || { totalOrders: 0, totalAmount: 0, totalDiscount: 0 };
-
     const orders = await orderModel.find(filter)
         .populate('userId', 'fullname email').populate('couponId', 'code')
         .sort({ createdAt: -1 }).skip(skip).limit(limit);
 
     const totalPages = Math.ceil(reportStats.totalOrders / limit);
-
     const queryParams = new URLSearchParams(req.query);
     queryParams.delete('page'); 
     const qs = queryParams.toString();
