@@ -13,10 +13,7 @@ export const load_sales_report = asyncHandler(async(req, res) => {
 
     let filter = {};
     if (startDate && endDate) {
-        filter.createdAt = { 
-            $gte: new Date(startDate), 
-            $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
-        };
+        filter.createdAt = { $gte: new Date(startDate), $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))};
     }
     if (paymentMethod) filter.paymentMethod = paymentMethod;
     if (status) filter.status = status;
@@ -36,11 +33,8 @@ export const load_sales_report = asyncHandler(async(req, res) => {
     const reportStats = stats[0] || { totalOrders: 0, totalAmount: 0, totalDiscount: 0 };
 
     const orders = await orderModel.find(filter)
-        .populate('userId', 'fullname email')
-        .populate('couponId', 'code')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit);
+        .populate('userId', 'fullname email').populate('couponId', 'code')
+        .sort({ createdAt: -1 }).skip(skip).limit(limit);
 
     const totalPages = Math.ceil(reportStats.totalOrders / limit);
 
@@ -95,7 +89,6 @@ export const download_sales_report = asyncHandler(async (req, res) => {
             { header: 'Status', key: 'status', width: 15 },
             { header: 'Amount', key: 'amount', width: 12 }
         ];
-
         orders.forEach(order => {
             worksheet.addRow({
                 id: order._id.toString(),
@@ -106,7 +99,6 @@ export const download_sales_report = asyncHandler(async (req, res) => {
                 amount: order.total
             });
         });
-
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=sales_report.xlsx');
         return workbook.xlsx.write(res).then(() => res.status(200).end());
@@ -139,9 +131,7 @@ export const download_sales_report = asyncHandler(async (req, res) => {
             theme: 'grid',
             headStyles: { fillColor: [41, 128, 185] } 
         });
-
         const pdfBuffer = doc.output('arraybuffer');
-        
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=sales_report.pdf');
         return res.send(Buffer.from(pdfBuffer));
