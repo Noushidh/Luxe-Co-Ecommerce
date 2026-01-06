@@ -5,13 +5,50 @@ import offerModal from "../../models/offermodel.js"
 import mongoose from "mongoose";
 
 export const load_offer = asyncHandler(async (req, res) => {
-    const offersList = await offerModal.find().populate('productId','name').populate('categoryId','subcategory').sort({ createdAt: -1 });
+    const { search, status, page = 1 } = req.query;
+    const limit = 10;
+    const skip = (parseInt(page) - 1) * limit;
+
+    let filter = {};
+    const now = new Date();
+
+    if (search) {
+        filter.offerTitle = { $regex: search, $options: 'i' };
+    }
+
+    if (status === 'active') {
+        filter.isActive = true;
+        filter.expiryDate = { $gte: now }; 
+    } else if (status === 'blocked') {
+        filter.isActive = false;
+    } else if (status === 'expired') {
+        filter.expiryDate = { $lt: now };
+    }
+    const totalOffers = await offerModal.countDocuments(filter);
+    const totalPages = Math.ceil(totalOffers / limit);
+
+    const offersList = await offerModal.find(filter)
+        .populate('productId', 'name')
+        .populate('categoryId', 'subcategory')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const queryParams = new URLSearchParams(req.query);
+    queryParams.delete('page'); 
+    const qs = queryParams.toString();
+
     res.render("admin/layout", {
         title: "Offers",
         body: "offer/offers",
-        offers: offersList || []
-    })
-})
+        offers: offersList || [],
+        currentPage: parseInt(page),
+        totalPages,
+        qs, 
+        search,
+        status
+    });
+});
 
 export const load_addOffer = asyncHandler(async (req, res) => {
     const subcategories = await SubCategory.find({ isBlocked: false })
