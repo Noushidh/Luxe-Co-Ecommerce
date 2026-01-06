@@ -1,16 +1,52 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import couponModel from "../../models/couponmodel.js"
 
-
 export const load_coupons = asyncHandler(async (req, res) => {
+    const { search, status, page = 1 } = req.query;
+    const limit = 10;
+    const skip = (parseInt(page) - 1) * limit;
+    let filter = {};
+    const now = new Date();
 
-    const coupons = await couponModel.find({}).sort({ createdAt: -1 })
+    if (search) {
+        filter.$or = [
+            { name: { $regex: search, $options: 'i' } },
+            { code: { $regex: search, $options: 'i' } }
+        ];
+    }
+
+    if (status === 'active') {
+        filter.isActive = true;
+        filter.expiryDate = { $gte: now }; 
+    } else if (status === 'blocked') {
+        filter.isActive = false;
+    } else if (status === 'expired') {
+        filter.expiryDate = { $lt: now };
+    }
+
+    const totalCoupons = await couponModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalCoupons / limit);
+
+    const coupons = await couponModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const queryParams = new URLSearchParams(req.query);
+    queryParams.delete('page'); 
+    const qs = queryParams.toString();
+
     res.render("admin/layout", {
         title: "Coupons",
         body: "coupon/coupons",
-        coupons
-    })
-})
+        coupons: coupons || [],
+        currentPage: parseInt(page),
+        totalPages,
+        qs, 
+        search: search || '',
+        status: status || 'all'
+    });
+});
 
 
 export const load_couponAdd = asyncHandler(async (req, res) => {
