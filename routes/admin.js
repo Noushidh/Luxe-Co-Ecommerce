@@ -13,6 +13,7 @@ import * as Products from "../controller/admincontroller/products.js"
 import * as Orders from "../controller/admincontroller/orders.js";
 import * as Coupon from "../controller/admincontroller/coupons.js"
 import * as Offer from "../controller/admincontroller/offer.js"
+import * as Sales from "../controller/admincontroller/sales-report.js";
 
 router.get('/login', adminAuth.isLoggin, adminAuthController.loadlogin)
 router.post('/login', adminAuth.isLoggin, adminAuthController.login)
@@ -68,6 +69,11 @@ router.get('/offers/edit/:id',adminAuth.checkSession,Offer.load_editOffer)
 router.post('/offers/add',adminAuth.checkSession,Offer.addOrUpdateOffer)
 router.patch('/offers/edit/:id',adminAuth.checkSession,Offer.addOrUpdateOffer)
 router.delete('/offers/delete/:id',adminAuth.checkSession,Offer.deleteOffer)
+
+
+//sales report
+router.get('/sales-report',adminAuth.checkSession,Sales.load_sales_report)
+router.get('/sales-report/download/:format',adminAuth.checkSession,Sales.download_sales_report);
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 

@@ -49,7 +49,7 @@ export default async function sendVerificationEmail(email, otp) {
     </div>
   `
     });
-    console.log("MAIL SEND RESULT:", info);   // <--- ADD THIS
+    console.log("MAIL SEND RESULT:", info);   
     return info.accepted.length > 0;
   } catch (error) {
     console.log("Error Sending Email:", error);

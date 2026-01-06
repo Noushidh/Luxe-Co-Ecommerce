@@ -46,6 +46,9 @@ export const finalizeOrder = async ({ userId, cart, address, appliedCoupon, paym
     const subtotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const shipping = subtotal > 500 ? 0 : 50;
     const finalTotal = (subtotal - appliedCoupon.discountValue) + shipping;
+    
+    const priceData = await calculateOrderPrices(cart, appliedCoupon);
+    const productOfferOnly = priceData.totalSavings - (appliedCoupon?.discountValue || 0);
 
     const currentYear = new Date().getFullYear();
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
@@ -67,6 +70,7 @@ export const finalizeOrder = async ({ userId, cart, address, appliedCoupon, paym
         total: finalTotal,
         shipping,
         discount: appliedCoupon.discountValue,
+        offerDiscount: productOfferOnly,
         couponId: appliedCoupon._id,
         status: "Confirmed",
         paymentMethod,
