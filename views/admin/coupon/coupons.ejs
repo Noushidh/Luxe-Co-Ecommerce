@@ -136,7 +136,7 @@
                             <% for (let i=1; i <=totalPages; i++) { %>
                                 <a href="/admin/coupons?<%= qs %>&page=<%= i %>"
                                     class="w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all 
-                   <%= i === currentPage ? 'bg-[#C8A97E] text-white shadow-lg' : 'bg-stone-50 text-stone-600 hover:bg-white' %>">
+                                     <%= i === currentPage ? 'bg-[#C8A97E] text-white shadow-lg' : 'bg-stone-50 text-stone-600 hover:bg-white' %>">
                                     <%= i %>
                                 </a>
                                 <% } %>

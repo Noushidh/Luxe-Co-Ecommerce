@@ -118,17 +118,21 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    const notyf = new Notyf({
-        duration: 2500,
-        position: { x: 'right', y: 'top' }
-    });
+      function copyReferralCode() {
+        const code = document.getElementById('referralCode').innerText;
+        navigator.clipboard.writeText(code);
 
-    function copyReferralCode() {
-        const code = document.getElementById("referralCode").innerText;
-        navigator.clipboard.writeText(code)
-            .then(() => notyf.success("Referral code copied!"))
-            .catch(() => notyf.error("Failed to copy"));
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: '#FAF7F2',
+            icon: 'success',
+            title: 'Referral Code Copied'
+        });
     }
 </script>
