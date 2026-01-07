@@ -4,54 +4,85 @@ import autoTable from 'jspdf-autotable';
 import asyncHandler from "../../utils/asynHandler.js";
 import orderModel from "../../models/ordermodel.js"
 
-export const load_sales_report = asyncHandler(async(req, res) => {
+export const load_sales_report = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = 10; 
+    const limit = 10;
     const skip = (page - 1) * limit;
     const { startDate, endDate, paymentMethod, status } = req.query;
 
     let filter = {};
     if (startDate && endDate) {
-        filter.createdAt = { $gte: new Date(startDate), $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))};
+        filter.createdAt = { 
+            $gte: new Date(startDate), 
+            $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)) 
+        };
     }
     if (paymentMethod) filter.paymentMethod = paymentMethod;
     if (status) filter.status = status;
 
-    const stats = await orderModel.aggregate([
-        { $match: filter },
-        {
-            $group: {
-                _id: null,
-                totalOrders: { $sum: 1 },
-                totalAmount: { $sum: "$total" },
-                totalDiscount: { $sum: { $add: ["$discount", { $ifNull: ["$offerDiscount", 0] }] } }
+   const stats = await orderModel.aggregate([
+    { 
+        $match: { 
+            ...filter, 
+            status: { $in: ["Delivered", "Return Requested", "Returned"] } 
+        } 
+    },
+    {
+        $group: {
+            _id: null,
+            count: { $sum: 1 },
+            
+            gross: { $sum: "$total" },
+            
+            refunds: { $sum: { $ifNull: ["$refundedAmount", 0] } },
+            
+            discounts: { 
+                $sum: { $add: ["$discount", { $ifNull: ["$offerDiscount", 0] }] } 
             }
         }
-    ]);
-    const reportStats = stats[0] || { totalOrders: 0, totalAmount: 0, totalDiscount: 0 };
-    const orders = await orderModel.find(filter)
-        .populate('userId', 'fullname email').populate('couponId', 'code')
-        .sort({ createdAt: -1 }).skip(skip).limit(limit);
+    },
+    {
+        $project: {
+            _id: 0,
+            totalOrders: "$count",
+            grossSales: "$gross",
+            totalDiscount: "$discounts",
+            netRevenue: { $subtract: ["$gross", "$refunds"] }
+        }
+    }
+]);
 
-    const totalPages = Math.ceil(reportStats.totalOrders / limit);
+    const reportStats = stats[0] || { totalOrders: 0, grossSales: 0, totalDiscount: 0, netRevenue: 0 };
+
+    const orders = await orderModel.find(filter)
+        .populate('userId', 'fullname email')
+        .populate('couponId', 'code')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const totalMatchingOrders = await orderModel.countDocuments(filter);
+    const totalPages = Math.ceil(totalMatchingOrders / limit);
+
     const queryParams = new URLSearchParams(req.query);
-    queryParams.delete('page'); 
+    queryParams.delete('page');
     const qs = queryParams.toString();
 
     res.render("admin/layout", {
         title: "Sales Report",
         body: "./sales-report",
         orders,
-        totalOrders: reportStats.totalOrders,
-        totalAmount: reportStats.totalAmount,
-        totalDiscount: reportStats.totalDiscount,
+        totalOrders: reportStats.totalOrders,   
+        totalAmount: reportStats.netRevenue,    
+        totalDiscount: reportStats.totalDiscount, 
+        grossSales: reportStats.grossSales,
         startDate,
         endDate,
-        paymentMethod, 
+        paymentMethod,
         status,
         currentPage: page,
         totalPages,
-        qs 
+        qs
     });
 });
 
