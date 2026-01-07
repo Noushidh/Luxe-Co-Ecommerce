@@ -3,10 +3,11 @@ import orderModel from "../../models/ordermodel.js"
 import userModel from "../../models/usermodel.js"
 import addressModel from "../../models/addressmodel.js";
 import returnModel from "../../models/returnmodel.js"
+import ProductModel from "../../models/productmodel.js";
 
 export const load_orders = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = 5; 
+    const limit = 5;
     const skip = (page - 1) * limit;
     const userId = req.session.user?._id;
     const totalOrdersCount = await orderModel.countDocuments({ userId });
@@ -48,8 +49,8 @@ export const load_orders_Details = asyncHandler(async (req, res) => {
 })
 
 export const load_returnOrder = asyncHandler(async (req, res) => {
-    const { id } = req.params; 
-    const productIdFromQuery = req.query.productId; 
+    const { id } = req.params;
+    const productIdFromQuery = req.query.productId;
     const userId = req.session.user._id;
 
     const order = await orderModel.findOne({ _id: id, userId }).populate('items.productId');
@@ -58,16 +59,16 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
     if (!order) return res.status(404).send("Order not found");
 
     const itemToReturn = order.items.find(item => {
-        const idFromItem = item.productId?._id?.toString() || 
-                           item.productId?.toString() || 
-                           item.product_id?.toString();
-        
+        const idFromItem = item.productId?._id?.toString() ||
+            item.productId?.toString() ||
+            item.product_id?.toString();
+
         return idFromItem === productIdFromQuery;
     });
 
     if (!itemToReturn) {
         console.error("Item not found in order. Clicked ID:", productIdFromQuery);
-        return res.redirect('/user/orders'); 
+        return res.redirect('/user/orders');
     }
 
     res.render("user/layout", {
@@ -76,7 +77,7 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
         currentPath: '/user/orders',
         order: order,
         userData: req.session.user,
-        item: itemToReturn, 
+        item: itemToReturn,
         addresses: addresses
     });
 });
@@ -85,16 +86,16 @@ export const returnOrder_details = asyncHandler(async (req, res) => {
     const { orderId, itemId, reason, refundMode, comments, addressId } = req.body;
 
     const order = await orderModel.findById(orderId);
-    const itemToReturn = order.items.id(itemId); 
+    const itemToReturn = order.items.id(itemId);
     const address = await addressModel.findById(addressId);
     const fulladdress = `${address.name}, ${address.phone}, ${address.street}, ${address.city}, ${address.state}, ${address.pincode}`;
 
     const newReturn = new returnModel({
         order_items_id: orderId,
         user_id: req.session.user._id,
-        product_id: itemToReturn.productId, 
+        product_id: itemToReturn.productId,
         reason: reason,
-        refund_mode: refundMode, 
+        refund_mode: refundMode,
         comments: comments,
         pickup_address: fulladdress,
         pickup_date: Date.now(),
@@ -103,7 +104,7 @@ export const returnOrder_details = asyncHandler(async (req, res) => {
     await newReturn.save();
 
     await orderModel.updateOne({ _id: orderId, "items._id": itemId },
-        { $set: { "items.$.status": "Return Requested","status": "Return Requested" } });
+        { $set: { "items.$.status": "Return Requested", "status": "Return Requested" } });
 
     return res.status(200).json({ success: true, message: "Return request submitted" });
 });
