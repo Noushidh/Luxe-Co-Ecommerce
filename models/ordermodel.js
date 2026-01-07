@@ -24,10 +24,8 @@ const orderSchema = new mongoose.Schema({
             default: "Placed"
         }
     }],
-    total: {
-        type: Number,
-        required: true
-    },
+    total: {type: Number,required: true},
+    refundedAmount: {type: Number,default: 0,min: 0},
     discount: { type: Number,default: 0},
     offerDiscount: { type: Number, default: 0 },
     couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },

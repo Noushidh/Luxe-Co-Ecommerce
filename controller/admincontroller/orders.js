@@ -105,22 +105,27 @@ export const approveReturn = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: "Return record not found" });
     }
 
+    if (returnDoc.status !== 'Pending') { 
+        return res.status(400).json({ success: false, message: "This return request has already been processed." });
+    }
     const order = await orderModel.findById(orderId);
     if (!order) {
         return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    const item = order.items.find(i => i.productId.toString() === returnDoc.product_id.toString());
+    
+    if (!item || item.status !== 'Return Requested') {
+        return res.status(400).json({ success: false, message: "Item is not in a returnable state." });
     }
 
     const totalOriginalPrice = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 
     const updatedOrder = await orderModel.findOneAndUpdate(
         { _id: orderId, "items.productId": returnDoc.product_id },
-        { $set: { "items.$.status": "Returned" } }, 
+        { $set: { "items.$.status": "Returned" } },
         { new: true }
     );
-
-    if (!updatedOrder) {
-        return res.status(404).json({ success: false, message: "Could not find product in this order" });
-    }
 
     const returnedItem = updatedOrder.items.find(item => item.productId.toString() === returnDoc.product_id.toString());
 
@@ -148,10 +153,10 @@ export const approveReturn = asyncHandler(async (req, res) => {
                 }
             }, { upsert: true });
 
-        updatedOrder.total -= refundAmount;
+        updatedOrder.refundedAmount = (updatedOrder.refundedAmount || 0) + refundAmount;
 
-        const allReturned = updatedOrder.items.every(i => ["Returned", "Cancelled"].includes(i.status));
-        if (allReturned) {
+        const allProcessed = updatedOrder.items.every(i => ["Returned", "Cancelled"].includes(i.status));
+        if (allProcessed) {
             updatedOrder.status = "Returned";
         }
         
@@ -159,7 +164,7 @@ export const approveReturn = asyncHandler(async (req, res) => {
     }
 
     await returnModel.findByIdAndUpdate(returnId, { status: "Approved" });
-    res.status(200).json({ success: true, message: "Return approved, wallet credited with pro-rata amount" });
+    res.status(200).json({ success: true, message: "Return approved and wallet credited" });
 });
 
 export const rejectReturn = asyncHandler(async(req,res)=>{
