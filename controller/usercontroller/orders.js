@@ -1,6 +1,5 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import orderModel from "../../models/ordermodel.js"
-import userModel from "../../models/usermodel.js"
 import addressModel from "../../models/addressmodel.js";
 import returnModel from "../../models/returnmodel.js"
 import productModel from "../../models/productmodel.js";
@@ -160,9 +159,7 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
                         date: new Date()
                     } 
                 }
-            },
-            { upsert: true, new: true } 
-        );
+            },{ upsert: true, new: true } );
     }
 
     order.total -= refundAmount;
@@ -172,7 +169,6 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
         order.status = 'Cancelled';
         if (order.paymentStatus === 'Paid') order.paymentStatus = 'Refunded';
     }
-
     await order.save();
     res.status(200).json({ success: true, message: `Item cancelled. ₹${refundAmount} has been credited to your wallet.`});
 });

@@ -105,43 +105,61 @@ export const approveReturn = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: "Return record not found" });
     }
 
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    const totalOriginalPrice = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
     const updatedOrder = await orderModel.findOneAndUpdate(
-        {  _id: orderId, "items.productId": returnDoc.product_id },
-        { $set: { "items.$.status": "Returned", "status": "Returned" } 
-        },{ new: true }
+        { _id: orderId, "items.productId": returnDoc.product_id },
+        { $set: { "items.$.status": "Returned" } }, 
+        { new: true }
     );
 
     if (!updatedOrder) {
         return res.status(404).json({ success: false, message: "Could not find product in this order" });
     }
 
-  const returnedItem = updatedOrder.items.find(item => item.productId.toString() === returnDoc.product_id.toString());
+    const returnedItem = updatedOrder.items.find(item => item.productId.toString() === returnDoc.product_id.toString());
 
     if (returnedItem) {
+        const itemSubtotal = returnedItem.price * returnedItem.quantity;
+        const refundAmount = Math.round((itemSubtotal / totalOriginalPrice) * order.total);
+
         await productModel.updateOne(
             { _id: returnedItem.productId, "variants.size": returnedItem.size, "variants.color": returnedItem.color },
             { $inc: { "variants.$.stock": returnedItem.quantity } }
         );
-    }
-    const refundAmount = returnedItem.price * returnedItem.quantity;
-    console.log("refundAmount",refundAmount)
-    await walletModel.findOneAndUpdate({userId:updatedOrder.userId},
-        {
-            $inc:{balance:refundAmount},
-            $push:{
-                transactions:{
-                    transactionId:`REF-${returnId.toString().slice(-6)}`,
-                    amount:refundAmount,
-                    type: 'Credit', 
-                    description: `Refund for returned product: ${returnedItem.name || 'Product'}`,
-                    status: "Success",
-                    date: new Date()
+
+        await walletModel.findOneAndUpdate({ userId: updatedOrder.userId },
+            {
+                $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        transactionId: `REF-${returnId.toString().slice(-6)}`,
+                        amount: refundAmount,
+                        type: 'Credit',
+                        description: `Refund for returned product: ${returnedItem.productName || 'Product'}`,
+                        status: "Success",
+                        date: new Date()
+                    }
                 }
-            }
-       },{ upsert: true })
+            }, { upsert: true });
+
+        updatedOrder.total -= refundAmount;
+
+        const allReturned = updatedOrder.items.every(i => ["Returned", "Cancelled"].includes(i.status));
+        if (allReturned) {
+            updatedOrder.status = "Returned";
+        }
+        
+        await updatedOrder.save();
+    }
 
     await returnModel.findByIdAndUpdate(returnId, { status: "Approved" });
-    res.status(200).json({ success: true, message: "Return approved and order status updated"});
+    res.status(200).json({ success: true, message: "Return approved, wallet credited with pro-rata amount" });
 });
 
 export const rejectReturn = asyncHandler(async(req,res)=>{
