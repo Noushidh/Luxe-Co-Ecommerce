@@ -134,89 +134,106 @@
                 <h2 class="text-2xl font-semibold mb-6">Order Summary</h2>
 
                 <!-- COUPON -->
-         <div class="mb-4">
-  <label class="block text-sm font-medium text-gray-700 mb-2">Have a Coupon?</label>
-  <div class="flex gap-2">
-    <input type="text" id="couponInput" placeholder="Enter code"
-      class="flex-grow border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#C8A97E] outline-none uppercase font-mono font-bold" />
-    <button onclick="applyCoupon()"
-      class="bg-[#C8A97E] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#b8986d] transition active:scale-95">
-      Apply
-    </button>
-  </div>
-  <p id="couponMessage" class="text-[10px] mt-1 hidden"></p>
+       <div class="mb-4">
+    <label class="block text-sm font-medium text-gray-700 mb-2">Have a Coupon?</label>
+    <div class="flex gap-2">
+        <input type="text" id="couponInput" placeholder="Enter code"
+            value="<%= locals.appliedCouponCode ? appliedCouponCode : '' %>"
+            <%= locals.appliedCouponCode ? 'disabled' : '' %>
+            class="flex-grow border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-[#C8A97E] outline-none uppercase font-mono font-bold <%= locals.appliedCouponCode ? 'bg-gray-100 text-gray-500' : '' %>" />
+        
+        <% if (locals.appliedCouponCode) { %>
+            <button onclick="removeCoupon()"
+                class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition active:scale-95">
+                Remove
+            </button>
+        <% } else { %>
+            <button onclick="applyCoupon()"
+                class="bg-[#C8A97E] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#b8986d] transition active:scale-95">
+                Apply
+            </button>
+        <% } %>
+    </div>
+    <p id="couponMessage" class="text-[10px] mt-1 hidden"></p>
 </div>
 
 <% if (locals.coupons && coupons.length > 0) { %>
-  <div class="mb-6">
-    <button onclick="toggleCouponList()"
-      class="text-[#4B3621] text-xs font-bold flex items-center gap-1 hover:underline mb-3 uppercase tracking-tight">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01" />
-      </svg>
-      Available & Upcoming Offers (<%= coupons.length %>)
-    </button>
+    <div class="mb-6">
+        <button onclick="toggleCouponList()"
+            class="text-[#4B3621] text-xs font-bold flex items-center gap-1 hover:underline mb-3 uppercase tracking-tight">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01" />
+            </svg>
+            Available & Upcoming Offers (<%= coupons.length %>)
+        </button>
 
-    <div id="couponList" class="hidden space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-      <% coupons.forEach(coupon => { 
-          const isLocked = subTotal < coupon.minPurchase;
-          const progress = Math.min((subTotal / coupon.minPurchase) * 100, 100);
-      %>
-        <div class="border-2 rounded-xl p-3 transition-all relative group 
-          <%= isLocked ? 'border-gray-200 bg-gray-50/50' : 'border-dashed border-[#C8A97E] bg-white shadow-sm' %>">
-          
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <div class="flex items-center gap-2">
-                <p class="font-mono font-bold text-sm <%= isLocked ? 'text-gray-400' : 'text-[#4B3621]' %> uppercase tracking-wider">
-                  <%= coupon.code %>
-                </p>
-                <% if (isLocked) { %>
-                  <span class="text-[8px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase font-bold">Locked</span>
-                <% } else { %>
-                  <span class="text-[8px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded uppercase font-bold animate-pulse">Available</span>
-                <% } %>
-              </div>
+        <div id="couponList" class="hidden space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+            <% coupons.forEach(coupon => { 
+                const isLocked = subTotal < coupon.minPurchase;
+                const progress = Math.min((subTotal / coupon.minPurchase) * 100, 100);
+                const isCurrentlyApplied = locals.appliedCouponCode && appliedCouponCode === coupon.code;
+            %>
+                <div class="border-2 rounded-xl p-3 transition-all relative group 
+                    <%= isLocked ? 'border-gray-200 bg-gray-50/50' : 'border-dashed border-[#C8A97E] bg-white shadow-sm' %>
+                    <%= isCurrentlyApplied ? 'ring-2 ring-red-400 border-red-400' : '' %>">
+                    
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <p class="font-mono font-bold text-sm <%= isLocked ? 'text-gray-400' : 'text-[#4B3621]' %> uppercase tracking-wider">
+                                    <%= coupon.code %>
+                                </p>
+                                <% if (isLocked) { %>
+                                    <span class="text-[8px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase font-bold">Locked</span>
+                                <% } else if (isCurrentlyApplied) { %>
+                                    <span class="text-[8px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase font-bold">Applied</span>
+                                <% } else { %>
+                                    <span class="text-[8px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded uppercase font-bold animate-pulse">Available</span>
+                                <% } %>
+                            </div>
 
-              <p class="text-[11px] font-bold mt-1 <%= isLocked ? 'text-gray-400' : 'text-green-600' %>">
-                Save <%= coupon.discountType === 'percentage' ? coupon.discountValue + '%' : '₹' + coupon.discountValue %>
-              </p>
-            </div>
+                            <p class="text-[11px] font-bold mt-1 <%= isLocked ? 'text-gray-400' : 'text-green-600' %>">
+                                Save <%= coupon.discountType === 'percentage' ? coupon.discountValue + '%' : '₹' + coupon.discountValue %>
+                            </p>
+                        </div>
 
-            <button onclick="copyAndFill('<%= coupon.code %>')" <%= isLocked ? 'disabled' : '' %>
-              class="text-[10px] px-3 py-1.5 rounded-md font-bold transition-all shadow-sm
-              <%= isLocked ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#C8A97E] text-white hover:brightness-110' %>">
-              <%= isLocked ? 'LOCKED' : 'APPLY' %>
-            </button>
-          </div>
+                        <% if (isCurrentlyApplied) { %>
+                            <button onclick="removeCoupon()"
+                                class="text-[10px] px-3 py-1.5 rounded-md font-bold transition-all shadow-sm bg-red-600 text-white hover:bg-red-700">
+                                REMOVE
+                            </button>
+                        <% } else { %>
+                            <button onclick="copyAndFill('<%= coupon.code %>')" <%= isLocked ? 'disabled' : '' %>
+                                class="text-[10px] px-3 py-1.5 rounded-md font-bold transition-all shadow-sm
+                                <%= isLocked ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#C8A97E] text-white hover:brightness-110' %>">
+                                <%= isLocked ? 'LOCKED' : 'APPLY' %>
+                            </button>
+                        <% } %>
+                    </div>
 
-          <% if (isLocked) { %>
-            <div class="mt-2">
-              <div class="flex justify-between items-center mb-1">
-                <p class="text-[9px] text-red-500 font-semibold">
-                  Add ₹<%= (coupon.minPurchase - subTotal).toFixed(0) %> more to unlock
-                </p>
-                <p class="text-[8px] text-gray-400"><%= progress.toFixed(0) %>%</p>
-              </div>
-              <div class="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
-                <div class="bg-[#C8A97E] h-full transition-all duration-500" style="width: <%= progress %>%"></div>
-              </div>
-              <a href="/user/products" class="text-[9px] text-[#C8A97E] font-bold hover:underline mt-2 inline-block">
-                + Add more items to save
-              </a>
-            </div>
-          <% } else { %>
-            <p class="text-[9px] text-gray-500 mt-1 italic">Successfully reached minimum purchase of ₹<%= coupon.minPurchase %></p>
-          <% } %>
-
+                    <% if (isLocked) { %>
+                        <div class="mt-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-[9px] text-red-500 font-semibold">
+                                    Add ₹<%= (coupon.minPurchase - subTotal).toFixed(0) %> more to unlock
+                                </p>
+                                <p class="text-[8px] text-gray-400"><%= progress.toFixed(0) %>%</p>
+                            </div>
+                            <div class="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                                <div class="bg-[#C8A97E] h-full transition-all duration-500" style="width: <%= progress %>%"></div>
+                            </div>
+                        </div>
+                    <% } else if (!isCurrentlyApplied) { %>
+                        <p class="text-[9px] text-gray-500 mt-1 italic font-medium text-green-600">Reached minimum purchase of ₹<%= coupon.minPurchase %></p>
+                    <% } %>
+                </div>
+            <% }) %>
         </div>
-      <% }) %>
     </div>
-  </div>
 <% } else { %>
-  <div class="mb-6 p-4 border-2 border-dotted border-stone-200 rounded-xl bg-stone-50/50 flex items-center gap-3">
-    <p class="text-[11px] text-stone-500 font-medium">No special coupons available at this moment.</p>
-  </div>
+    <div class="mb-6 p-4 border-2 border-dotted border-stone-200 rounded-xl bg-stone-50/50 flex items-center gap-3">
+        <p class="text-[11px] text-stone-500 font-medium">No special coupons available at this moment.</p>
+    </div>
 <% } %>
 
                       <!-- SUMMARY -->
@@ -356,5 +373,20 @@
       }
     }
 
-
+async function removeCoupon() {
+    try {
+        const response = await axios.patch('/user/remove-coupon');
+        
+        if (response.data.success) {
+            window.location.reload(); 
+        }
+    } catch (error) {
+        console.error("Remove Coupon Error:", error);
+        const msg = document.getElementById('couponMessage');
+        if (msg) {
+            msg.textContent = "Failed to remove coupon";
+            msg.classList.remove('hidden');
+        }
+    }
+}
   </script>

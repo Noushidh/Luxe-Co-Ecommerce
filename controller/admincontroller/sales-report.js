@@ -42,15 +42,7 @@ export const load_sales_report = asyncHandler(async (req, res) => {
         }
     },
     {
-        $project: {
-            _id: 0,
-            totalOrders: "$count",
-            grossSales: "$gross",
-            totalDiscount: "$discounts",
-            netRevenue: { $subtract: ["$gross", "$refunds"] }
-        }
-    }
-]);
+        $project: {_id: 0,totalOrders: "$count",grossSales: "$gross",totalDiscount: "$discounts",netRevenue: { $subtract: ["$gross", "$refunds"] }}}]);
 
     const reportStats = stats[0] || { totalOrders: 0, grossSales: 0, totalDiscount: 0, netRevenue: 0 };
 

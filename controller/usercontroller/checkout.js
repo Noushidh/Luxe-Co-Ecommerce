@@ -147,3 +147,13 @@ export const applyCoupen = asyncHandler(async (req, res) => {
         discount: req.session.appliedCoupon.discountValue 
     });
 });
+
+export const removeCoupen = asyncHandler(async(req,res)=>{
+       if (req.session.appliedCoupon) {
+            delete req.session.appliedCoupon;
+        }
+        if (req.session.appliedCouponCode) {
+            delete req.session.appliedCouponCode;
+        }
+        return res.status(200).json({ success: true});
+})

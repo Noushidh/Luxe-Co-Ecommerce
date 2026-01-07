@@ -92,7 +92,7 @@ router.get('/cart/check-stock',userAuth.isAuthenticated,Checkout.checkStockBefor
 router.get('/checkout',userAuth.isAuthenticated,Checkout.load_checkout)
 //coupen applied
 router.post('/apply-coupon',userAuth.isAuthenticated,Checkout.applyCoupen)
-
+router.patch('/remove-coupon',userAuth.isAuthenticated,Checkout.removeCoupen)
 
 //payment
 router.get('/payment',userAuth.isAuthenticated,Payment.load_payment)
