@@ -18,13 +18,11 @@ const formatPrice=(amount)=> {
     <h1 class="text-3xl font-bold text-stone-700 tracking-tight">Order Details</h1>
     
     <% 
-        // 1. Logic check for partial returns within this order
         const hasItemReturnRequested = order.items.some(item => item.status === 'Return Requested');
         
         let mainBadgeStyle=''; 
         let displayStatus = order.status;
 
-        // 2. Priority Logic: If an item is being returned, show it in the main header
         if (hasItemReturnRequested) {
             displayStatus = 'Return In Progress';
             mainBadgeStyle = 'bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600';
@@ -111,54 +109,72 @@ const formatPrice=(amount)=> {
                     </div>
                 </div>
 
-
-
-
 <div>
     <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Product Details</h3>
     
     <% order.items.forEach(item => { %>
     <div class="flex gap-4 mb-4 items-center border-b pb-4 last:border-0">
-        <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border">
+        <img src="<%= item.image %>" class="w-20 h-20 object-cover rounded-lg border" alt="<%= item.productName %>">
         
         <div class="flex-1">
             <h4 class="text-sm font-bold text-stone-800"><%= item.productName %></h4>
-            <p class="text-xs text-stone-500">Quantity: <%= item.quantity %></p>
+            <div class="flex gap-3 mt-1">
+                <p class="text-[10px] text-stone-500 uppercase font-bold">Size: <%= item.size %></p>
+                <p class="text-[10px] text-stone-500 uppercase font-bold">Qty: <%= item.quantity %></p>
+            </div>
             
-            <% if (['Return Requested', 'Returned', 'Rejected'].includes(item.status)) { %>
-                <span class="inline-block mt-1 text-[9px] px-2 py-0.5 rounded border font-bold uppercase bg-orange-50 text-orange-600 border-orange-200">
-                    <%= item.status %>
-                </span>
-            <% } %>
+            <div class="mt-2">
+                <% if (item.status === 'Cancelled') { %>
+                    <span class="text-[9px] px-2 py-0.5 rounded border font-black uppercase bg-red-50 text-red-600 border-red-200">
+                        <%= item.status %>
+                    </span>
+                <% } else if (['Return Requested', 'Returned', 'Rejected'].includes(item.status)) { %>
+                    <span class="text-[9px] px-2 py-0.5 rounded border font-black uppercase bg-orange-50 text-orange-600 border-orange-200">
+                        <%= item.status %>
+                    </span>
+                <% } else if (item.status === 'Delivered') { %>
+                    <span class="text-[9px] px-2 py-0.5 rounded border font-black uppercase bg-green-50 text-green-600 border-green-200">
+                        Delivered
+                    </span>
+                <% } %>
+            </div>
             
-            <p class="text-sm font-bold text-[#C8A97E] mt-1"><%= formatPrice(item.price) %></p>
+            <p class="text-sm font-bold text-[#C8A97E] mt-1">₹<%= item.price.toLocaleString() %></p>
         </div>
 
         <div class="flex flex-col gap-2">
-            <% 
-                // SCOPE FIX: These must be inside the forEach loop
-                const isOrderEligible = ['Delivered', 'Return Requested'].includes(order.status);
-                const isItemEligible = !['Return Requested', 'Returned', 'Cancelled', 'Rejected'].includes(item.status);
+          <% 
+    const isItemCancelled = item.status === 'Cancelled';
+    const isItemReturned = ['Returned', 'Return Requested'].includes(item.status); // NEW CHECK
+    const isOrderDelivered = order.status === 'Delivered';
+    const isOrderCancelled = order.status === 'Cancelled';
+    const isOrderShipped = order.status === 'Shipped';
+%>
 
-                if(isOrderEligible && isItemEligible) { 
-            %>
-                <a href="/user/order-return/<%= order._id %>?productId=<%= item.productId._id %>" 
-                   class="text-[10px] text-center px-3 py-1 bg-white border border-stone-400 rounded font-bold hover:bg-stone-50 transition-colors">
-                    RETURN ITEM
+     
+         <% if (!isOrderDelivered && !isOrderShipped && !isItemCancelled && !isOrderCancelled && !isItemReturned) { %>
+              <button onclick="cancelSingleItem('<%= order._id %>', '<%= item._id %>')" 
+            class="text-[10px] px-4 py-1.5 bg-white border border-rose-300 text-rose-600 rounded font-black hover:bg-rose-50 transition-all uppercase tracking-wider">
+               Cancel Item
+              </button>
+          <% } %>
+
+            <% if (isOrderDelivered && !isItemCancelled && !['Return Requested', 'Returned'].includes(item.status)) { %>
+                 <a href="/user/order-return/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
+                   class="text-[10px] text-center px-4 py-1.5 bg-[#C8A97E] text-white rounded font-black hover:brightness-110 transition-all uppercase tracking-wider">
+                    Return Item
                 </a>
             <% } %>
 
-            <% if(['Delivered', 'Return Requested'].includes(order.status)) { %>
-                <button class="text-[10px] h-fit px-3 py-1 bg-stone-100 border border-stone-300 rounded font-bold hover:bg-stone-200">
-                    WRITE REVIEW
+            <% if (isOrderDelivered && !isItemCancelled) { %>
+                <button class="text-[10px] px-4 py-1.5 bg-stone-100 border border-stone-300 text-stone-600 rounded font-black hover:bg-stone-200 uppercase tracking-wider">
+                    Write Review
                 </button>
             <% } %>
         </div>
     </div>
     <% }) %>
 </div>
-
-
 
             </div>
 
@@ -195,7 +211,7 @@ const formatPrice=(amount)=> {
                DOWNLOAD INVOICE
           </a>
 
-            <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Return Requested') { %>
+            <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Return Requested'  && order.status !== 'Shipped') { %>
                 <button onclick="confirmCancel('<%= order._id %>')" class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
                     CANCEL ORDER
                 </button>
@@ -203,9 +219,35 @@ const formatPrice=(amount)=> {
         </div>
     </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+    const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+    async function cancelSingleItem(orderId, itemId) {
+    const result = await Swal.fire({
+        title: 'Cancel this item?',
+        text: "The proportional refund will be added to your wallet.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#be123c', 
+        cancelButtonColor: '#57534e', 
+        confirmButtonText: 'Yes, cancel it'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.patch('/user/orders/cancel-item',{orderId,itemId});
+            if (response.data.success) {
+                notyf.success(response.data.message)
+                location.reload(); 
+            } else {
+                notyf.error(response.data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            notyf.error(error.response?.data?.message || 'Error cancelling item');        }
+    }
+}
         async function confirmCancel(id) {
-            const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
             try {
                 const response = await axios.patch(`/user/order-cancelled/${id}`);
                 if (response.data.success) {
