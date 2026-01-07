@@ -60,7 +60,7 @@ export const finalizeOrder = async ({ userId, cart, address, appliedCoupon, paym
         items: cart.items.map(item => ({
             productId: item.productId._id,
             productName: item.productId.name,
-            image: item.productId.images?.[0] || item.productId.image,
+            image: item.image || item.productId.images?.[0],
             price: item.price,
             quantity: item.quantity,
             size: item.size,
