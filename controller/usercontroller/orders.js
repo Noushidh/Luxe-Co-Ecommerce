@@ -3,7 +3,8 @@ import orderModel from "../../models/ordermodel.js"
 import userModel from "../../models/usermodel.js"
 import addressModel from "../../models/addressmodel.js";
 import returnModel from "../../models/returnmodel.js"
-import ProductModel from "../../models/productmodel.js";
+import productModel from "../../models/productmodel.js";
+import walletModel from "../../models/walletmodel.js"
 
 export const load_orders = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -114,4 +115,64 @@ export const returnOrder_details = asyncHandler(async (req, res) => {
         { $set: { "items.$.status": "Return Requested", "status": "Return Requested" } });
 
     return res.status(200).json({ success: true, message: "Return request submitted" });
+});
+
+
+export const cancel_individualItem = asyncHandler(async (req, res) => {
+    const { orderId, itemId } = req.body;
+    
+    const order = await orderModel.findById(orderId);
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    const item = order.items.id(itemId);
+    if (!item) return res.status(404).json({ success: false, message: "Item not found in order" });
+
+    const restrictedStatus = ["Shipped", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected"];
+    if (restrictedStatus.includes(item.status)) {
+        return res.status(400).json({ success: false, message: "This item cannot be cancelled at the current stage." });
+    }
+
+    const totalOriginalPrice = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    const itemSubtotal = item.price * item.quantity;
+    const refundAmount = Math.round((itemSubtotal / totalOriginalPrice) * order.total);
+
+
+    await productModel.findOneAndUpdate(
+        { _id: item.productId },
+        { $inc: { "variants.$[elem].stock": item.quantity } },
+        { arrayFilters: [{ "elem.size": item.size, "elem.color": item.color }] }
+    );
+
+    item.status = "Cancelled";
+
+    if (order.paymentMethod !== 'cashOnDelivery' && order.paymentStatus === 'Paid') {
+        await walletModel.findOneAndUpdate(
+            { userId: order.userId },
+            { 
+                $inc: { balance: refundAmount },
+                $push: { 
+                    transactions: { 
+                        transactionId: `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                        amount: refundAmount, 
+                        type: "Credit", 
+                        description: `Partial cancellation of Order: ${order.orderId}`,
+                        status: "Success",
+                        date: new Date()
+                    } 
+                }
+            },
+            { upsert: true, new: true } 
+        );
+    }
+
+    order.total -= refundAmount;
+
+    const allCancelled = order.items.every(i => i.status === 'Cancelled');
+    if (allCancelled) {
+        order.status = 'Cancelled';
+        if (order.paymentStatus === 'Paid') order.paymentStatus = 'Refunded';
+    }
+
+    await order.save();
+    res.status(200).json({ success: true, message: `Item cancelled. ₹${refundAmount} has been credited to your wallet.`});
 });

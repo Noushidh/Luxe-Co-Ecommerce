@@ -110,6 +110,7 @@ router.get('/orders',Orders.load_orders);
 router.get('/order-details/:orderId',Orders.load_orders_Details)
 router.get('/order-return/:id',Orders.load_returnOrder)
 router.post('/order/return',Orders.returnOrder_details);
+router.patch('/orders/cancel-item',Orders.cancel_individualItem)
 //invoice
 router.get('/orders/invoice/:id',Invoice.load_Download_invoice);
 

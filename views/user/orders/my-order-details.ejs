@@ -221,7 +221,6 @@ const formatPrice=(amount)=> {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
     async function cancelSingleItem(orderId, itemId) {
     const result = await Swal.fire({
         title: 'Cancel this item?',
@@ -238,7 +237,7 @@ const formatPrice=(amount)=> {
             const response = await axios.patch('/user/orders/cancel-item',{orderId,itemId});
             if (response.data.success) {
                 notyf.success(response.data.message)
-                location.reload(); 
+               setTimeout(()=> location.reload(),1000)
             } else {
                 notyf.error(response.data.message);
             }
