@@ -105,62 +105,127 @@ export const download_sales_report = asyncHandler(async (req, res) => {
         .sort({ createdAt: -1 });
 
     if (format === 'excel') {
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Sales Report');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sales Report');
 
-        worksheet.columns = [
-            { header: 'Order ID', key: 'id', width: 25 },
-            { header: 'Date', key: 'date', width: 15 },
-            { header: 'Customer', key: 'customer', width: 20 },
-            { header: 'Payment', key: 'payment', width: 15 },
-            { header: 'Status', key: 'status', width: 15 },
-            { header: 'Amount', key: 'amount', width: 12 }
+    worksheet.mergeCells('A1:F1');
+    const headerCell = worksheet.getCell('A1');
+    headerCell.value = 'LUXE & CO. - SALES PERFORMANCE REPORT';
+    headerCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+    headerCell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFC8A97E' } 
+    };
+    headerCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    worksheet.mergeCells('A2:F2');
+    const period = (startDate && endDate) ? `${startDate} to ${endDate}` : 'All-Time';
+    const subHeader = worksheet.getCell('A2');
+    subHeader.value = `Period: ${period} | Generated on: ${new Date().toLocaleString('en-IN')}`;
+    subHeader.font = { italic: true };
+    subHeader.alignment = { horizontal: 'center' };
+
+    worksheet.addRow([]);
+
+    worksheet.columns = [
+        { header: 'Order ID', key: 'id', width: 25 },
+        { header: 'Date', key: 'date', width: 15 },
+        { header: 'Customer', key: 'customer', width: 25 },
+        { header: 'Payment Method', key: 'payment', width: 20 },
+        { header: 'Order Status', key: 'status', width: 15 },
+        { header: 'Amount (INR)', key: 'amount', width: 15 }
+    ];
+
+    const tableHeaderRow = worksheet.getRow(4);
+    tableHeaderRow.font = { bold: true };
+    tableHeaderRow.eachCell((cell) => {
+        cell.border = { bottom: { style: 'thin' } };
+    });
+
+    orders.forEach(order => {
+        worksheet.addRow({
+            id: order._id.toString().toUpperCase(),
+            date: order.createdAt.toLocaleDateString('en-IN'),
+            customer: order.userId ? (order.userId.fullname || order.userId.name || 'N/A') : 'Guest',
+            payment: order.paymentMethod,
+            status: order.status,
+            amount: order.total
+        });
+    });
+
+    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    worksheet.addRow([]); 
+    const totalRow = worksheet.addRow({
+        status: 'TOTAL NET REVENUE',
+        amount: totalRevenue
+    });
+    
+    totalRow.getCell('status').font = { bold: true };
+    totalRow.getCell('amount').font = { bold: true, color: { argb: 'FF006400' } }; // Dark Green
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=luxe_sales_report.xlsx');
+
+    return workbook.xlsx.write(res).then(() => res.status(200).end());
+}
+
+ if (format === 'pdf') {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text("LUXE & CO.", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("123 Business Street, Fashion Hub", 14, 26);
+    doc.text("Contact: +91 9876543210 | support@luxe.com", 14, 31);
+    
+    doc.setFontSize(14);
+    doc.text("SALES REPORT", 14, 45);
+    
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, 14, 52);
+    
+    if (startDate && endDate) {
+        doc.text(`Period: ${startDate} to ${endDate}`, 14, 58);
+    }
+
+    doc.setLineWidth(0.5);
+    doc.line(14, 62, 196, 62);
+
+    const tableColumn = ["Order ID", "Date", "Customer", "Status", "Amount"];
+    const tableRows = [];
+
+    orders.forEach(order => {
+        const rowData = [
+            order._id.toString().slice(-6).toUpperCase(),
+            order.createdAt.toLocaleDateString(),
+            order.userId ? (order.userId.fullname || order.userId.name || 'N/A') : 'Guest',
+            order.status,
+            `Rs. ${order.total.toLocaleString('en-IN')}`
         ];
-        orders.forEach(order => {
-            worksheet.addRow({
-                id: order._id.toString(),
-                date: order.createdAt.toLocaleDateString(),
-                customer: order.userId ? (order.userId.fullname || order.userId.name || 'N/A') : 'Guest',
-                payment: order.paymentMethod,
-                status: order.status,
-                amount: order.total
-            });
-        });
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=sales_report.xlsx');
-        return workbook.xlsx.write(res).then(() => res.status(200).end());
-    }
+        tableRows.push(rowData);
+    });
 
-    if (format === 'pdf') {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("Sales Report", 14, 15);
-        doc.setFontSize(11);
-        
-        const tableColumn = ["Order ID", "Date", "Customer", "Status", "Amount"];
-        const tableRows = [];
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 70, 
+        theme: 'grid',
+        headStyles: { fillColor: [200, 169, 126], textColor: [255, 255, 255] }, // Matches your UI Gold color
+        styles: { fontSize: 9 },
+        didDrawPage: function (data) {
+            const str = "Page " + doc.internal.getNumberOfPages();
+            doc.setFontSize(10);
+            doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
+        }
+    });
 
-        orders.forEach(order => {
-            const rowData = [
-                order._id.toString().slice(-6).toUpperCase(),
-                order.createdAt.toLocaleDateString(),
-                order.userId ? (order.userId.fullname || order.userId.name || 'N/A') : 'Guest',
-                order.status,
-                `Rs. ${order.total}`
-            ];
-            tableRows.push(rowData);
-        });
-
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185] } 
-        });
-        const pdfBuffer = doc.output('arraybuffer');
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=sales_report.pdf');
-        return res.send(Buffer.from(pdfBuffer));
-    }
+    const pdfBuffer = doc.output('arraybuffer');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=sales_report.pdf');
+    return res.send(Buffer.from(pdfBuffer));
+}
 });
