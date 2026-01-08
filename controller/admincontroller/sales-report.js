@@ -10,6 +10,7 @@ export const load_sales_report = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     const { startDate, endDate, paymentMethod, status } = req.query;
 
+    // 1. DYNAMIC FILTER
     let filter = {};
     if (startDate && endDate) {
         filter.createdAt = { 
@@ -18,34 +19,51 @@ export const load_sales_report = asyncHandler(async (req, res) => {
         };
     }
     if (paymentMethod) filter.paymentMethod = paymentMethod;
-    if (status) filter.status = status;
 
-   const stats = await orderModel.aggregate([
-    { 
-        $match: { 
-            ...filter, 
-            status: { $in: ["Delivered", "Return Requested", "Returned"] } 
-        } 
-    },
-    {
-        $group: {
-            _id: null,
-            count: { $sum: 1 },
-            
-            gross: { $sum: "$total" },
-            
-            refunds: { $sum: { $ifNull: ["$refundedAmount", 0] } },
-            
-            discounts: { 
-                $sum: { $add: ["$discount", { $ifNull: ["$offerDiscount", 0] }] } 
+    // IMPORTANT: If no status is selected, only show finalized sales
+    // This automatically EXCLUDES "Cancelled" and "Pending" orders
+    if (status) {
+        filter.status = status;
+    } else {
+        filter.status = { $in: ["Delivered", "Return Requested", "Returned"] };
+    }
+
+    // 2. AGGREGATE STATS
+    const stats = await orderModel.aggregate([
+        { $match: filter },
+        {
+            $group: {
+                _id: null,
+                count: { $sum: 1 },
+                gross: { $sum: "$total" },
+                // Calculate refunds for returned items
+                refunds: { $sum: { $ifNull: ["$refundedAmount", 0] } },
+                // Calculate total discounts (Coupon + Offer) safely
+                discounts: { 
+                    $sum: { 
+                        $add: [
+                            { $ifNull: ["$discount", 0] }, 
+                            { $ifNull: ["$offerDiscount", 0] }
+                        ] 
+                    } 
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                totalOrders: "$count",
+                grossSales: "$gross",
+                totalDiscount: "$discounts",
+                // Net Revenue = Money in - Money out
+                netRevenue: { $subtract: ["$gross", "$refunds"] }
             }
         }
-    },
-    {
-        $project: {_id: 0,totalOrders: "$count",grossSales: "$gross",totalDiscount: "$discounts",netRevenue: { $subtract: ["$gross", "$refunds"] }}}]);
+    ]);
 
     const reportStats = stats[0] || { totalOrders: 0, grossSales: 0, totalDiscount: 0, netRevenue: 0 };
 
+    // 3. FETCH ORDERS FOR TABLE
     const orders = await orderModel.find(filter)
         .populate('userId', 'fullname email')
         .populate('couponId', 'code')

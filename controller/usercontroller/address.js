@@ -65,9 +65,15 @@ export const editAddress = asyncHandler(async (req, res) => {
 
     const userId = req.session.user._id;
 
-    await addressModel.findOneAndUpdate({ _id: id, userId }, { type, name, phone: normalizedPhone, street, street2, city, state, pincode }, { new: true })
+    await addressModel.findOneAndUpdate({ _id: id, userId }, { type, name, phone: normalizedPhone, street, street2, city, state, pincode }, { new: true });
 
-    return res.status(200).json({ success: true, message: "Address updated successfully", redirectTo: from === "checkout" ? "/user/checkout" : null })
+    let redirectTo = null;
+if (from === "checkout") {
+    redirectTo = "/user/checkout";
+} else if (from === "return-order") {
+    redirectTo = req.header('Referer')
+}
+    return res.status(200).json({ success: true, message: "Address updated successfully", redirectTo : redirectTo})
 })
 
 //update default address
