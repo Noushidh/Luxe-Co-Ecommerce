@@ -17,14 +17,15 @@ export const load_address = asyncHandler(async (req, res) => {
     res.render('user/layout', {
         title: "Address",
         body: "user/address/address",
-        userData, addresses, from,
+        userData,
+        addresses,
+        from,
         currentPath: '/user/address'
     });
 });
 
 export const addAddress = asyncHandler(async (req, res) => {
     const { type, name, phone, street, street2, city, state, pincode, from } = req.body;
-    console.log(req.body)
     const phoneRegex = /^(?:\+91|0)?[6-9]\d{9}$/;
 
     if (!phone || !phoneRegex.test(phone)) {
@@ -55,7 +56,6 @@ export const addAddress = asyncHandler(async (req, res) => {
 export const editAddress = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { type, name, phone, street, street2, city, state, pincode, from } = req.body;
-    console.log(req.body)
     const phoneRegex = /^(?:\+91|0)?[6-9]\d{9}$/;
 
     if (!phone || !phoneRegex.test(phone)) {
@@ -78,19 +78,21 @@ export const editAddress = asyncHandler(async (req, res) => {
     await addressModel.findOneAndUpdate({ _id: id, userId }, { type, name, phone: normalizedPhone, street, street2, city, state, pincode }, { new: true });
 
     let redirectTo = null;
-if (from === "checkout") {
-    redirectTo = "/user/checkout";
-} else if (from === "return-order") {
-    redirectTo = req.header('Referer')
-}
-    return res.status(200).json({ success: true, message: "Address updated successfully", redirectTo : redirectTo})
+
+    if (from === "checkout") {
+        redirectTo = "/user/checkout";
+    } 
+    else if (from === "return-order") {
+        redirectTo ="/user/orders";
+    }
+
+    return res.status(200).json({ success: true, message: "Address updated successfully", redirectTo: redirectTo })
 })
 
 //update default address
 export const setDefaultAddress = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
     const { addressId } = req.params;
-    console.log(req.params);
     await addressModel.updateMany({ userId }, { $set: { isDefault: false } });
     await addressModel.findByIdAndUpdate(addressId, { isDefault: true })
     return res.status(200).json({ success: true })
@@ -98,7 +100,6 @@ export const setDefaultAddress = asyncHandler(async (req, res) => {
 
 export const deleteAddress = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    console.log(id)
     const userId = req.session.user._id;
 
     await addressModel.findOneAndDelete({ _id: id, userId: userId })

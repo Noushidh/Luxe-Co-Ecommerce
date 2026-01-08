@@ -243,7 +243,6 @@
             }
 
         } catch (err) {
-            console.error("Save address error:", err);
             notyf.error(err.response?.data?.message || "Something went wrong while saving address");
         }
     }
@@ -255,7 +254,6 @@
             await axios.delete(`/user/address/delete/${id}`);
             window.location.reload();
         } catch (err) {
-            console.error("Delete address error:", err);
             alert("Failed to delete address");
         }
     }
