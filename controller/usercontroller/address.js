@@ -37,6 +37,11 @@ export const addAddress = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "All required fields must be filled" });
     }
 
+    const pincodeRegex = /^\d{6}$/;
+    if (!pincodeRegex.test(pincode)) {
+        return res.status(400).json({ success: false, message: "Pincode must be exactly 6 digits" });
+    }
+
     const userId = req.session.user._id;
 
     const newAddress = { userId: userId, type, name, phone: normalizedPhone, street, street2, city, state, pincode, isDefault: false };
@@ -61,6 +66,11 @@ export const editAddress = asyncHandler(async (req, res) => {
 
     if (!name || !street || !city || !state || !pincode) {
         return res.status(400).json({ success: false, message: "All required fields must be filled" });
+    }
+
+    const pincodeRegex = /^\d{6}$/;
+    if (!pincodeRegex.test(pincode)) {
+        return res.status(400).json({ success: false, message: "Pincode must be exactly 6 digits" });
     }
 
     const userId = req.session.user._id;
