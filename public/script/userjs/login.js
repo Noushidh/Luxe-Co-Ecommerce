@@ -39,9 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const params = new URLSearchParams(window.location.search);
 
-  const notyf = new Notyf({
-    position: { x: "right", y: "top" }, duration: 3500
-  });
+  const notyf = new Notyf({position: { x: "right", y: "top" }, duration: 3500});
 
   if (params.get("blocked") === "true") {
     notyf.error("Your account is disabled. Please contact support.");

@@ -1,174 +1,90 @@
-<!-- SIDEBAR (fixed) -->
-<aside class="fixed top-[103px] left-0 w-[230px] 
-    h-[calc(100vh-103px)] bg-white shadow-md 
-    flex flex-col justify-between overflow-y-auto">
+<header class="fixed top-0 left-0 right-0 h-[60px] bg-[#C8A97E] flex items-center px-6 z-50 shadow-sm">
+    <button id="mobile-toggle" class="md:hidden mr-4 text-white focus:outline-none p-1 hover:bg-white/10 rounded">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m4 6h16"></path>
+        </svg>
+    </button>
+    <h1 class="text-white font-bold text-lg">Luxe & Co Admin</h1>
+</header>
 
-    <!-- MENU ITEMS -->
-    <div class="mt-2 space-y-1">
+<aside id="sidebar" class="fixed top-0 left-0 w-[240px] h-full bg-white shadow-md flex flex-col z-40 transition-transform duration-300 -translate-x-full md:translate-x-0">
+    
+    <div class="h-[60px] shrink-0"></div>
 
-        <!-- Dashboard (ALWAYS COLORED) -->
-        <a href="/admin/dashboard"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm
-           hover:bg-[#e0d4c2]
-           hover:shadow-lg hover:shadow-[#c8a97e]/30
-           hover:scale-[1.03]
-           transition-all duration-200 transform-gpu rounded-md">
+    <div class="mt-4 px-3 space-y-1 flex-grow overflow-y-auto">
+        <% 
+        const menuItems = [
+            { label: 'Dashboard', path: '/admin/dashboard', icon: 'span-8.svg' },
+            { label: 'Products', path: '/admin/products', icon: 'span-4.svg' },
+            { label: 'Categories', path: '/admin/category', icon: 'span-5.svg' },
+            { label: 'Orders', path: '/admin/orders', icon: 'span.svg' },
+            { label: 'Customers', path: '/admin/customers', icon: 'span-2.svg' },
+            { label: 'Analytics', path: '/admin/sales-report', icon: 'span-5.svg' },
+            { label: 'Coupons', path: '/admin/coupons', icon: 'span-6.svg' },
+            { label: 'Offers', path: '/admin/offers', icon: 'span-3.svg' },
+            { label: 'Settings', path: '/admin/settings', icon: 'span-1.svg' }
+        ];
+        %>
 
-            <div class="w-1 h-12 bg-[#c8a97e] rounded-r"></div>
-            <img class="w-5 h-5 ml-3" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-8.svg" />
-            <span class="text-[#c8a97e] font-medium text-sm">Dashboard</span>
-        </a>
-
-        <!-- Products -->
-        <a href="/admin/products"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/products'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-4.svg" />
-            <span class="font-medium text-sm">Products</span>
-        </a>
-
-        <!-- Categories -->
-        <a href="/admin/category"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/category'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-5.svg" />
-            <span class="font-medium text-sm">Categories</span>
-        </a>
-
-        <!-- Orders -->
-        <a href="/admin/orders"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/orders'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span.svg" />
-            <span class="font-medium text-sm">Orders</span>
-        </a>
-
-        <!-- Customers -->
-        <a href="/admin/customers"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/customers'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-2.svg" />
-            <span class="font-medium text-sm">Customers</span>
-        </a>
-
-        <!-- Analytics -->
-        <a href="/admin/sales-report"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/analytics'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-5.svg" />
-            <span class="font-medium text-sm">Analytics</span>
-        </a>
-
-        <!-- Coupons -->
-        <a href="/admin/coupons"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/coupons'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-6.svg" />
-            <span class="font-medium text-sm">Coupons</span>
-        </a>
-
-        <!-- Banner -->
-        <a href="/admin/banner"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/banner'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-7.svg" />
-            <span class="font-medium text-sm">Banner</span>
-        </a>
-
-        <!-- Offers -->
-        <a href="/admin/offers"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/offers'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-3.svg" />
-            <span class="font-medium text-sm">Offers</span>
-        </a>
-
-        <!-- Settings -->
-        <a href="/admin/settings"
-           class="group w-full flex items-center gap-3 py-3 cursor-pointer
-           hover:-translate-y-[1px] hover:translate-x-[3px]
-           hover:shadow-md hover:shadow-[#c8a97e]/20
-           hover:scale-[1.01] transition-all duration-200 rounded-md
-           <%= currentPath === '/admin/settings'
-             ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm'
-             : 'hover:bg-[#f5f0ea] text-stone-600'
-           %>">
-
-            <img class="w-5 h-5 ml-6" src="https://c.animaapp.com/mi8qitnhNI1H79/img/span-1.svg" />
-            <span class="font-medium text-sm">Settings</span>
-        </a>
-
+        <% menuItems.forEach(item => { %>
+            <a href="<%= item.path %>"
+               class="group w-full flex items-center gap-3 py-3 px-4 rounded-lg transition-all
+               <%= currentPath === item.path 
+                 ? 'bg-[#EEE4D4] text-[#C8A97E] font-bold shadow-sm' 
+                 : 'text-stone-600 hover:bg-[#f5f0ea]' %>">
+                
+                <img class="w-5 h-5" src="https://c.animaapp.com/mi8qitnhNI1H79/img/<%= item.icon %>" />
+                <span class="text-sm"><%= item.label %></span>
+            </a>
+        <% }) %>
     </div>
 
-    <!-- Logout -->
-    <form action="/admin/logout" method="get">
-        <button class="flex items-center justify-center gap-2 
-        bg-[#C8A97E] text-[#2c2c2c] 
-        px-5 py-2.5 rounded-xl mx-4 mb-4 
-        font-medium text-sm cursor-pointer
-        hover:shadow-lg hover:shadow-[#c8a97e]/40
-        hover:scale-[1.05]
-        transition-all duration-200">
-            <img class="w-[18px] h-[18px]" src="https://c.animaapp.com/mi8qitnhNI1H79/img/frame.svg" />
-            <span>Logout</span>
-        </button>
-    </form>
-
+    <div class="p-4 border-t mt-auto">
+        <form action="/admin/logout" method="get">
+            <button class="w-full flex items-center justify-center gap-2 bg-[#C8A97E] text-white py-2.5 rounded-lg font-medium hover:opacity-90 transition-all">
+                <img class="w-4 h-4 brightness-0 invert" src="https://c.animaapp.com/mi8qitnhNI1H79/img/frame.svg" />
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
 </aside>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+<main class="pt-[80px] md:ml-[240px] min-h-screen bg-stone-50 transition-all duration-300">
+    <div class="p-4 md:p-8">
+        </div>
+</main>
+
+<script>
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+
+    mobileToggle?.addEventListener('click', toggleSidebar);
+    overlay?.addEventListener('click', toggleSidebar);
+
+    const links = sidebar.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        });
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.add('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+</script>
