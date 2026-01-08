@@ -99,14 +99,14 @@
             </div>
         </div>
 
-    <% 
-    const stats = [
-        { label: 'Total Sales Count', value: totalOrders, color: 'text-stone-700', bg: 'bg-white' },
-        { label: 'Gross Sales', value: '₹' + (totalAmount + totalDiscount).toLocaleString(), color: 'text-stone-700', bg: 'bg-white' },
-        { label: 'Discount & Coupon Deducted', value: '₹' + totalDiscount.toLocaleString(), color: 'text-red-500', bg: 'bg-white' },
-        { label: 'Net Revenue', value: '₹' + totalAmount.toLocaleString(), color: 'text-white', bg: 'bg-[#CEB195]' }
-    ];
-  %>
+ <% 
+  const stats = [
+      { label: 'Total Sales Count', value: totalOrders, color: 'text-stone-700', bg: 'bg-white' },
+      { label: 'Gross Sales', value: '₹' + grossSales.toLocaleString(), color: 'text-stone-700', bg: 'bg-white' },
+      { label: 'Discount & Coupon Deducted', value: '₹' + totalDiscount.toLocaleString(), color: 'text-red-500', bg: 'bg-white' },
+      { label: 'Net Revenue', value: '₹' + totalAmount.toLocaleString(), color: 'text-white', bg: 'bg-[#CEB195]' }
+  ];
+%>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <% stats.forEach(stat=> { %>
