@@ -67,22 +67,24 @@
             <!-- RIGHT SIDE -->
             <div class="flex items-center space-x-6 slow-load-header slow-load-3">
 
-                <!-- SEARCH (ALL USERS) -->
-                <form method="GET" id="searchForm" class="relative hidden md:block">
+                <!-- SEARCH (ALL PRODUCTS) -->
+                <form action="/user/products" method="GET" id="searchForm" class="relative hidden md:block">
                     <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>"
                         placeholder="Search..." oninput="autoSearch()" class="pl-4 pr-9 py-2 rounded-full bg-white/10 text-sm text-white
                   placeholder:text-stone-300 outline-none border border-white/20
-                  focus:ring-2 focus:ring-[#C8A97E]">
-                    <svg class="w-4 h-4 text-stone-200 absolute right-3 top-2.5" fill="none" stroke="currentColor"
-                        stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="7"></circle>
-                        <line x1="16" y1="16" x2="20" y2="20"></line>
-                    </svg>
+                  focus:ring-2 focus:ring-[#C8A97E] transition-all">
+
+                    <button type="submit" class="absolute right-3 top-2.5 outline-none">
+                        <svg class="w-4 h-4 text-stone-200 hover:text-[#C8A97E] transition-colors" fill="none"
+                            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="16" y1="16" x2="20" y2="20"></line>
+                        </svg>
+                    </button>
                 </form>
 
                 <% if (user) { %>
                     <!-- LOGGED-IN USER ICONS -->
-
                     <!-- WISHLIST -->
                     <a href="/user/wishlist" class="hover:scale-110 transition">
                         <svg class="w-6 h-6 text-[#C8A97E]" fill="none" stroke="currentColor" stroke-width="2"
@@ -108,8 +110,6 @@
                             </span>
                             <% } %>
                     </a>
-
-
 
                     <a href="/user/profile" class="hover:scale-110 transition block">
                         <% if (user && user.profilePic) { %>
@@ -196,10 +196,11 @@
 
         let typingTimer;
         function autoSearch() {
-            clearInterval(typingTimer);
+            clearTimeout(typingTimer);
+            const searchInput = document.querySelector('input[name="search"]');
             typingTimer = setTimeout(() => {
                 document.getElementById("searchForm").submit();
             }, 800);
-        };
+        }
 
     </script>

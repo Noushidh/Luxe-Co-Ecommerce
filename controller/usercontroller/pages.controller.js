@@ -9,8 +9,6 @@ export const LandingOrHome_load = (req, res) => {
   });
 };
 
-
-
 export const AboutPage_load = (req,res)=>{
 
    res.render("user/layout",{

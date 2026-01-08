@@ -16,13 +16,21 @@ const mapCategory = (cat) => {
 
 export const loadFiltersPage = asyncHandler(async (req, res) => {
 
-    const { page, category, subcategory, price, size, sort } = req.query;
+    const { page, category, subcategory, price, size, sort, search } = req.query;
     const currentPage = parseInt(page) || 1;
     const limit = 9;
     const skip = (currentPage - 1) * limit;
 
     const filter = getReadyProductFilter();
     filter.isBlocked = false;
+
+    if (search && search.trim() !== "") {
+        const query = search.trim();
+        filter.$or = [
+            { name: { $regex: query, $options: "i" } },
+            { description: { $regex: query, $options: "i" } }
+        ];
+    }
 
     const fixedCategory = mapCategory(category);
     const allSubcategories = await SubCategory.find({ isBlocked: false }).lean();
@@ -93,6 +101,21 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         .limit(limit)
         .lean();
 
+    if (search) {
+        const query = search.toLowerCase().trim();
+        rawProducts.sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+
+            if (aName === query && bName !== query) return -1;
+            if (aName !== query && bName === query) return 1;
+
+            if (aName.startsWith(query) && !bName.startsWith(query)) return -1;
+            if (!aName.startsWith(query) && bName.startsWith(query)) return 1;
+            return 0;
+        });
+    }
+
     const products = await Promise.all(rawProducts.map(async (p) => {
         const offerData = await getBestOfferForProduct(p, now);
         return { ...p, ...offerData };
@@ -117,7 +140,8 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         currentPage: currentPage,
         totalPages: totalPages,
         sort: sort || '',
-        totalDocuments: totalDocuments
+        totalDocuments: totalDocuments,
+        search: search || ''
     });
 });
 
@@ -126,8 +150,8 @@ export const ProductDetails = asyncHandler(async (req, res) => {
 
     const product = await ProductModel.findById(productId).populate('subCategory_id').lean();
 
-    const isReady = product &&!product.isBlocked &&
-        product.variants?.length > 0 &&product.variants.some(v => v.images && v.images.length > 0);
+    const isReady = product && !product.isBlocked &&
+        product.variants?.length > 0 && product.variants.some(v => v.images && v.images.length > 0);
 
     if (!isReady) {
         return res.status(404).render("user/layout", {
@@ -138,7 +162,7 @@ export const ProductDetails = asyncHandler(async (req, res) => {
 
     const { finalPrice, discountPercentage } = await getBestOfferForProduct(product);
 
-    const relProdsFilter = getReadyProductFilter({subCategory_id: product.subCategory_id?._id,_id: { $ne: product._id }});
+    const relProdsFilter = getReadyProductFilter({ subCategory_id: product.subCategory_id?._id, _id: { $ne: product._id } });
 
     const relProds = await ProductModel.find(relProdsFilter).limit(4).lean();
 
