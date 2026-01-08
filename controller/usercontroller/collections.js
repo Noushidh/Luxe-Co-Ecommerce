@@ -3,6 +3,7 @@ import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import offerModal from "../../models/offermodel.js"
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
+import { getReadyProductFilter } from "../../utils/productVisibility.js";
 
 const mapCategory = (cat) => {
     if (!cat) return "";
@@ -20,7 +21,7 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
     const limit = 9;
     const skip = (currentPage - 1) * limit;
 
-    const filter = {};
+    const filter = getReadyProductFilter();
     filter.isBlocked = false;
 
     const fixedCategory = mapCategory(category);
@@ -84,7 +85,7 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         sortCriteria.createdAt = -1;
     }
 
- const now = new Date();
+    const now = new Date();
     const rawProducts = await ProductModel.find(filter)
         .populate("subCategory_id")
         .sort(sortCriteria)
@@ -123,11 +124,12 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
 export const ProductDetails = asyncHandler(async (req, res) => {
     const productId = req.params.id;
 
-    const product = await ProductModel.findById(productId)
-        .populate('subCategory_id')
-        .lean();
+    const product = await ProductModel.findById(productId).populate('subCategory_id').lean();
 
-    if (!product) {
+    const isReady = product &&!product.isBlocked &&
+        product.variants?.length > 0 &&product.variants.some(v => v.images && v.images.length > 0);
+
+    if (!isReady) {
         return res.status(404).render("user/layout", {
             title: "Not Found",
             body: "user/error-404"
@@ -136,10 +138,9 @@ export const ProductDetails = asyncHandler(async (req, res) => {
 
     const { finalPrice, discountPercentage } = await getBestOfferForProduct(product);
 
-    const relProds = await ProductModel.find({ 
-        subCategory_id: product.subCategory_id, 
-        _id: { $ne: product._id } 
-    }).limit(4).lean();
+    const relProdsFilter = getReadyProductFilter({subCategory_id: product.subCategory_id?._id,_id: { $ne: product._id }});
+
+    const relProds = await ProductModel.find(relProdsFilter).limit(4).lean();
 
     const selectedVariantId = req.query.variantId;
 
@@ -153,6 +154,6 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         relProds,
         finalPrice,
         discountPercentage,
-       initialVariantId: selectedVariantId || null
+        initialVariantId: selectedVariantId || null
     });
 });

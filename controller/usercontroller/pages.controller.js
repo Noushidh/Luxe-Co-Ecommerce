@@ -1,5 +1,6 @@
 import ProductModel from "../../models/productmodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import { getReadyProductFilter } from "../../utils/productVisibility.js"; 
 
 export const LandingOrHome_load = (req, res) => {
   res.render("user/layout", {
@@ -20,9 +21,8 @@ export const AboutPage_load = (req,res)=>{
 
 export const ShopPage_load = asyncHandler(async(req,res)=>{
    
-    const products = await ProductModel.find({})
-                                       .sort({createdAt: -1}) 
-                                       .limit(12);
+    const filter =getReadyProductFilter();
+    const products = await ProductModel.find(filter).sort({createdAt: -1}) .limit(12);
 
     res.render("user/layout",{
      title:"Shop",

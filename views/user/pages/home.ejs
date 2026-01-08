@@ -1,17 +1,10 @@
 <style>
-    /* Custom color definitions */
     .bg-custom-tan { background-color: #C8A97E; }
     .hover\:bg-custom-dark-tan:hover { background-color: #A78868; } 
-
-    /* CSS Animation Definitions for Smooth Load */
     @keyframes smoothFadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-
-    /* Base class to hide content and apply animation. 
-       We will use different delay times inline (animation-delay) 
-       to create the staggered effect. */
     .slow-load {
         opacity: 0;
         animation: smoothFadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -64,35 +57,50 @@
     <section class="bg-orange-50 py-20 px-6">
         <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 slow-load" style="animation-delay: 2.0s;">
-                <img class="w-full h-64 object-cover" src="https://placehold.co/303x256" alt="Men's Classic">
-                <div class="p-8">
-                    <h3 class="text-stone-700 text-xl mb-6">Men's Classic</h3>
-                    <button class="bg-custom-tan hover:bg-custom-dark-tan text-white text-sm py-2 px-6 rounded-full transition-colors">
-                        Shop Now
-                    </button>
-                </div>
-            </div>
+<div class="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 slow-load" style="animation-delay: 2.0s;">
+    <img class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" 
+         src="https://images.unsplash.com/photo-1533867617858-e7b97e060509?q=80&w=1000&auto=format&fit=crop" 
+         alt="Men's Classic Leather Shoe">
+    
+    <div class="p-8">
+        <h3 class="text-stone-700 text-xl mb-6 font-semibold">Men's Classic</h3>
+                <a href="http://localhost:5000/user/products?category=men">
+        <button class="bg-[#C8A97E] hover:bg-[#b6916a] text-white text-sm py-2 px-6 rounded-full transition-colors shadow-md uppercase tracking-wider">
+            Shop Now
+        </button>
+            </a>
+    </div>
+</div>
 
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 slow-load" style="animation-delay: 2.3s;">
-                <img class="w-full h-64 object-cover" src="https://placehold.co/303x256" alt="Women's Elegance">
-                <div class="p-8">
-                    <h3 class="text-stone-700 text-xl mb-6">Women's Elegance</h3>
-                    <button class="bg-custom-tan hover:bg-custom-dark-tan text-white text-sm py-2 px-6 rounded-full transition-colors">
-                        Shop Now
-                    </button>
-                </div>
-            </div>
+<div class="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 slow-load" style="animation-delay: 2.0s;">
+    <img class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" 
+          src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=1000&auto=format&fit=crop"
+         alt="Men's Classic Leather Shoe">
+    
+    <div class="p-8">
+        <h3 class="text-stone-700 text-xl mb-6 font-semibold">Women's Elegance</h3>
+        <a href="http://localhost:5000/user/products?category=women">
+        <button class="bg-custom-tan hover:bg-custom-dark-tan text-white text-sm py-2 px-6 rounded-full transition-colors shadow-md">
+            Shop Now
+        </button>
+       </a>
+    </div>
+</div>
 
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 slow-load" style="animation-delay: 2.6s;">
-                <img class="w-full h-64 object-cover" src="https://placehold.co/303x256" alt="Child's Comfort">
-                <div class="p-8">
-                    <h3 class="text-stone-700 text-xl mb-6">Child's Comfort</h3>
-                    <button class="bg-custom-tan hover:bg-custom-dark-tan text-white text-sm py-2 px-6 rounded-full transition-colors">
-                        Shop Now
-                    </button>
-                </div>
-            </div>
+<div class="bg-white rounded-lg shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300 slow-load" style="animation-delay: 2.0s;">
+    <img class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" 
+         src= "https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=1000&auto=format&fit=crop"
+         alt="Men's Classic Leather Shoe">
+    
+    <div class="p-8">
+        <h3 class="text-stone-700 text-xl mb-6 font-semibold">Child's Comfort</h3>
+                <a href="http://localhost:5000/user/products?category=kids">
+        <button class="bg-custom-tan hover:bg-custom-dark-tan text-white text-sm py-2 px-6 rounded-full transition-colors shadow-md">
+            Shop Now
+        </button>
+           </a>
+    </div>
+</div>
 
         </div>
     </section>
@@ -129,7 +137,7 @@
                     </svg>
                 </div>
                 <h4 class="text-stone-700 font-semibold mb-2">Free Shipping</h4>
-                <p class="text-neutral-600 text-sm">On orders over $200</p>
+                <p class="text-neutral-600 text-sm">On orders over ₹500</p>
             </div>
 
             <div class="flex flex-col items-center slow-load" style="animation-delay: 3.6s;">
