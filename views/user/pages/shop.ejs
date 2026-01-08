@@ -1,17 +1,14 @@
 <style>
-    /* CSS Animation Definitions for Smooth Load */
     @keyframes smoothFadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Base class to hide content and apply animation. */
     .slow-load {
         opacity: 0;
         animation: smoothFadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     
-    /* Specific rule for the Hero image to fade in smoothly without moving */
     @keyframes smoothFadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -19,7 +16,7 @@
     .hero-image-load {
         opacity: 0;
         animation: smoothFadeIn 1.5s ease forwards;
-        animation-delay: 0.2s; /* Start slightly earlier */
+        animation-delay: 0.2s; 
     }
 </style>
 
@@ -29,10 +26,6 @@
 <img src="https://images.pexels.com/photos/298863/pexels-photo-298863.jpeg?auto=compress&cs=tinysrgb&w=1200"
      alt="Classic Leather Shoe"
      class="w-full h-full object-cover absolute inset-0 hero-image-load">
-
-
-
-
     <div class="absolute inset-0 bg-black/30 flex flex-col justify-center items-center text-center px-4">
         
         <h1 class="text-white text-5xl md:text-6xl font-normal leading-tight mb-6 slow-load"
@@ -63,37 +56,6 @@
     </div>
 </section>
 
-
-    <section class="max-w-7xl mx-auto px-6 py-16">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            <div class="relative group h-96 overflow-hidden border border-stone-200 shadow-sm slow-load" style="animation-delay: 1.8s;">
-                <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/470x400" alt="Men's Classics" />
-                <div class="absolute bottom-8 left-8">
-                    <h3 class="text-white text-2xl mb-2 drop-shadow-md">Men's Classics</h3>
-                    <p class="text-stone-200 text-xs max-w-[80%] drop-shadow-md">Elegant Oxford and Derby shoes crafted in full-grain leather</p>
-                </div>
-            </div>
-
-            <div class="relative group h-96 overflow-hidden border border-stone-200 shadow-sm slow-load" style="animation-delay: 2.1s;">
-                <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/470x400" alt="Women's Elegance" />
-                <div class="absolute bottom-8 left-8">
-                    <h3 class="text-white text-2xl mb-2 drop-shadow-md">Women's Elegance</h3>
-                    <p class="text-stone-200 text-xs max-w-[80%] drop-shadow-md">Refined loafers, heels, and timeless flats</p>
-                </div>
-            </div>
-
-            <div class="relative group h-96 overflow-hidden border border-stone-200 shadow-sm slow-load" style="animation-delay: 2.4s;">
-                <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/470x400" alt="Limited Editions" />
-                <div class="absolute bottom-8 left-8">
-                    <h3 class="text-white text-2xl mb-2 drop-shadow-md">Limited Editions</h3>
-                    <p class="text-stone-200 text-xs max-w-[80%] drop-shadow-md">Exclusive hand-finished designs in small batches</p>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
    <section class="w-full bg-[#F5F5F5] py-16">
     <div class="max-w-7xl mx-auto px-6">
         
@@ -105,7 +67,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
             
             <% 
-            // Assuming you pass an array of products named 'products' from your controller
             let delay = 3.0;
             if (typeof products !== 'undefined' && products.length > 0) {
                 products.forEach((product, index) => { 
