@@ -18,18 +18,23 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <% if (wishlist && wishlist.length> 0) { %>
                         <% wishlist.forEach(item=> { %>
-                            <% const p=item.productId; const selectedVariant=p.variants.find(v=> v._id.toString() ===
-                                item.variantId.toString());
+          <% 
+                const p = item.productId; 
+                const selectedVariant = p.variants.find(v => v._id.toString() === item.variantId.toString());
 
-                                let mainImg = "/images/placeholder.png";
-                                if (selectedVariant && selectedVariant.images && selectedVariant.images[0]) {
-                                mainImg = selectedVariant.images[0];
-                                } else if (p.image) {
-                                mainImg = p.image;
-                                }
+                const basePrice = (selectedVariant && selectedVariant.price) ? selectedVariant.price : p.price;
+                
+                let mainImg = "/images/placeholder.png";
+                if (selectedVariant && selectedVariant.images && selectedVariant.images[0]) {
+                    mainImg = selectedVariant.images[0];
+                } else if (p.image) {
+                    mainImg = p.image;
+                }
 
-                                const finalPrice = p.price - (p.price * (p.discount / 100));
-                                %>
+                const discountPercent = p.discount || 0;
+                const discountAmount = basePrice * (discountPercent / 100);
+                const finalPrice = Math.round(basePrice - discountAmount);
+            %>
 
                                 <div
                                     class="group bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition-all flex flex-col h-full">

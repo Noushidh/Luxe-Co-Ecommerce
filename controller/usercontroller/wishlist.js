@@ -1,7 +1,7 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import wishlistModel from "../../models/wishlistmodel.js";
 import CartModel from "../../models/cartmodel.js";
-
+import { getBestOfferForProduct } from '../../utils/offerHelper.js';
 
 export const product_add_wishlist = asyncHandler(async(req,res)=>{
     const {variantId,productId}=req.body
