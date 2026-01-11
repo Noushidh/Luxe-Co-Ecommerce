@@ -2,6 +2,7 @@ import ProductModel from "../../models/productmodel.js";
 import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import offerModal from "../../models/offermodel.js"
+import reviewModel from "../../models/reviewmodal.js"
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 import { getReadyProductFilter } from "../../utils/productVisibility.js";
 
@@ -160,6 +161,12 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         });
     }
 
+    const reviews = await reviewModel.find({productId:productId}).populate('userId','fullname').sort({createdAt:-1}).lean();
+
+    const totalReviews = reviews.length;
+
+    const averageRating = totalReviews > 0 ? (reviews.reduce((sum, rev) => sum + rev.rating, 0) / totalReviews).toFixed(1) : 0;
+
     const { finalPrice, discountPercentage } = await getBestOfferForProduct(product);
 
     const relProdsFilter = getReadyProductFilter({ subCategory_id: product.subCategory_id?._id, _id: { $ne: product._id } });
@@ -178,6 +185,9 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         relProds,
         finalPrice,
         discountPercentage,
-        initialVariantId: selectedVariantId || null
+        initialVariantId: selectedVariantId || null,
+        reviews,
+        averageRating,
+        totalReviews
     });
 });

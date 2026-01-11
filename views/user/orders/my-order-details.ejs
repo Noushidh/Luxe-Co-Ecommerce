@@ -167,9 +167,10 @@ const formatPrice=(amount)=> {
             <% } %>
 
             <% if (isOrderDelivered && !isItemCancelled) { %>
-                <button class="text-[10px] px-4 py-1.5 bg-stone-100 border border-stone-300 text-stone-600 rounded font-black hover:bg-stone-200 uppercase tracking-wider">
-                    Write Review
-                </button>
+                <a href="/user/review/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
+                  class="text-[10px] text-center px-4 py-1.5 bg-stone-200 text-stone-500 rounded font-black uppercase tracking-wider cursor-default">
+                    write review
+                </a>
             <% } %>
         </div>
     </div>

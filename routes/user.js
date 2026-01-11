@@ -15,7 +15,8 @@ import * as Orders from "../controller/usercontroller/orders.js";
 import * as Invoice from "../controller/usercontroller/invoice.js";
 import * as Wishlist from "../controller/usercontroller/wishlist.js";
 import * as Wallet from "../controller/usercontroller/wallet.js"
-import * as Razorpay from "../controller/usercontroller/razorpay.js"
+import * as Razorpay from "../controller/usercontroller/razorpay.js";
+import * as Review from "../controller/usercontroller/review.js";
 import { upload } from "../config/multer.js";
 
 
@@ -124,6 +125,10 @@ router.get("/wallet", userAuth.isAuthenticated, Wallet.load_wallet)
 router.post('/order/wallet', userAuth.isAuthenticated, Wallet.walletPayment)
 router.post('/wallet/add-money', userAuth.isAuthenticated, Wallet.addMoneyToWallet)
 router.post('/wallet/verify', userAuth.isAuthenticated, Wallet.verifyWalletPayment);
+
+//Review  
+router.get('/review/:orderId',Review.load_Write_review)
+router.post('/review/submit',Review.submit_review);
 
 router.get('/logout', userAuth.isAuthenticated, usercontroller.isLogout);
 
