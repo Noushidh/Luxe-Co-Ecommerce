@@ -127,8 +127,8 @@ router.post('/wallet/add-money', userAuth.isAuthenticated, Wallet.addMoneyToWall
 router.post('/wallet/verify', userAuth.isAuthenticated, Wallet.verifyWalletPayment);
 
 //Review  
-router.get('/review/:orderId',Review.load_Write_review)
-router.post('/review/submit',Review.submit_review);
+router.get('/review/:orderId',userAuth.isAuthenticated,Review.load_Write_review)
+router.post('/review/submit',userAuth.isAuthenticated,Review.submit_review);
 
 router.get('/logout', userAuth.isAuthenticated, usercontroller.isLogout);
 
