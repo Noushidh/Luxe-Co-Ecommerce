@@ -1,15 +1,27 @@
-<aside class="w-64 bg-white p-6 shadow-md rounded-lg">
-    <h2 class="text-base font-bold text-stone-700 mb-6 tracking-wide">
-        Filters
-    </h2>
+<div class="lg:hidden mb-4">
+    <button onclick="toggleMobileFilters()" class="w-full flex items-center justify-center gap-2 py-3 bg-[#2D1B14] text-[#C8A97E] font-bold rounded-lg shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        Show Filters
+    </button>
+</div>
+
+<div id="filterOverlay" onclick="toggleMobileFilters()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+
+<aside id="filterSidebar" class="
+    fixed inset-y-0 left-0 w-72 bg-white p-6 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300
+    lg:relative lg:translate-x-0 lg:w-64 lg:shadow-md lg:rounded-lg lg:z-0 lg:block
+    overflow-y-auto
+">
+    <div class="flex justify-between items-center mb-6 lg:block">
+        <h2 class="text-base font-bold text-stone-700 tracking-wide uppercase">Filters</h2>
+        <button onclick="toggleMobileFilters()" class="lg:hidden text-stone-500 p-2 text-2xl">&times;</button>
+    </div>
 
     <div class="mb-8">
-        <label for="category" class="block text-base font-semibold text-stone-700 mb-3">
-            Category
-        </label>
-
-        <select id="category"
-            class="w-full px-3 py-2 rounded-lg border border-stone-400 bg-white text-sm text-stone-700">
+        <label for="category" class="block text-base font-semibold text-stone-700 mb-3">Category</label>
+        <select id="category" class="w-full px-3 py-2 rounded-lg border border-stone-400 bg-white text-sm text-stone-700 focus:ring-2 focus:ring-[#C8A97E] outline-none">
             <option value="" <%=category==="" ? 'selected' : '' %>>All</option>
             <option value="men" <%=category==="men" ? 'selected' : '' %>>Men</option>
             <option value="women" <%=category==="women" ? 'selected' : '' %>>Women</option>
@@ -18,14 +30,9 @@
     </div>
 
     <div class="mb-8">
-        <label for="subcategory" class="block text-base font-semibold text-stone-700 mb-3">
-            Styles
-        </label>
-        <select id="subcategory"
-            class="w-full px-3 py-2 rounded-lg border border-stone-400 bg-white text-sm text-stone-700">
-
+        <label for="subcategory" class="block text-base font-semibold text-stone-700 mb-3">Styles</label>
+        <select id="subcategory" class="w-full px-3 py-2 rounded-lg border border-stone-400 bg-white text-sm text-stone-700 focus:ring-2 focus:ring-[#C8A97E] outline-none">
             <option value="">All</option>
-
             <% subcategories.forEach(sc => { %>
                 <option 
                     data-category="<%= (sc.category || '').toString().toLowerCase() %>" 
@@ -39,157 +46,116 @@
         </select>
     </div>
 
-
     <div class="mb-8">
-        <label class="block text-sm font-semibold text-stone-700 mb-3">
-            Size
-        </label>
-
-        <div class="grid grid-cols-3 gap-3">
+        <label class="block text-sm font-semibold text-stone-700 mb-3">Size</label>
+        <div class="grid grid-cols-3 gap-2">
             <% sizes 
                 .filter(s => !isNaN(s) && Number(s) > 0 && Number(s) <= 20) 
                 .sort((a, b) => Number(a) - Number(b))
                 .forEach(s => { 
-                // Assuming 'selectedSize' holds the currently applied size parameter
             %>
-                <button type="button" class="size-btn w-16 h-11 flex items-center justify-center rounded 
-                border border-[#C8A97E] text-sm transition-all duration-200
-                <%= selectedSize == s 
-                    ? 'bg-[#C8A97E] text-white' 
-                    : 'bg-white text-stone-700 hover:bg-[#C8A97E] hover:text-white' %>" data-size="<%= s %>">
+                <button type="button" class="size-btn w-full h-11 flex items-center justify-center rounded border border-[#C8A97E] text-sm transition-all
+                <%= selectedSize == s ? 'bg-[#C8A97E] text-white shadow-inner' : 'bg-white text-stone-700 active:scale-95' %>" data-size="<%= s %>">
                     <%= s %>
                 </button>
             <% }) %>
         </div>
     </div>
 
-    <div class="mb-6">
-        <label class="block text-sm font-semibold text-stone-700 mb-3">
-            Price Range
-        </label>
-
-        <style>
-            input[type="radio"] {
-                accent-color: #5D4037; 
-            }
-        </style>
-
-        <div class="space-y-3 text-sm text-stone-700">
-            <% 
-                // Define the price ranges and check if the 'price' variable matches
-                const priceRanges = [
-                    { value: "0-1000", label: "Under ₹1000" },
-                    { value: "1000-3000", label: "₹1000 - ₹3000" },
-                    { value: "3000-6000", label: "₹3000 - ₹6000" },
-                    { value: "6000+", label: "Over ₹6000" }
-                ];
-            %>
+    <div class="mb-8">
+        <label class="block text-sm font-semibold text-stone-700 mb-3">Price Range</label>
+        <div class="space-y-4">
+            <% const priceRanges = [
+                { value: "0-1000", label: "Under ₹1000" },
+                { value: "1000-3000", label: "₹1000 - ₹3000" },
+                { value: "3000-6000", label: "₹3000 - ₹6000" },
+                { value: "6000+", label: "Over ₹6000" }
+            ]; %>
             <% priceRanges.forEach(range => { %>
-                <label class="flex items-center gap-3">
+                <label class="flex items-center gap-3 cursor-pointer group">
                     <input type="radio" name="price" value="<%= range.value %>" 
-                        <%=price===range.value ? "checked" : "" %> >
-                    <%= range.label %>
+                        class="w-4 h-4 accent-[#5D4037]" <%=price===range.value ? "checked" : "" %> >
+                    <span class="text-sm text-stone-700 group-hover:text-[#C8A97E]"><%= range.label %></span>
                 </label>
             <% }) %>
-
         </div>
     </div>
 
-
-<div class="mt-4">
-    <a href="/user/products" 
-       class="block w-full py-3 px-6 text-center rounded-full border-2 border-[#C8A97E] 
-              bg-[#2D1B14] text-[#C8A97E] font-semibold text-lg
-              hover:bg-[#C8A97E] hover:text-[#2D1B14] transition-all duration-300 shadow-md">
-        Clear Filters
-    </a>
-</div>
-
-
+    <div class="pt-4 border-t border-stone-100">
+        <a href="/user/products" class="block w-full py-3 px-6 text-center rounded-full border-2 border-[#C8A97E] bg-[#2D1B14] text-[#C8A97E] font-semibold hover:bg-[#C8A97E] hover:text-[#2D1B14] transition-all shadow-md">
+            Clear Filters
+        </a>
+    </div>
 </aside>
 
-
 <script>
+    function toggleMobileFilters() {
+        const sidebar = document.getElementById('filterSidebar');
+        const overlay = document.getElementById('filterOverlay');
+        const isHidden = sidebar.classList.contains('-translate-x-full');
+
+        if (isHidden) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = ''; 
+        }
+    }
 
     function filterSubcategories() {
         const selectedCategory = document.getElementById("category").value;
         const subcategorySelect = document.getElementById("subcategory");
         const subcategoryOptions = document.querySelectorAll(".subcategory-option");
-
         let selectedOptionVisible = subcategorySelect.value === "";
 
         subcategoryOptions.forEach(option => {
             const optionCategory = option.dataset.category;
             if (!optionCategory) return; 
-            
             const isVisible = (selectedCategory === "" || optionCategory === selectedCategory);
             option.style.display = isVisible ? '' : 'none';
-
-            if (isVisible && option.selected) {
-                selectedOptionVisible = true;
-            }
+            if (isVisible && option.selected) selectedOptionVisible = true;
         });
 
-        if (!selectedOptionVisible && subcategorySelect.value !== "") {
-            subcategorySelect.value = "";
-        }
+        if (!selectedOptionVisible && subcategorySelect.value !== "") subcategorySelect.value = "";
     }
-
-
 
     function applyFiltersAndRedirect(changedFilterType = null, changedValue = null) {
         const url = new URL(window.location.href);
-        
         url.searchParams.delete('page');
 
         const category = document.getElementById("category").value;
-        if (category) url.searchParams.set("category", category);
-        else url.searchParams.delete("category");
+        if (category) url.searchParams.set("category", category); else url.searchParams.delete("category");
 
         const subcategory = document.getElementById("subcategory").value;
-        if (subcategory) url.searchParams.set("subcategory", subcategory);
-        else url.searchParams.delete("subcategory");
+        if (subcategory) url.searchParams.set("subcategory", subcategory); else url.searchParams.delete("subcategory");
 
         const price = document.querySelector("input[name='price']:checked");
-        if (price) url.searchParams.set("price", price.value);
-        else url.searchParams.delete("price");
+        if (price) url.searchParams.set("price", price.value); else url.searchParams.delete("price");
 
         if (changedFilterType === 'size') {
             const currentSize = url.searchParams.get('size');
-            if (currentSize === changedValue) {
-                url.searchParams.delete('size');
-            } else {
-                url.searchParams.set('size', changedValue);
-            }
-        } else {
+            if (currentSize === changedValue) url.searchParams.delete('size');
+            else url.searchParams.set('size', changedValue);
         }
 
         window.location.href = url.toString();
     }
 
-
-
     document.addEventListener('DOMContentLoaded', () => {
         filterSubcategories(); 
-
         document.getElementById("category").addEventListener("change", () => {
              filterSubcategories(); 
              applyFiltersAndRedirect(); 
         });
-
         document.getElementById("subcategory").addEventListener("change", applyFiltersAndRedirect);
-
         document.querySelectorAll(".size-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const sizeValue = btn.dataset.size;
-                applyFiltersAndRedirect('size', sizeValue);
-            });
+            btn.addEventListener("click", () => applyFiltersAndRedirect('size', btn.dataset.size));
         });
-
         document.querySelectorAll("input[name='price']").forEach(radio => {
              radio.addEventListener("change", applyFiltersAndRedirect);
         });
-        
-        document.getElementById("applyFilters").addEventListener("click", applyFiltersAndRedirect);
     });
 </script>
