@@ -6,6 +6,8 @@ export const load_dashboard = asyncHandler(async (req, res) => {
   const totalUsers = await userModel.countDocuments({ isBlocked: false });
   const totalOrders = await orderModel.countDocuments();
 
+  let format = "%b %Y";
+
   const topProducts = await orderModel.aggregate([
     { $match: { status: "Delivered" } },
     { $unwind: "$items" },
@@ -34,21 +36,101 @@ export const load_dashboard = asyncHandler(async (req, res) => {
     { $sort: { totalSold: -1 } }, { $limit: 10 }
   ]);
 
-  const monthlyRevenueData = await orderModel.aggregate([
+const data = await orderModel.aggregate([
     { $match: { status: "Delivered" } },
-    { $group: { _id: { $month: "$createdAt" }, total: { $sum: "$total" } } },
+    { 
+        $group: { 
+            _id: { $dateToString: { format: format, date: "$createdAt" } }, 
+            total: { $sum: "$total" },
+            totalCouponDiscounts: { $sum: "$discount" },
+            totalOfferDiscounts: { $sum: "$offerDiscount" }
+        } 
+    },
     { $sort: { "_id": 1 } }
   ]);
+
+  const revenueData = await orderModel.aggregate([
+    { $match: { status: "Delivered" } },
+    { $group: { _id: null, totalRevenue: { $sum: "$total" } } }
+  ]);
+  const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
 
   res.render("admin/layout", {
     title: "Dashboard",
     body: "./dashboard",
     totalUsers,
     totalOrders,
-    totalRevenue: 5,
+    totalRevenue,
     topProducts,
     topCategories,
     topSubcategories,
-    monthlyRevenue: JSON.stringify(monthlyRevenueData)
+    data
   });
 }) 
+
+export const getChartData = asyncHandler(async (req, res) => {
+    const { filter } = req.query;
+    const now = new Date();
+    
+    let aggregationPipeline = [
+        { $match: { status: "Delivered" } }
+    ];
+
+    if (filter === 'yearly') {
+        aggregationPipeline.push(
+            {
+                $group: {
+                    _id: { 
+                        month: { $month: "$createdAt" }, 
+                        year: { $year: "$createdAt" } 
+                    },
+                    total: { $sum: "$total" }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } },
+            {
+                $project: {
+                    _id: {
+                        $concat: [
+                            { $arrayElemAt: [["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "$_id.month"] },
+                            " ",
+                            { $substr: ["$_id.year", 0, 4] }
+                        ]
+                    },
+                    total: 1
+                }
+            }
+        );
+    } else if (filter === 'monthly') {
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        aggregationPipeline.push(
+            { 
+                $match: { 
+                    createdAt: { $gte: startOfMonth, $lte: endOfMonth } 
+                } 
+            },
+            {
+                $group: {
+                    _id: { $dayOfMonth: "$createdAt" },
+                    total: { $sum: "$total" }
+                }
+            },
+            { $sort: { "_id": 1 } }
+        );
+    } else {
+        aggregationPipeline.push(
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%d %b", date: "$createdAt" } },
+                    total: { $sum: "$total" }
+                }
+            },
+            { $sort: { "_id": 1 } }
+        );
+    }
+
+    const data = await orderModel.aggregate(aggregationPipeline);
+    res.status(200).json(data);
+});

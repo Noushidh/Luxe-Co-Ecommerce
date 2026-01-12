@@ -18,7 +18,9 @@ import * as Sales from "../controller/admincontroller/sales-report.js";
 router.get('/login', adminAuth.isLoggin, adminAuthController.loadlogin)
 router.post('/login', adminAuth.isLoggin, adminAuthController.login)
 
+//dashboard
 router.get('/dashboard', adminAuth.checkSession, admindashboard.load_dashboard)
+router.get('/chart-data',adminAuth.checkSession,admindashboard.getChartData)
 
 router.get('/customers', adminAuth.checkSession, admincustomers.load_customers)
 router.patch('/user/:id/toggle-block', adminAuth.checkSession, admincustomers.blockUser)

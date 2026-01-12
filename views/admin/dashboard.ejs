@@ -5,32 +5,58 @@
             <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-2 text-stone-900">Executive Dashboard</h1>
             <p class="text-stone-400 text-[10px] font-bold uppercase tracking-[0.4em]">Real-time Performance Metrics</p>
         </div>
-
-        <div class="flex items-center bg-white border border-stone-100 rounded-2xl p-1.5 shadow-sm">
-            <button onclick="updateFilter('yearly')" class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-stone-50 transition-all">Yearly</button>
-            <button onclick="updateFilter('monthly')" class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl bg-stone-900 text-white shadow-lg">Monthly</button>
-            <button onclick="updateFilter('weekly')" class="px-5 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-stone-50 transition-all">Weekly</button>
-        </div>
+        <div class="flex bg-white p-1.5 rounded-2xl border border-stone-100 shadow-sm">
+        <button id="btn-weekly" onclick="updateFilter('weekly', event)" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Weekly</button>
+        <button id="btn-monthly" onclick="updateFilter('monthly', event)" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Monthly</button>
+        <button id="btn-yearly" onclick="updateFilter('yearly', event)" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Yearly</button>
+    </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm flex flex-col justify-between">
+        <div>
             <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Revenue</p>
-            <h3 class="text-3xl font-black tracking-tighter">₹<%= totalRevenue.toLocaleString() %></h3>
+            <h3 class="text-3xl font-black tracking-tighter">
+                ₹<%= data.reduce((acc, curr) => acc + curr.total, 0).toLocaleString() %>
+            </h3>
         </div>
-        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
-            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Orders</p>
-            <h3 class="text-3xl font-black tracking-tighter"><%= totalOrders %></h3>
-        </div>
-        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
-            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Avg. Order Value</p>
-            <h3 class="text-3xl font-black tracking-tighter">₹<%= Math.round(totalRevenue/totalOrders).toLocaleString() %></h3>
-        </div>
-        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
-            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Active Users</p>
-            <h3 class="text-3xl font-black tracking-tighter"><%= totalUsers %></h3>
+        <div class="mt-4 flex gap-4 border-t border-stone-50 pt-4">
+            <div>
+                <p class="text-[8px] font-black text-stone-400 uppercase">Coupon</p>
+                <p class="text-[11px] font-bold text-stone-900">
+                    ₹<%= data.reduce((acc, curr) => acc + curr.totalCouponDiscounts, 0).toLocaleString() %>
+                </p>
+            </div>
+            <div>
+                <p class="text-[8px] font-black text-stone-400 uppercase">Offers</p>
+                <p class="text-[11px] font-bold text-stone-900">
+                    ₹<%= data.reduce((acc, curr) => acc + curr.totalOfferDiscounts, 0).toLocaleString() %>
+                </p>
+            </div>
         </div>
     </div>
+
+    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Orders</p>
+        <h3 class="text-3xl font-black tracking-tighter"><%= totalOrders %></h3>
+    </div>
+
+    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Avg. Order Value</p>
+        <h3 class="text-3xl font-black tracking-tighter">
+            <% 
+                const currentTotal = data.reduce((acc, curr) => acc + curr.total, 0);
+                const avg = totalOrders > 0 ? Math.round(currentTotal / totalOrders) : 0;
+            %>
+            ₹<%= avg.toLocaleString() %>
+        </h3>
+    </div>
+
+    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Active Users</p>
+        <h3 class="text-3xl font-black tracking-tighter"><%= totalUsers %></h3>
+    </div>
+</div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
         
@@ -51,9 +77,11 @@
             <div class="relative z-10">
                 <span class="text-[#C8A97E] text-[10px] font-black uppercase tracking-[0.5em] mb-8 block">Leaderboard</span>
                 <% if (topProducts && topProducts.length > 0) { %>
-                    <div class="aspect-square w-full bg-stone-800 rounded-[2.5rem] overflow-hidden mb-8 border border-white/5 shadow-2xl">
-                        <img src="<%= topProducts[0].imageUrl %>" class="w-full h-full object-cover" alt="Best Seller">
-                    </div>
+          <div class="aspect-square w-full bg-stone-800 rounded-[2.5rem] overflow-hidden mb-8 border border-white/5 shadow-2xl flex items-center justify-center p-4">
+    <img src="<%= topProducts[0].imageUrl %>" 
+         class="max-w-full max-h-full object-contain" 
+         alt="Best Seller">
+</div>
                     <h4 class="text-3xl font-black uppercase tracking-tighter mb-1 leading-none"><%= topProducts[0].name %></h4>
                     <p class="text-stone-500 text-xs font-bold uppercase tracking-widest">Most Wanted Item</p>
                 <% } %>
@@ -136,53 +164,121 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const rawRevenueData = <%- monthlyRevenue %>;
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    
-    const labels = rawRevenueData.map(item => monthNames[item._id - 1]);
-    const dataValues = rawRevenueData.map(item => item.total);
 
+<script>
+let revenueChart;
+
+async function updateFilter(filterType, event) {
+const buttons = document.querySelectorAll('button[onclick^="updateFilter"]');
+    buttons.forEach(btn => {
+        btn.classList.remove('bg-[#C8A97E]', 'text-white', 'shadow-lg', 'shadow-[#C8A97E]/20');
+        btn.classList.add('text-stone-400', 'hover:bg-stone-50');
+    });
+        const activeBtn = event ? event.currentTarget : document.getElementById(`btn-${filterType}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-stone-400', 'hover:bg-stone-50');
+        activeBtn.classList.add('bg-[#C8A97E]', 'text-white', 'shadow-lg', 'shadow-[#C8A97E]/20');
+    }
+
+    try {
+        const response = await fetch(`/admin/chart-data?filter=${filterType}`);
+        const rawData = await response.json();
+
+        let labels, values;
+
+        if (filterType === 'yearly') {
+            const currentYear = new Date().getFullYear();
+            const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            labels = allMonths.map(m => `${m} ${currentYear}`);
+            values = labels.map(label => {
+                const found = rawData.find(item => item._id === label);
+                return found ? found.total : 0; 
+            });
+        } 
+        else if (filterType === 'monthly') {
+            const now = new Date();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const monthName = now.toLocaleString('default', { month: 'short' });
+            
+            labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1} ${monthName}`);
+            values = labels.map(label => {
+                const found = rawData.find(item => item._id === label || parseInt(item._id) === parseInt(label));
+                return found ? found.total : 0;
+            });
+        } 
+        else {
+            labels = rawData.map(item => item._id);
+            values = rawData.map(item => item.total);
+        }
+
+        renderChart(labels, values);
+    } catch (err) {
+        console.error("Error fetching chart data:", err);
+    }
+}
+
+function renderChart(labels, values) {
     const ctx = document.getElementById('revenueChart').getContext('2d');
-    
+    if (revenueChart) revenueChart.destroy();
+
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(200, 169, 126, 0.1)');
+    gradient.addColorStop(0, 'rgba(200, 169, 126, 0.3)'); 
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
-    new Chart(ctx, {
+    revenueChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Revenue',
-                data: dataValues,
-                borderColor: '#1C1917',
+                data: values,
+                borderColor: '#C8A97E',
                 borderWidth: 3,
-                backgroundColor: gradient,
                 fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 6,
-                pointHoverBackgroundColor: '#C8A97E',
-                pointHoverBorderColor: '#fff',
-                pointHoverBorderWidth: 3
+                backgroundColor: gradient,
+                tension: 0.4, 
+                pointRadius: 4, 
+                pointBackgroundColor: '#C8A97E',
+                pointHoverRadius: 6
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1c1917',
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Revenue: ₹' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            },
             scales: {
-                x: { 
-                    grid: { display: false },
-                    ticks: { font: { weight: '600', size: 10 }, color: '#A8A29E' }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f5f5f7', drawBorder: false },
+                    ticks: { 
+                        color: '#a8a29e', 
+                        font: { size: 10 },
+                        callback: (value) => '₹' + value.toLocaleString()
+                    }
                 },
-                y: { 
-                    border: { display: false },
-                    grid: { color: '#F5F5F4' },
-                    ticks: { font: { weight: '600', size: 10 }, color: '#A8A29E' }
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#a8a29e', font: { size: 10 } }
                 }
             }
         }
     });
+}
+
+// Initial Load
+document.addEventListener('DOMContentLoaded', () => {
+    updateFilter('weekly');
+});
 </script>
