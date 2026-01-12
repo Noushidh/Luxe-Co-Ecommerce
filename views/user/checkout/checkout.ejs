@@ -310,11 +310,8 @@
     }
   </style>
   <script>
-    const notyf = new Notyf({ duration: 1500, position: { x: 'right', y: 'top' } });
 
     async function processPayment() {
-      const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
-
       try {
         const selected = document.querySelector('input[name="selectedAddress"]:checked');
         if (!selected) {

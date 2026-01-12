@@ -51,13 +51,19 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
+    const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
+    
+    if (prices.finalTotal > 1000) {
+        return res.status(400).json({ success: false, message: "Cash on Delivery is only available for orders below Rs 1000. Please use online payment."});
+    }
+
     for (const item of cart.items) {
         const variant = item.productId.variants.find(v => v.size === item.size && v.color === item.color);
         if (!variant || variant.stock < item.quantity) {
             return res.status(400).json({ success: false, message: `Stock unavailable for ${item.productId.name}` });
         }
     }
-
+    
     const appliedCoupon = req.session.appliedCoupon || { discountValue: 0, _id: null };
 
     const savedOrder = await finalizeOrder({
@@ -72,11 +78,7 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
 
     delete req.session.appliedCoupon;
 
-    res.status(201).json({
-        success: true,
-        message: "Order placed successfully",
-        orderId: savedOrder._id
-    });
+    res.status(201).json({success: true,message: "Order placed successfully",orderId: savedOrder._id});
 });
 
 export const load_orderConfirmed = asyncHandler(async (req, res) => {
