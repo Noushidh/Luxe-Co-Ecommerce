@@ -17,13 +17,17 @@ export const load_payment = asyncHandler(async (req, res) => {
         return res.redirect('/user/cart');
     }
 
-    const cart = await CartModel.findOne({ user: userId }).populate("items.productId");
+    const cart = await CartModel.findOne({ user: userId }).populate({
+        path: 'items.productId',
+        populate: { path: 'subCategory_id', model: 'SubCategory' } 
+    });
+
     if (!cart || cart.items.length === 0) {
         return res.redirect('/user/cart');
     }
-
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
-    const wallet = await walletModel.findOne({userId})
+    const wallet = await walletModel.findOne({ userId });
+
     res.render("user/layout", {
         title: "Payment",
         body: "user/payment/payment",
@@ -36,7 +40,6 @@ export const load_payment = asyncHandler(async (req, res) => {
         razorpayKey: process.env.RAZORPAY_KEY_ID
     });
 });
-
 
 export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;

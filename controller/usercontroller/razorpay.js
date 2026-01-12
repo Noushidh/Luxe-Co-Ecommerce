@@ -1,7 +1,7 @@
 import asyncHandler from '../../utils/asynHandler.js';
 import CartModel from '../../models/cartmodel.js';
-import {finalizeOrder} from "../../utils/orderHelper.js"
-import {calculateOrderPrices} from "../../utils/orderHelper.js"
+import { finalizeOrder } from "../../utils/orderHelper.js"
+import { calculateOrderPrices } from "../../utils/orderHelper.js"
 import Razorpay from 'razorpay';
 import crypto from "crypto";
 
@@ -13,7 +13,10 @@ const razorpay = new Razorpay({
 export const razorpayPayment = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
 
-    const cart = await CartModel.findOne({ user: userId }).populate("items.productId");
+    const cart = await CartModel.findOne({ user: userId }).populate({
+        path: "items.productId",
+        populate: { path: "subCategory_id", model: "SubCategory" } // Essential for offer calculation
+    });
 
     if (!cart || cart.items.length === 0) {
         return res.status(400).json({ success: false, message: "Cart is empty" });
@@ -29,20 +32,20 @@ export const razorpayPayment = asyncHandler(async (req, res) => {
 
     try {
         const razorpayOrder = await razorpay.orders.create(options);
-        
+
         console.log("Razorpay Order Success:", razorpayOrder.id, "Amount:", prices.finalTotal);
 
         res.status(200).json({
             success: true,
-            razorpayOrder, 
+            razorpayOrder,
             user: req.session.user,
             finalOrderTotal: prices.finalTotal
         });
     } catch (error) {
         console.error("Razorpay Order Error:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Could not initiate (thudakkan kazhiyilla) payment" 
+        res.status(500).json({
+            success: false,
+            message: "Could not initiate (thudakkan kazhiyilla) payment"
         });
     }
 });
@@ -70,7 +73,7 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
         paymentStatus: "Paid",
         razorpayPaymentId: razorpay_payment_id
     });
-     console.log(savedOrder);
+    console.log(savedOrder);
     delete req.session.appliedCoupon;
     res.json({ success: true, orderId: savedOrder._id });
 });
@@ -78,10 +81,10 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
 //payment failed page
 export const load_paymentFailed = asyncHandler(async (req, res) => {
     const reason = req.query.reason || "Your payment could not be processed.";
-    
+
     res.render("user/layout", {
         title: "Payment Failed",
-        body: "user/payment/payment-failed", 
+        body: "user/payment/payment-failed",
         reason: reason
     });
 });

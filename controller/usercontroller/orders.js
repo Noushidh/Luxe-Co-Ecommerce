@@ -131,6 +131,9 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "This item cannot be cancelled at the current stage." });
     }
 
+    const currentSubtotal = order.items.filter(i=>i.status !== "Cancelled").reduce((sum,i)=>sum+(i.price*i.quantity),0);
+    
+
     const totalOriginalPrice = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     const itemSubtotal = item.price * item.quantity;
     const refundAmount = Math.round((itemSubtotal / totalOriginalPrice) * order.total);

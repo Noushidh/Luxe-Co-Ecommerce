@@ -25,7 +25,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
     res.render("user/layout", {
         title: "My Wallet",
         body: "user/wallet/wallet",
-        walletData:wallet,
+        walletData: wallet,
         userData,
         razorpayKey: process.env.RAZORPAY_KEY_ID,
         currentPath: '/user/wallet'
@@ -35,8 +35,10 @@ export const load_wallet = asyncHandler(async (req, res) => {
 export const walletPayment = asyncHandler(async (req, res) => {
     const { address } = req.body;
     const userId = req.session.user._id;
-    const cart = await CartModel.findOne({ user: userId }).populate("items.productId")
-    console.log("wallet user cart",cart)
+    const cart = await CartModel.findOne({ user: userId }).populate({
+        path: "items.productId",
+        populate: { path: "subCategory_id", model: "SubCategory" }
+    }); console.log("wallet user cart", cart)
     const wallet = await walletModel.findOne({ userId });
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
 
@@ -98,9 +100,9 @@ export const walletPayment = asyncHandler(async (req, res) => {
 //add money to wallet 
 export const addMoneyToWallet = asyncHandler(async (req, res) => {
     const { amount } = req.body;
-    
+
     const options = {
-        amount: Math.round(amount * 100), 
+        amount: Math.round(amount * 100),
         currency: "INR",
         receipt: `wallet_rcg_${Date.now()}`
     };
@@ -123,22 +125,22 @@ export const verifyWalletPayment = asyncHandler(async (req, res) => {
     }
 
     const wallet = await walletModel.findOne({ userId });
-    
+
     if (!wallet) {
         return res.status(404).json({ success: false, message: "Wallet not found" });
     }
 
-    wallet.balance += Number(amount); 
+    wallet.balance += Number(amount);
     wallet.transactions.push({
         transactionId: razorpay_payment_id,
-        amount: Number(amount), 
+        amount: Number(amount),
         type: "Credit",
         description: "Wallet Recharge via Razorpay",
         status: "Success",
         date: new Date(),
     });
 
-    await wallet.save(); 
+    await wallet.save();
 
     res.json({ success: true, message: "Amount added to wallet successfully", newBalance: wallet.balance });
 });
