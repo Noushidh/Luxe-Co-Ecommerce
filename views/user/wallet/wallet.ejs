@@ -82,46 +82,60 @@
                                 Status</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-stone-50">
-                        <% if (walletData.transactions && walletData.transactions.length> 0) { %>
-                            <% walletData.transactions.reverse().forEach(txn=> { %>
-                                <tr class="group hover:bg-[#F5E9DA]/10 transition-colors">
-                                    <td class="py-6 px-8 text-sm text-stone-500 font-bold">
-                                        <%= new Date(txn.date).toLocaleDateString('en-GB', { day: '2-digit' ,
-                                            month: 'short' , year: 'numeric' }) %>
-                                    </td>
-                                    <td class="py-6 px-8">
-                                        <div
-                                            class="text-sm font-bold text-stone-800 group-hover:text-black transition-colors">
-                                            <%= txn.description %>
-                                        </div>
-                                        <div class="text-[9px] text-stone-300 font-mono mt-1 tracking-widest lowercase">
-                                            <%= txn.transactionId %>
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="py-6 px-8 text-sm font-black text-right <%= txn.type.toLowerCase() === 'credit' ? 'text-emerald-500' : 'text-rose-400' %>">
+                 <div class="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm overflow-hidden">
+            <table class="w-full text-left border-collapse">
+        <tbody class="divide-y divide-stone-50" id="transaction-body">
+            <% if (walletData.transactions && walletData.transactions.length > 0) { %>
+                <% 
+                    const sortedTxns = [...walletData.transactions].reverse(); 
+                %>
+                <% sortedTxns.forEach((txn, index) => { %>
+                    <tr class="group hover:bg-[#F5E9DA]/10 transition-colors <%= index >= 5 ? 'hidden extra-row' : '' %>">
+                        <td class="py-6 px-8 text-sm text-stone-500 font-bold">
+                            <%= new Date(txn.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                        </td>
+                        <td class="py-6 px-8">
+                            <div class="text-sm font-bold text-stone-800 group-hover:text-black transition-colors">
+                                <%= txn.description %>
+                            </div>
+                            <div class="text-[9px] text-stone-300 font-mono mt-1 tracking-widest lowercase">
+                                <%= txn.transactionId %>
+                            </div>
+                        </td>
+                        <td class="py-6 px-8 text-sm font-black text-right <%= txn.type.toLowerCase() === 'credit' ? 'text-emerald-500' : 'text-rose-400' %>">
+                            <%= txn.type.toLowerCase() === 'credit' ? '+' : '-' %>₹<%= txn.amount.toFixed(2) %>
+                        </td>
+                        <td class="py-6 px-8 text-right">
+                            <span class="text-[9px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-lg <%= txn.status === 'Success' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-50 text-stone-400' %>">
+                                <%= txn.status %>
+                            </span>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="4" class="py-24 text-center">
+                        <p class="text-stone-300 font-bold text-sm tracking-wide">No transactions recorded yet.</p>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
 
-                                        <%= txn.type.toLowerCase()==='credit' ? '+' : '-' %>₹<%= txn.amount.toFixed(2)
-                                                %>
-                                    </td>
-                                    <td class="py-6 px-8 text-right">
-                                        <span
-                                            class="text-[9px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-lg <%= txn.status === 'Success' ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-50 text-stone-400' %>">
-                                            <%= txn.status %>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <% }) %>
-                                    <% } else { %>
-                                        <tr>
-                                            <td colspan="4" class="py-24 text-center">
-                                                <p class="text-stone-300 font-bold text-sm tracking-wide">No
-                                                    transactions recorded yet.</p>
-                                            </td>
-                                        </tr>
-                                        <% } %>
-                    </tbody>
+    <% if (walletData.transactions && walletData.transactions.length > 5) { %>
+        <div class="py-6 bg-stone-50/50 flex justify-center border-t border-stone-100">
+            <button id="toggle-btn" onclick="toggleTransactions()" 
+                    class="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-[#C8A97E] hover:text-stone-900 transition-all active:scale-95">
+                <span id="btn-text">View All History</span>
+                <div class="w-6 h-6 rounded-full border border-[#C8A97E]/20 flex items-center justify-center group-hover:border-[#C8A97E] transition-colors">
+                    <svg id="btn-icon" class="w-2.5 h-2.5 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </button>
+        </div>
+    <% } %>
+</div>
                 </table>
             </div>
         </div>
@@ -147,6 +161,26 @@
             title: 'Referral Code Copied'
         });
     }
+    function toggleTransactions() {
+    const extraRows = document.querySelectorAll('.extra-row');
+    const btnText = document.getElementById('btn-text');
+    const btnIcon = document.getElementById('btn-icon');
+    
+    const isCurrentlyHidden = extraRows[0].classList.contains('hidden');
+
+    if (isCurrentlyHidden) {
+        extraRows.forEach(row => row.classList.remove('hidden'));
+        btnText.innerText = "Collapse List";
+        btnIcon.style.transform = "rotate(180deg)";
+    } else {
+        extraRows.forEach(row => row.classList.add('hidden'));
+        btnText.innerText = "View All History";
+        btnIcon.style.transform = "rotate(0deg)";
+        
+        const tableHeader = document.getElementById('transaction-body').closest('table');
+        tableHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
    async function addFunds() {
     const { value: amount } = await Swal.fire({
         title: 'Add Funds to Wallet',
