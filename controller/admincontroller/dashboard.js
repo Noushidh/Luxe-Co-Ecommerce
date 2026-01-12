@@ -78,15 +78,7 @@ export const getChartData = asyncHandler(async (req, res) => {
 
     if (filter === 'yearly') {
         aggregationPipeline.push(
-            {
-                $group: {
-                    _id: { 
-                        month: { $month: "$createdAt" }, 
-                        year: { $year: "$createdAt" } 
-                    },
-                    total: { $sum: "$total" }
-                }
-            },
+            {$group: {_id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } },total: { $sum: "$total" }}},
             { $sort: { "_id.year": 1, "_id.month": 1 } },
             {
                 $project: {
@@ -106,27 +98,13 @@ export const getChartData = asyncHandler(async (req, res) => {
         const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
         aggregationPipeline.push(
-            { 
-                $match: { 
-                    createdAt: { $gte: startOfMonth, $lte: endOfMonth } 
-                } 
-            },
-            {
-                $group: {
-                    _id: { $dayOfMonth: "$createdAt" },
-                    total: { $sum: "$total" }
-                }
-            },
+            { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+            {$group: {_id: { $dayOfMonth: "$createdAt" },total: { $sum: "$total" }}},
             { $sort: { "_id": 1 } }
         );
     } else {
         aggregationPipeline.push(
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%d %b", date: "$createdAt" } },
-                    total: { $sum: "$total" }
-                }
-            },
+            {$group: { _id: { $dateToString: { format: "%d %b", date: "$createdAt" } },total: { $sum: "$total" }}},
             { $sort: { "_id": 1 } }
         );
     }

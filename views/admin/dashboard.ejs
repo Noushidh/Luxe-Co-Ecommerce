@@ -1,65 +1,72 @@
 <div class="max-w-[1600px] mx-auto px-8 py-10 font-['Inter']">
-    
+
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
         <div>
-            <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-2 text-stone-900">Executive Dashboard</h1>
+            <h1 class="text-3xl font-black tracking-tighter uppercase leading-none mb-2 text-stone-900">Executive
+                Dashboard</h1>
             <p class="text-stone-400 text-[10px] font-bold uppercase tracking-[0.4em]">Real-time Performance Metrics</p>
         </div>
         <div class="flex bg-white p-1.5 rounded-2xl border border-stone-100 shadow-sm">
-        <button id="btn-weekly" onclick="updateFilter('weekly', event)" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Weekly</button>
-        <button id="btn-monthly" onclick="updateFilter('monthly', event)" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Monthly</button>
-        <button id="btn-yearly" onclick="updateFilter('yearly', event)" class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Yearly</button>
-    </div>
+            <button id="btn-weekly" onclick="updateFilter('weekly', event)"
+                class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Weekly</button>
+            <button id="btn-monthly" onclick="updateFilter('monthly', event)"
+                class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Monthly</button>
+            <button id="btn-yearly" onclick="updateFilter('yearly', event)"
+                class="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Yearly</button>
+        </div>
     </header>
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm flex flex-col justify-between">
-        <div>
-            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Revenue</p>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Revenue</p>
+                <h3 class="text-3xl font-black tracking-tighter">
+                    ₹<%= data.reduce((acc, curr)=> acc + curr.total, 0).toLocaleString() %>
+                </h3>
+            </div>
+            <div class="mt-4 flex gap-4 border-t border-stone-50 pt-4">
+                <div>
+                    <p class="text-[8px] font-black text-stone-400 uppercase">Coupon</p>
+                    <p class="text-[11px] font-bold text-stone-900">
+                        ₹<%= data.reduce((acc, curr)=> acc + curr.totalCouponDiscounts, 0).toLocaleString() %>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-[8px] font-black text-stone-400 uppercase">Offers</p>
+                    <p class="text-[11px] font-bold text-stone-900">
+                        ₹<%= data.reduce((acc, curr)=> acc + curr.totalOfferDiscounts, 0).toLocaleString() %>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Orders</p>
             <h3 class="text-3xl font-black tracking-tighter">
-                ₹<%= data.reduce((acc, curr) => acc + curr.total, 0).toLocaleString() %>
+                <%= totalOrders %>
             </h3>
         </div>
-        <div class="mt-4 flex gap-4 border-t border-stone-50 pt-4">
-            <div>
-                <p class="text-[8px] font-black text-stone-400 uppercase">Coupon</p>
-                <p class="text-[11px] font-bold text-stone-900">
-                    ₹<%= data.reduce((acc, curr) => acc + curr.totalCouponDiscounts, 0).toLocaleString() %>
-                </p>
-            </div>
-            <div>
-                <p class="text-[8px] font-black text-stone-400 uppercase">Offers</p>
-                <p class="text-[11px] font-bold text-stone-900">
-                    ₹<%= data.reduce((acc, curr) => acc + curr.totalOfferDiscounts, 0).toLocaleString() %>
-                </p>
-            </div>
+
+        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Avg. Order Value</p>
+            <h3 class="text-3xl font-black tracking-tighter">
+                <% const currentTotal=data.reduce((acc, curr)=> acc + curr.total, 0);
+                    const avg = totalOrders > 0 ? Math.round(currentTotal / totalOrders) : 0;
+                    %>
+                    ₹<%= avg.toLocaleString() %>
+            </h3>
+        </div>
+
+        <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
+            <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Active Users</p>
+            <h3 class="text-3xl font-black tracking-tighter">
+                <%= totalUsers %>
+            </h3>
         </div>
     </div>
 
-    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
-        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Total Orders</p>
-        <h3 class="text-3xl font-black tracking-tighter"><%= totalOrders %></h3>
-    </div>
-
-    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
-        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Avg. Order Value</p>
-        <h3 class="text-3xl font-black tracking-tighter">
-            <% 
-                const currentTotal = data.reduce((acc, curr) => acc + curr.total, 0);
-                const avg = totalOrders > 0 ? Math.round(currentTotal / totalOrders) : 0;
-            %>
-            ₹<%= avg.toLocaleString() %>
-        </h3>
-    </div>
-
-    <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
-        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Active Users</p>
-        <h3 class="text-3xl font-black tracking-tighter"><%= totalUsers %></h3>
-    </div>
-</div>
-
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-        
+
         <div class="lg:col-span-8 bg-white p-10 rounded-[3rem] border border-stone-100 shadow-sm">
             <div class="flex justify-between items-center mb-10">
                 <h3 class="text-xs font-black uppercase tracking-[0.3em] text-stone-900">Revenue Stream</h3>
@@ -73,91 +80,145 @@
             </div>
         </div>
 
-        <div class="lg:col-span-4 bg-stone-900 rounded-[3rem] p-10 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden">
+        <div
+            class="lg:col-span-4 bg-gradient-to-br from-white to-[#FAF9F6] rounded-[3.5rem] p-10 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-white relative overflow-hidden group">
+
+            <div
+                class="absolute -top-20 -right-20 w-64 h-64 bg-[#C8A97E]/5 rounded-full blur-[80px] group-hover:bg-[#C8A97E]/10 transition-all duration-700">
+            </div>
+
             <div class="relative z-10">
-                <span class="text-[#C8A97E] text-[10px] font-black uppercase tracking-[0.5em] mb-8 block">Leaderboard</span>
-                <% if (topProducts && topProducts.length > 0) { %>
-          <div class="aspect-square w-full bg-stone-800 rounded-[2.5rem] overflow-hidden mb-8 border border-white/5 shadow-2xl flex items-center justify-center p-4">
-    <img src="<%= topProducts[0].imageUrl %>" 
-         class="max-w-full max-h-full object-contain" 
-         alt="Best Seller">
-</div>
-                    <h4 class="text-3xl font-black uppercase tracking-tighter mb-1 leading-none"><%= topProducts[0].name %></h4>
-                    <p class="text-stone-500 text-xs font-bold uppercase tracking-widest">Most Wanted Item</p>
-                <% } %>
+                <div class="flex justify-between items-center mb-8">
+                    <span
+                        class="text-[#C8A97E] text-[10px] font-black uppercase tracking-[0.5em] block">Leaderboard</span>
+                    <div class="bg-[#C8A97E]/10 px-3 py-1 rounded-full">
+                        <span class="text-[#C8A97E] text-[8px] font-black uppercase tracking-tighter">Bestseller</span>
+                    </div>
+                </div>
+
+                <% if (topProducts && topProducts.length> 0) { %>
+                    <div
+                        class="aspect-square w-full bg-white rounded-[2.5rem] overflow-hidden mb-10 shadow-[0_15px_35px_rgba(200,169,126,0.12)] flex items-center justify-center p-8 border border-[#C8A97E]/10 relative">
+                        <img src="<%= topProducts[0].imageUrl %>"
+                            class="max-w-full max-h-full object-contain scale-95 group-hover:scale-105 transition-transform duration-700"
+                            alt="Best Seller">
+                        <div class="absolute inset-0 shadow-[inset_0_0_40px_rgba(255,255,255,0.8)] pointer-events-none">
+                        </div>
+                    </div>
+
+                    <h4 class="text-3xl font-black text-stone-800 uppercase tracking-tight mb-2 leading-none">
+                        <%= topProducts[0].name %>
+                    </h4>
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#C8A97E] animate-pulse"></span>
+                        <p class="text-stone-400 text-[10px] font-bold uppercase tracking-widest italic">Premier
+                            Collection</p>
+                    </div>
+                    <% } %>
             </div>
-            
-            <div class="pt-8 border-t border-white/10 flex justify-between items-center relative z-10">
+
+            <div class="mt-10 pt-8 border-t border-stone-100 flex justify-between items-end relative z-10">
                 <div>
-                    <p class="text-[9px] font-black text-stone-500 uppercase mb-1">Volume</p>
-                    <p class="text-xl font-bold"><%= topProducts[0].totalSolds %> Units</p>
+                    <p class="text-[9px] font-black text-stone-300 uppercase tracking-[0.2em] mb-2">Market Volume</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-black text-stone-800">
+                            <%= topProducts[0].totalSolds %>
+                        </span>
+                        <span class="text-[10px] font-bold text-stone-400 uppercase">Units</span>
+                    </div>
                 </div>
+
                 <div class="text-right">
-                    <p class="text-[9px] font-black text-stone-500 uppercase mb-1">Status</p>
-                    <p class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Trending Up</p>
+                    <div class="inline-flex flex-col items-end">
+                        <p class="text-[9px] font-black text-[#C8A97E] uppercase mb-1 tracking-wider">Growth</p>
+                        <div
+                            class="flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100/50">
+                            <svg class="w-2.5 h-2.5 text-emerald-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                            </svg>
+                            <span class="text-[10px] font-black text-emerald-600 uppercase">Trending</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-[#C8A97E]/10 rounded-full blur-[100px]"></div>
+
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-[#C8A97E]/5 rounded-full blur-[60px]"></div>
         </div>
+
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
+
         <div class="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-sm">
             <h3 class="text-xs font-black uppercase tracking-[0.3em] mb-8">Top 10 Products</h3>
             <div class="space-y-5">
-                <% topProducts.forEach((product, i) => { %>
-                <div class="flex items-center gap-4 group cursor-default">
-                    <span class="text-[10px] font-black text-stone-200 group-hover:text-[#C8A97E] transition-colors"><%= (i+1).toString().padStart(2, '0') %></span>
-                    <div class="flex-grow">
-                        <p class="text-[11px] font-black text-stone-700 uppercase truncate"><%= product.name %></p>
-                        <p class="text-[9px] text-stone-400 font-bold uppercase tracking-tighter"><%= product.totalSolds %> Sales</p>
+                <% topProducts.forEach((product, i)=> { %>
+                    <div class="flex items-center gap-4 group cursor-default">
+                        <span
+                            class="text-[10px] font-black text-stone-200 group-hover:text-[#C8A97E] transition-colors">
+                            <%= (i+1).toString().padStart(2, '0' ) %>
+                        </span>
+                        <div class="flex-grow">
+                            <p class="text-[11px] font-black text-stone-700 uppercase truncate">
+                                <%= product.name %>
+                            </p>
+                            <p class="text-[9px] text-stone-400 font-bold uppercase tracking-tighter">
+                                <%= product.totalSolds %> Sales
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <% }) %>
+                    <% }) %>
             </div>
         </div>
 
-<div class="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-sm">
-    <h3 class="text-xs font-black uppercase tracking-[0.3em] mb-8">Main Categories</h3>
-    <div class="space-y-8">
-        <% 
-           const maxCatCount = topCategories.length > 0 ? topCategories[0].count : 1;
-           topCategories.forEach(cat => { 
-           const percentage = (cat.count / maxCatCount) * 100;
-        %>
-        <div class="group">
-            <div class="flex justify-between text-[10px] font-black uppercase mb-3 tracking-widest">
-                <span class="text-stone-600"><%= cat._id %></span>
-                <span class="text-stone-300"><%= Math.round(percentage) %>%</span>
-            </div>
-            <div class="w-full h-[3px] bg-stone-50 rounded-full overflow-hidden">
-                <div class="h-full bg-stone-900 group-hover:bg-[#C8A97E] transition-all duration-1000" 
-                     style="width: <%= percentage %>%"></div>
+        <div class="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-sm">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] mb-8">Main Categories</h3>
+            <div class="space-y-8">
+                <% const maxCatCount=topCategories.length> 0 ? topCategories[0].count : 1;
+                    topCategories.forEach(cat => {
+                    const percentage = (cat.count / maxCatCount) * 100;
+                    %>
+                    <div class="group">
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-3 tracking-widest">
+                            <span class="text-stone-600">
+                                <%= cat._id %>
+                            </span>
+                            <span class="text-stone-300">
+                                <%= Math.round(percentage) %>%
+                            </span>
+                        </div>
+                        <div class="w-full h-[3px] bg-stone-50 rounded-full overflow-hidden">
+                            <div class="h-full bg-stone-900 group-hover:bg-[#C8A97E] transition-all duration-1000"
+                                style="width: <%= percentage %>%"></div>
+                        </div>
+                    </div>
+                    <% }) %>
             </div>
         </div>
-        <% }) %>
-    </div>
-</div>
 
- <div class="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-sm">
-    <h3 class="text-xs font-black uppercase tracking-[0.3em] mb-8">Top 10 Subcategories</h3>
-    <div class="space-y-5">
-        <% topSubcategories.forEach((sub, i) => { %>
-        <div class="flex items-center justify-between group cursor-default">
-            <div class="flex items-center gap-4">
-                <span class="text-[10px] font-black text-stone-200 group-hover:text-stone-900 transition-colors">
-                    <%= (i+1).toString().padStart(2, '0') %>
-                </span>
-                <p class="text-[11px] font-black text-stone-700 uppercase"><%= sub._id %></p>
+        <div class="bg-white p-10 rounded-[2.5rem] border border-stone-100 shadow-sm">
+            <h3 class="text-xs font-black uppercase tracking-[0.3em] mb-8">Top 10 Subcategories</h3>
+            <div class="space-y-5">
+                <% topSubcategories.forEach((sub, i)=> { %>
+                    <div class="flex items-center justify-between group cursor-default">
+                        <div class="flex items-center gap-4">
+                            <span
+                                class="text-[10px] font-black text-stone-200 group-hover:text-stone-900 transition-colors">
+                                <%= (i+1).toString().padStart(2, '0' ) %>
+                            </span>
+                            <p class="text-[11px] font-black text-stone-700 uppercase">
+                                <%= sub._id %>
+                            </p>
+                        </div>
+                        <span class="text-[10px] font-bold text-stone-400 bg-stone-50 px-3 py-1 rounded-full">
+                            <%= sub.totalSold %> Sold
+                        </span>
+                    </div>
+                    <% }) %>
             </div>
-            <span class="text-[10px] font-bold text-stone-400 bg-stone-50 px-3 py-1 rounded-full">
-                <%= sub.totalSold %> Sold
-            </span>
         </div>
-        <% }) %>
-    </div>
-</div>
 
 
     </div>
@@ -166,119 +227,119 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-let revenueChart;
+    let revenueChart;
 
-async function updateFilter(filterType, event) {
-const buttons = document.querySelectorAll('button[onclick^="updateFilter"]');
-    buttons.forEach(btn => {
-        btn.classList.remove('bg-[#C8A97E]', 'text-white', 'shadow-lg', 'shadow-[#C8A97E]/20');
-        btn.classList.add('text-stone-400', 'hover:bg-stone-50');
-    });
+    async function updateFilter(filterType, event) {
+        const buttons = document.querySelectorAll('button[onclick^="updateFilter"]');
+        buttons.forEach(btn => {
+            btn.classList.remove('bg-[#C8A97E]', 'text-white', 'shadow-lg', 'shadow-[#C8A97E]/20');
+            btn.classList.add('text-stone-400', 'hover:bg-stone-50');
+        });
         const activeBtn = event ? event.currentTarget : document.getElementById(`btn-${filterType}`);
-    if (activeBtn) {
-        activeBtn.classList.remove('text-stone-400', 'hover:bg-stone-50');
-        activeBtn.classList.add('bg-[#C8A97E]', 'text-white', 'shadow-lg', 'shadow-[#C8A97E]/20');
-    }
-
-    try {
-        const response = await fetch(`/admin/chart-data?filter=${filterType}`);
-        const rawData = await response.json();
-
-        let labels, values;
-
-        if (filterType === 'yearly') {
-            const currentYear = new Date().getFullYear();
-            const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            labels = allMonths.map(m => `${m} ${currentYear}`);
-            values = labels.map(label => {
-                const found = rawData.find(item => item._id === label);
-                return found ? found.total : 0; 
-            });
-        } 
-        else if (filterType === 'monthly') {
-            const now = new Date();
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const monthName = now.toLocaleString('default', { month: 'short' });
-            
-            labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1} ${monthName}`);
-            values = labels.map(label => {
-                const found = rawData.find(item => item._id === label || parseInt(item._id) === parseInt(label));
-                return found ? found.total : 0;
-            });
-        } 
-        else {
-            labels = rawData.map(item => item._id);
-            values = rawData.map(item => item.total);
+        if (activeBtn) {
+            activeBtn.classList.remove('text-stone-400', 'hover:bg-stone-50');
+            activeBtn.classList.add('bg-[#C8A97E]', 'text-white', 'shadow-lg', 'shadow-[#C8A97E]/20');
         }
 
-        renderChart(labels, values);
-    } catch (err) {
-        console.error("Error fetching chart data:", err);
+        try {
+            const response = await fetch(`/admin/chart-data?filter=${filterType}`);
+            const rawData = await response.json();
+
+            let labels, values;
+
+            if (filterType === 'yearly') {
+                const currentYear = new Date().getFullYear();
+                const allMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                labels = allMonths.map(m => `${m} ${currentYear}`);
+                values = labels.map(label => {
+                    const found = rawData.find(item => item._id === label);
+                    return found ? found.total : 0;
+                });
+            }
+            else if (filterType === 'monthly') {
+                const now = new Date();
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const monthName = now.toLocaleString('default', { month: 'short' });
+
+                labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1} ${monthName}`);
+                values = labels.map(label => {
+                    const found = rawData.find(item => item._id === label || parseInt(item._id) === parseInt(label));
+                    return found ? found.total : 0;
+                });
+            }
+            else {
+                labels = rawData.map(item => item._id);
+                values = rawData.map(item => item.total);
+            }
+
+            renderChart(labels, values);
+        } catch (err) {
+            console.error("Error fetching chart data:", err);
+        }
     }
-}
 
-function renderChart(labels, values) {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    if (revenueChart) revenueChart.destroy();
+    function renderChart(labels, values) {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        if (revenueChart) revenueChart.destroy();
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(200, 169, 126, 0.3)'); 
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(200, 169, 126, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
-    revenueChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Revenue',
-                data: values,
-                borderColor: '#C8A97E',
-                borderWidth: 3,
-                fill: true,
-                backgroundColor: gradient,
-                tension: 0.4, 
-                pointRadius: 4, 
-                pointBackgroundColor: '#C8A97E',
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#1c1917',
-                    padding: 12,
-                    displayColors: false,
-                    callbacks: {
-                        label: function(context) {
-                            return 'Revenue: ₹' + context.parsed.y.toLocaleString();
+        revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue',
+                    data: values,
+                    borderColor: '#C8A97E',
+                    borderWidth: 3,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#C8A97E',
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1c1917',
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Revenue: ₹' + context.parsed.y.toLocaleString();
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#f5f5f7', drawBorder: false },
-                    ticks: { 
-                        color: '#a8a29e', 
-                        font: { size: 10 },
-                        callback: (value) => '₹' + value.toLocaleString()
-                    }
                 },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#a8a29e', font: { size: 10 } }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f5f5f7', drawBorder: false },
+                        ticks: {
+                            color: '#a8a29e',
+                            font: { size: 10 },
+                            callback: (value) => '₹' + value.toLocaleString()
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#a8a29e', font: { size: 10 } }
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 
-// Initial Load
-document.addEventListener('DOMContentLoaded', () => {
-    updateFilter('weekly');
-});
+    // Initial Load
+    document.addEventListener('DOMContentLoaded', () => {
+        updateFilter('weekly');
+    });
 </script>
