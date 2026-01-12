@@ -106,13 +106,13 @@ router.get('/payment-failed', userAuth.isAuthenticated, Razorpay.load_paymentFai
 router.patch('/order-cancelled/:id', Payment.orderCancel)
 
 //Orders
-router.get('/orders', Orders.load_orders);
-router.get('/order-details/:orderId', Orders.load_orders_Details)
-router.get('/order-return/:id', Orders.load_returnOrder)
-router.post('/order/return', Orders.returnOrder_details);
-router.patch('/orders/cancel-item', Orders.cancel_individualItem)
+router.get('/orders',userAuth.isAuthenticated, Orders.load_orders);
+router.get('/order-details/:orderId',userAuth.isAuthenticated, Orders.load_orders_Details)
+router.get('/order-return/:id',userAuth.isAuthenticated, Orders.load_returnOrder)
+router.post('/order/return',userAuth.isAuthenticated, Orders.returnOrder_details);
+router.patch('/orders/cancel-item',userAuth.isAuthenticated, Orders.cancel_individualItem)
 //invoice
-router.get('/orders/invoice/:id', Invoice.load_Download_invoice);
+router.get('/orders/invoice/:id',userAuth.isAuthenticated,Invoice.load_Download_invoice);
 
 //wislist
 router.get('/wishlist', userAuth.isAuthenticated, Wishlist.load_wishlist);

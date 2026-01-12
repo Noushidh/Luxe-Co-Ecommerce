@@ -31,116 +31,170 @@
         }
     </style>
 
-  <header class="w-full bg-[#2B1B17] h-20 shadow-md flex items-center z-50 relative">
-    <div class="max-w-7xl mx-auto w-full px-6 flex items-center justify-between">
+    <header class="w-full bg-[#2B1B17] h-20 shadow-md flex items-center z-50 relative">
+        <div class="max-w-7xl mx-auto w-full px-6 flex items-center justify-between">
 
-        <div class="text-white text-3xl font-serif font-bold tracking-wide slow-load-header slow-load-1">
-            <a href="/user" aria-label="Luxe & Co Shop" class="hover:text-[#C8A97E]">
-                Luxe &amp; Co
-            </a>
-        </div>
-
-        <nav class="hidden md:flex items-center space-x-10 text-white text-sm slow-load-header slow-load-2">
-            <a href="/user/products" class="hover:text-[#C8A97E] transition <%= currentCategory === '' ? 'text-[#C8A97E] font-semibold' : '' %>">All</a>
-            <a href="/user/products?category=men" class="hover:text-[#C8A97E] transition <%= currentCategory === 'men' ? 'text-[#C8A97E] font-semibold' : '' %>">Men</a>
-            <a href="/user/products?category=women" class="hover:text-[#C8A97E] transition <%= currentCategory === 'women' ? 'text-[#C8A97E] font-semibold' : '' %>">Women</a>
-            <a href="/user/products?category=kids" class="hover:text-[#C8A97E] transition <%= currentCategory === 'kids' ? 'text-[#C8A97E] font-semibold' : '' %>">Kids</a>
-        </nav>
-
-        <div class="flex items-center space-x-6 slow-load-header slow-load-3">
-
-            <form action="/user/products" method="GET" id="searchForm" class="relative hidden md:block">
-                <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>"
-                    placeholder="Search..." oninput="autoSearch(this)" 
-                    class="pl-4 pr-9 py-2 rounded-full bg-white/10 text-sm text-white placeholder:text-stone-300 outline-none border border-white/20 focus:ring-2 focus:ring-[#C8A97E] transition-all">
-                <button type="submit" class="absolute right-3 top-2.5">
-                    <svg class="w-4 h-4 text-stone-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16" y1="16" x2="20" y2="20"></line></svg>
-                </button>
-            </form>
-
-            <% if (user) { %>
-                <a href="/user/wishlist" class="hover:scale-110 transition">
-                    <svg class="w-6 h-6 text-[#C8A97E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            <div class="text-white text-3xl font-serif font-bold tracking-wide slow-load-header slow-load-1">
+                <a href="/user" aria-label="Luxe & Co Shop" class="hover:text-[#C8A97E]">
+                    Luxe &amp; Co
                 </a>
-                <a href="/user/cart" class="relative hover:scale-110 transition">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12L5 3H2" /><circle cx="9" cy="20" r="1.3" /><circle cx="18" cy="20" r="1.3" /></svg>
-                    <% if (locals.cartItemsCount && cartItemsCount > 0) { %><span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold"><%= cartItemsCount %></span><% } %>
-                </a>
-                <a href="/user/profile" class="hover:scale-110 transition">
-                    <% if (user && user.profilePic) { %>
-                        <img src="<%= user.profilePic %>" class="w-8 h-8 rounded-full object-cover border border-[#C8A97E]" />
+            </div>
+
+            <nav class="hidden md:flex items-center space-x-10 text-white text-sm slow-load-header slow-load-2">
+                <a href="/user/products"
+                    class="hover:text-[#C8A97E] transition <%= currentCategory === '' ? 'text-[#C8A97E] font-semibold' : '' %>">All</a>
+                <a href="/user/products?category=men"
+                    class="hover:text-[#C8A97E] transition <%= currentCategory === 'men' ? 'text-[#C8A97E] font-semibold' : '' %>">Men</a>
+                <a href="/user/products?category=women"
+                    class="hover:text-[#C8A97E] transition <%= currentCategory === 'women' ? 'text-[#C8A97E] font-semibold' : '' %>">Women</a>
+                <a href="/user/products?category=kids"
+                    class="hover:text-[#C8A97E] transition <%= currentCategory === 'kids' ? 'text-[#C8A97E] font-semibold' : '' %>">Kids</a>
+            </nav>
+
+            <div class="flex items-center space-x-6 slow-load-header slow-load-3">
+
+                <form action="/user/products" method="GET" id="searchForm" class="relative hidden md:block">
+                    <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>"
+                        placeholder="Search..." oninput="autoSearch(this)"
+                        class="pl-4 pr-9 py-2 rounded-full bg-white/10 text-sm text-white placeholder:text-stone-300 outline-none border border-white/20 focus:ring-2 focus:ring-[#C8A97E] transition-all">
+                    <button type="submit" class="absolute right-3 top-2.5">
+                        <svg class="w-4 h-4 text-stone-200" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="16" y1="16" x2="20" y2="20"></line>
+                        </svg>
+                    </button>
+                </form>
+
+                <% if (user) { %>
+                    <a href="/user/wishlist" class="hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-[#C8A97E]" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </a>
+                    <a href="/user/cart" class="relative hover:scale-110 transition">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.8"
+                            viewBox="0 0 24 24">
+                            <path d="M6 6h15l-1.5 9h-12L5 3H2" />
+                            <circle cx="9" cy="20" r="1.3" />
+                            <circle cx="18" cy="20" r="1.3" />
+                        </svg>
+                        <% if (locals.cartItemsCount && cartItemsCount> 0) { %><span
+                                class="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                                <%= cartItemsCount %>
+                            </span>
+                            <% } %>
+                    </a>
+                    <a href="/user/profile" class="hover:scale-110 transition">
+                        <% if (user && user.profilePic) { %>
+                            <img src="<%= user.profilePic %>"
+                                class="w-8 h-8 rounded-full object-cover border border-[#C8A97E]" />
+                            <% } else { %>
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="1.7"
+                                    viewBox="0 0 24 24">
+                                    <circle cx="12" cy="7" r="4" />
+                                    <path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
+                                </svg>
+                                <% } %>
+                    </a>
                     <% } else { %>
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4" /><path d="M4 21c0-4 4-7 8-7s8 3 8 7" /></svg>
-                    <% } %>
-                </a>
-            <% } else { %>
-                <a href="/user/login" class="px-4 py-2 text-sm border border-[#C8A97E] text-[#C8A97E] rounded-full">Login</a>
-            <% } %>
+                        <a href="/user/login"
+                            class="px-4 py-2 text-sm border border-[#C8A97E] text-[#C8A97E] rounded-full">Login</a>
+                        <% } %>
 
-            <button id="mobileMenuBtn" class="md:hidden text-white focus:outline-none">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                            <button id="mobileMenuBtn" class="md:hidden text-white focus:outline-none">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="mobileMenu"
+        class="fixed top-20 left-0 w-full bg-[#2B1B17] text-white py-6 px-6 space-y-6 transform -translate-y-full opacity-0 transition-all duration-300 md:hidden z-40 pointer-events-none">
+
+        <form action="/user/products" method="GET" id="mobileSearchForm" class="relative">
+            <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>"
+                placeholder="Search products..." oninput="autoSearch(this)"
+                class="w-full pl-4 pr-10 py-3 rounded-lg bg-white/10 text-white placeholder:text-stone-400 border border-white/20 outline-none">
+            <button type="submit" class="absolute right-3 top-3.5">
+                <svg class="w-5 h-5 text-[#C8A97E]" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="16" y1="16" x2="20" y2="20"></line>
+                </svg>
             </button>
+        </form>
+
+        <div class="space-y-4">
+            <a href="/user/products" class="block text-lg">All</a>
+            <a href="/user/products?category=men" class="block text-lg">Men</a>
+            <a href="/user/products?category=women" class="block text-lg">Women</a>
+            <a href="/user/products?category=kids" class="block text-lg">Kids</a>
         </div>
-    </div>
-</header>
 
-<div id="mobileMenu" class="fixed top-20 left-0 w-full bg-[#2B1B17] text-white py-6 px-6 space-y-6 transform -translate-y-full opacity-0 transition-all duration-300 md:hidden z-40 pointer-events-none">
-    
-    <form action="/user/products" method="GET" id="mobileSearchForm" class="relative">
-        <input type="text" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>"
-            placeholder="Search products..." oninput="autoSearch(this)" 
-            class="w-full pl-4 pr-10 py-3 rounded-lg bg-white/10 text-white placeholder:text-stone-400 border border-white/20 outline-none">
-        <button type="submit" class="absolute right-3 top-3.5">
-            <svg class="w-5 h-5 text-[#C8A97E]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16" y1="16" x2="20" y2="20"></line></svg>
-        </button>
-    </form>
-
-    <div class="space-y-4">
-        <a href="/user/products" class="block text-lg">All</a>
-        <a href="/user/products?category=men" class="block text-lg">Men</a>
-        <a href="/user/products?category=women" class="block text-lg">Women</a>
-        <a href="/user/products?category=kids" class="block text-lg">Kids</a>
+        <% if (user) { %>
+            <button onclick="handleLogout()" class="block text-left text-lg text-red-400">Logout</button>
+            <% } else { %>
+                <div class="flex flex-col space-y-3">
+                    <a href="/user/login"
+                        class="block text-center py-2 border border-[#C8A97E] text-[#C8A97E] rounded-lg">Login</a>
+                    <a href="/user/register"
+                        class="block text-center py-2 bg-[#C8A97E] text-black rounded-lg">Register</a>
+                </div>
+                <% } %>
     </div>
 
-    <% if (user) { %>
-        <button onclick="handleLogout()" class="block text-left text-lg text-red-400">Logout</button>
-    <% } else { %>
-        <div class="flex flex-col space-y-3">
-            <a href="/user/login" class="block text-center py-2 border border-[#C8A97E] text-[#C8A97E] rounded-lg">Login</a>
-            <a href="/user/register" class="block text-center py-2 bg-[#C8A97E] text-black rounded-lg">Register</a>
-        </div>
-    <% } %>
-</div>
+    <script>
+        const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
+        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+        const mobileMenu = document.getElementById("mobileMenu");
 
-<script>
-    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-    const mobileMenu = document.getElementById("mobileMenu");
-
-    mobileMenuBtn.addEventListener("click", () => {
-        const isOpen = mobileMenu.classList.contains("translate-y-0");
-        if (isOpen) {
-            mobileMenu.classList.remove("translate-y-0", "opacity-100");
-            mobileMenu.classList.add("-translate-y-full", "opacity-0", "pointer-events-none");
-        } else {
-            mobileMenu.classList.add("translate-y-0", "opacity-100");
-            mobileMenu.classList.remove("-translate-y-full", "opacity-0", "pointer-events-none");
-        }
-    });
-
-    let typingTimer;
-    function autoSearch(inputElement) {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => {
-            if (inputElement && inputElement.form) {
-                inputElement.form.submit();
+        mobileMenuBtn.addEventListener("click", () => {
+            const isOpen = mobileMenu.classList.contains("translate-y-0");
+            if (isOpen) {
+                mobileMenu.classList.remove("translate-y-0", "opacity-100");
+                mobileMenu.classList.add("-translate-y-full", "opacity-0", "pointer-events-none");
+            } else {
+                mobileMenu.classList.add("translate-y-0", "opacity-100");
+                mobileMenu.classList.remove("-translate-y-full", "opacity-0", "pointer-events-none");
             }
-        }, 900);
-    }
+        });
 
-    function updateCartCount(count) {
-        const badge = document.getElementById("cartCountBadge");
-        if (!badge) return;
-        badge.textContent = count;
-        count > 0 ? badge.classList.remove("hidden") : badge.classList.add("hidden");
-    }
-</script>
+        let typingTimer;
+        function autoSearch(inputElement) {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                if (inputElement && inputElement.form) {
+                    inputElement.form.submit();
+                }
+            }, 900);
+        }
+
+        function updateCartCount(count) {
+            const badge = document.getElementById("cartCountBadge");
+            if (!badge) return;
+            badge.textContent = count;
+            count > 0 ? badge.classList.remove("hidden") : badge.classList.add("hidden");
+        }
+
+        async function handleLogout() {
+            try {
+                const res = await axios.get("/user/logout");
+
+                if (res.data.success) {
+                    notyf.success(res.data.message || "Logged out successfully");
+                    setTimeout(() => {
+                        window.location.href = "/user/login";
+                    }, 800);
+                }
+            } catch (error) {
+                console.error("Logout failed:", error);
+                notyf.error("Something went wrong while logging out.");
+            }
+        }
+    </script>

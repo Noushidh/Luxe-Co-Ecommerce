@@ -146,21 +146,26 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-    function copyReferralCode() {
-        const code = document.getElementById('referralCode').innerText;
-        navigator.clipboard.writeText(code);
-
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 2000,
-            timerProgressBar: true,
-            background: '#FAF7F2',
-            icon: 'success',
-            title: 'Referral Code Copied'
-        });
-    }
+  function copyReferralCode() {
+    const code = document.getElementById('referralCode').innerText;
+    const tempInput = document.createElement("input");
+    tempInput.value = code;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    tempInput.setSelectionRange(0, 99999); 
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        background: '#FAF7F2',
+        icon: 'success',
+        title: 'Referral Code Copied'
+    });
+}
     function toggleTransactions() {
     const extraRows = document.querySelectorAll('.extra-row');
     const btnText = document.getElementById('btn-text');
