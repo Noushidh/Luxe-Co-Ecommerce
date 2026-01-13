@@ -15,7 +15,7 @@ export const razorpayPayment = asyncHandler(async (req, res) => {
 
     const cart = await CartModel.findOne({ user: userId }).populate({
         path: "items.productId",
-        populate: { path: "subCategory_id", model: "SubCategory" } // Essential for offer calculation
+        populate: { path: "subCategory_id", model: "SubCategory" } 
     });
 
     if (!cart || cart.items.length === 0) {

@@ -3,15 +3,15 @@
 import mongoose from "mongoose";
 
 const adminschema = new mongoose.Schema({
-    email:{
-        type:String,
-        required:true,
-        unique:true
+    email: {
+        type: String,
+        required: true,
+        unique: true
     },
     password_hash: {
-    type: String,
-    required: true
-     }
+        type: String,
+        required: true
+    }
 })
 
 const Admin = mongoose.model('Admin', adminschema)

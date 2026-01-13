@@ -19,7 +19,7 @@ export const load_payment = asyncHandler(async (req, res) => {
 
     const cart = await CartModel.findOne({ user: userId }).populate({
         path: 'items.productId',
-        populate: { path: 'subCategory_id', model: 'SubCategory' } 
+        populate: { path: 'subCategory_id', model: 'SubCategory' }
     });
 
     if (!cart || cart.items.length === 0) {
@@ -33,10 +33,10 @@ export const load_payment = asyncHandler(async (req, res) => {
         body: "user/payment/payment",
         address,
         wallet,
-        subTotal: prices.grossSubTotal,  
-        discount: prices.totalSavings,  
-        shipping: prices.shipping,      
-        total: prices.finalTotal,       
+        subTotal: prices.grossSubTotal,
+        discount: prices.totalSavings,
+        shipping: prices.shipping,
+        total: prices.finalTotal,
         razorpayKey: process.env.RAZORPAY_KEY_ID
     });
 });
@@ -49,15 +49,18 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "Please select a shipping address" });
     }
 
-    const cart = await CartModel.findOne({ user: userId }).populate("items.productId");
+    const cart = await CartModel.findOne({ user: userId }).populate({
+        path: 'items.productId',
+        populate: { path: 'subCategory_id' }
+    });
     if (!cart || cart.items.length === 0) {
         return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
-    
+
     if (prices.finalTotal > 1000) {
-        return res.status(400).json({ success: false, message: "Cash on Delivery is only available for orders below Rs 1000. Please use online payment."});
+        return res.status(400).json({ success: false, message: "Cash on Delivery is only available for orders below Rs 1000. Please use online payment." });
     }
 
     for (const item of cart.items) {
@@ -66,7 +69,7 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
             return res.status(400).json({ success: false, message: `Stock unavailable for ${item.productId.name}` });
         }
     }
-    
+
     const appliedCoupon = req.session.appliedCoupon || { discountValue: 0, _id: null };
 
     const savedOrder = await finalizeOrder({
@@ -81,14 +84,14 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
 
     delete req.session.appliedCoupon;
 
-    res.status(201).json({success: true,message: "Order placed successfully",orderId: savedOrder._id});
+    res.status(201).json({ success: true, message: "Order placed successfully", orderId: savedOrder._id });
 });
 
 export const load_orderConfirmed = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.redirect('/user/home'); 
+        return res.redirect('/user/home');
     }
 
     const order = await OrderModel.findById(id)
@@ -102,10 +105,8 @@ export const load_orderConfirmed = asyncHandler(async (req, res) => {
             message: "Order details not found"
         });
     }
-
     const items = order.items || [];
 
-    
     const subTotalMRP = items.reduce((acc, item) => {
         const mrp = item.productId ? item.productId.price : item.price;
         return acc + (mrp * item.quantity);
@@ -114,21 +115,20 @@ export const load_orderConfirmed = asyncHandler(async (req, res) => {
     const couponSavings = order.discount || 0;
 
     const totalSoldPrice = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const offerSavings = subTotalMRP - totalSoldPrice;
-
+    const offerSavings = (subTotalMRP - totalSoldPrice);
     const totalSavings = (offerSavings > 0 ? offerSavings : 0) + couponSavings;
-
+    const actualPayable = subTotalMRP - totalSavings + (order.shipping || 0);;
     res.render("user/layout", {
         title: "Order Confirmed",
         body: "user/payment/order-confirmed",
         order,
         items,
-        subTotal: subTotalMRP, 
+        subTotal: subTotalMRP,
         offerSavings: offerSavings > 0 ? offerSavings : 0,
         couponDiscount: couponSavings,
         totalSavings: totalSavings,
         shipping: order.shipping || 0,
-        total: order.total || 0
+        total: actualPayable,
     });
 });
 
@@ -160,7 +160,7 @@ export const orderCancel = asyncHandler(async (req, res) => {
         }
     }
 
-if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus === "Paid") {
+    if (order.paymentMethod !== "cashOnDelivery" && order.paymentStatus === "Paid") {
         const refundAmount = order.total;
 
         await walletModel.findOneAndUpdate(

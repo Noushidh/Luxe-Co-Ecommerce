@@ -1,14 +1,14 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import CartModel from "../../models/cartmodel.js";
 import ProductModel from "../../models/productmodel.js";
-import {getBestOfferForProduct} from "../../utils/offerHelper.js"
+import { getBestOfferForProduct } from "../../utils/offerHelper.js"
 
 export const load_cart = asyncHandler(async (req, res) => {
   const userId = req.session.user?._id;
-  const cartDoc = await CartModel.findOne({ user: userId }).populate('items.productId');
+  const cartDoc = await CartModel.findOne({ user: userId }).populate({ path: 'items.productId', populate: { path: 'subCategory_id' } });
 
-  let grossSubTotal = 0;  
-  let subTotal = 0;       
+  let grossSubTotal = 0;
+  let subTotal = 0;
   let cartItemsWithOffers = [];
 
   if (cartDoc && cartDoc.items.length > 0) {
@@ -20,15 +20,15 @@ export const load_cart = asyncHandler(async (req, res) => {
 
       if (currentVariant) {
         const { finalPrice } = await getBestOfferForProduct(product);
-        
+        console.log("finalPrice", finalPrice)
         if (item.price !== finalPrice) { item.price = finalPrice; isModified = true; }
         if (item.color !== currentVariant.color) { item.color = currentVariant.color; isModified = true; }
         if (item.size !== currentVariant.size) { item.size = currentVariant.size; isModified = true; }
 
-        grossSubTotal += (product.price * item.quantity); 
-        subTotal += (finalPrice * item.quantity);        
+        grossSubTotal += (product.price * item.quantity);
+        subTotal += (finalPrice * item.quantity);
 
-        return {...item.toObject(),offerPrice: finalPrice, rowTotal: finalPrice * item.quantity };
+        return { ...item.toObject(), offerPrice: finalPrice, rowTotal: finalPrice * item.quantity };
       }
       return item.toObject();
     }));
@@ -46,11 +46,11 @@ export const load_cart = asyncHandler(async (req, res) => {
   res.render('user/layout', {
     title: "Cart",
     body: "user/cart/cart",
-    cart: cartItemsWithOffers, 
+    cart: cartItemsWithOffers,
     cartItemsCount: cartItemsWithOffers.length,
-    shipping, 
-    discount: productDiscount, 
-    total, 
+    shipping,
+    discount: productDiscount,
+    total,
     subTotal: grossSubTotal,
     actualPayable: subTotal,
     couponCode: null,
@@ -58,36 +58,28 @@ export const load_cart = asyncHandler(async (req, res) => {
   });
 });
 
-function finalUnitPrice(price, discount) {
-  if (discount > 0) {
-    return price * (1 - discount / 100)
-  }
-  return price;
-}
-
 export const addtocart = asyncHandler(async (req, res) => {
-  const { productId, size, color ,variantId} = req.body;
-  const quantity = Number(req.body.quantity)||1;
+  const { productId, size, color, variantId } = req.body;
+  const quantity = Number(req.body.quantity) || 1;
   const userId = req.session.user?._id;
-  
+
   if (!userId) {
     return res.status(401).json({ success: false, message: "Please log in to add items to your cart." });
   }
   const hasVariantIdentifier = variantId || (size && color);
-  if (!productId ||!hasVariantIdentifier  || !Number.isInteger(quantity) || quantity < 1) {
+  if (!productId || !hasVariantIdentifier || !Number.isInteger(quantity) || quantity < 1) {
     return res.status(400).json({ success: false, message: "Invalid product data or quantity" });
   }
 
-  const product = await ProductModel.findById(productId);
-  if (!product || product.isBlocked) {
+  const product = await ProductModel.findById(productId).populate('subCategory_id'); if (!product || product.isBlocked) {
     return res.status(404).json({ success: false, message: "Product not available" });
   }
-  
+
   let variant;
-  if(variantId){
-    variant = product.variants.find(v=>v._id.toString()===variantId.toString())
-  }else{
-   variant = product.variants.find(v => v.size === size && v.color === color);
+  if (variantId) {
+    variant = product.variants.find(v => v._id.toString() === variantId.toString())
+  } else {
+    variant = product.variants.find(v => v.size === size && v.color === color);
 
   }
 
@@ -95,8 +87,7 @@ export const addtocart = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "Invalid or blocked variant" });
   }
 
-  const finalPrice = finalUnitPrice(product.price, product.discount);
-
+  const { finalPrice } = await getBestOfferForProduct(product);
   let cart = await CartModel.findOne({ user: userId });
   if (!cart) {
     cart = new CartModel({ user: userId, items: [] });
@@ -120,7 +111,7 @@ export const addtocart = asyncHandler(async (req, res) => {
     cart.items[itemIndex].quantity = newQty;
     action = "updated";
   } else {
-    cart.items.push({ productId, variantId: variant._id, size:variant.size , color:variant.color, price: finalPrice, quantity, image: variant.images?.[0] || "" });
+    cart.items.push({ productId, variantId: variant._id, size: variant.size, color: variant.color, price: finalPrice, quantity, image: variant.images?.[0] || "" });
   }
 
   cart.subTotal = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -129,8 +120,6 @@ export const addtocart = asyncHandler(async (req, res) => {
 
   return res.status(200).json({ success: true, action, message: action === "added" ? "Product added to cart" : "Product quantity updated in cart", cartCount: cart.items.length });
 });
-
-
 
 
 export const updateCartquantity = asyncHandler(async (req, res) => {

@@ -15,7 +15,7 @@ export const load_orders = asyncHandler(async (req, res) => {
             { orderId: { $regex: search, $options: "i" } },
             { status: { $regex: search, $options: "i" } },
             { paymentMethod: { $regex: search, $options: "i" } },
-            { "address.name": { $regex: search, $options: "i" } } 
+            { "address.name": { $regex: search, $options: "i" } }
         ];
     }
     if (status) {
@@ -24,7 +24,7 @@ export const load_orders = asyncHandler(async (req, res) => {
     if (payment) {
         query.paymentMethod = payment;
     }
-    let sortQuery = { createdAt: -1 }; 
+    let sortQuery = { createdAt: -1 };
     if (dateSort === "oldest") {
         sortQuery = { createdAt: 1 };
     }
@@ -39,7 +39,7 @@ export const load_orders = asyncHandler(async (req, res) => {
         orders,
         status,
         payment,
-        sortDate: dateSort, 
+        sortDate: dateSort,
         search,
         currentPage: parseInt(page),
         totalPages
@@ -92,6 +92,14 @@ export const updateStatus = asyncHandler(async (req, res) => {
     console.log(id, status)
     const order = await orderModel.findById(id);
     order.status = status;
+
+    order.items.forEach(item => {
+        item.status = status;
+    });
+    if (status === "Delivered") {
+        order.deliveryDate = new Date();
+        order.paymentStatus = "Paid";
+    }
     await order.save();
     res.status(200).json({ success: true, message: "Order Status Updatd Successfully" })
 })
@@ -105,7 +113,7 @@ export const approveReturn = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: "Return record not found" });
     }
 
-    if (returnDoc.status !== 'Pending') { 
+    if (returnDoc.status !== 'Pending') {
         return res.status(400).json({ success: false, message: "This return request has already been processed." });
     }
     const order = await orderModel.findById(orderId);
@@ -114,7 +122,7 @@ export const approveReturn = asyncHandler(async (req, res) => {
     }
 
     const item = order.items.find(i => i.productId.toString() === returnDoc.product_id.toString());
-    
+
     if (!item || item.status !== 'Return Requested') {
         return res.status(400).json({ success: false, message: "Item is not in a returnable state." });
     }
@@ -159,7 +167,7 @@ export const approveReturn = asyncHandler(async (req, res) => {
         if (allProcessed) {
             updatedOrder.status = "Returned";
         }
-        
+
         await updatedOrder.save();
     }
 
@@ -167,15 +175,15 @@ export const approveReturn = asyncHandler(async (req, res) => {
     res.status(200).json({ success: true, message: "Return approved and wallet credited" });
 });
 
-export const rejectReturn = asyncHandler(async(req,res)=>{
-    console.log("REQUEST",req.body)
-    const {orderId,returnId}=req.body;
-    
+export const rejectReturn = asyncHandler(async (req, res) => {
+    console.log("REQUEST", req.body)
+    const { orderId, returnId } = req.body;
+
     const returnDoc = await returnModel.findById(returnId);
-         await orderModel.findOneAndUpdate(
-        {_id:orderId,"items.productId":returnDoc.product_id},
-        {$set:{"items.$.status":"Rejected","status":"Rejected"}},
-        {new:true}
+    await orderModel.findOneAndUpdate(
+        { _id: orderId, "items.productId": returnDoc.product_id },
+        { $set: { "items.$.status": "Rejected", "status": "Rejected" } },
+        { new: true }
     )
-   return res.status(200).json({success:true,message:"Return Rejected"})
+    return res.status(200).json({ success: true, message: "Return Rejected" })
 })

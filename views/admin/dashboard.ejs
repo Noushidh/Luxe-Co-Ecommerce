@@ -87,62 +87,48 @@
                 class="absolute -top-20 -right-20 w-64 h-64 bg-[#C8A97E]/5 rounded-full blur-[80px] group-hover:bg-[#C8A97E]/10 transition-all duration-700">
             </div>
 
-            <div class="relative z-10">
-                <div class="flex justify-between items-center mb-8">
-                    <span
-                        class="text-[#C8A97E] text-[10px] font-black uppercase tracking-[0.5em] block">Leaderboard</span>
-                    <div class="bg-[#C8A97E]/10 px-3 py-1 rounded-full">
-                        <span class="text-[#C8A97E] text-[8px] font-black uppercase tracking-tighter">Bestseller</span>
-                    </div>
-                </div>
+        <div class="relative z-10">
+    <div class="flex justify-between items-center mb-8">
+        <span class="text-[#C8A97E] text-[10px] font-black uppercase tracking-[0.5em] block">Leaderboard</span>
+        <div class="bg-[#C8A97E]/10 px-3 py-1 rounded-full">
+            <span class="text-[#C8A97E] text-[8px] font-black uppercase tracking-tighter">Bestseller</span>
+        </div>
+    </div>
 
-                <% if (topProducts && topProducts.length> 0) { %>
-                    <div
-                        class="aspect-square w-full bg-white rounded-[2.5rem] overflow-hidden mb-10 shadow-[0_15px_35px_rgba(200,169,126,0.12)] flex items-center justify-center p-8 border border-[#C8A97E]/10 relative">
-                        <img src="<%= topProducts[0].imageUrl %>"
-                            class="max-w-full max-h-full object-contain scale-95 group-hover:scale-105 transition-transform duration-700"
-                            alt="Best Seller">
-                        <div class="absolute inset-0 shadow-[inset_0_0_40px_rgba(255,255,255,0.8)] pointer-events-none">
-                        </div>
-                    </div>
+    <% if (topProducts && topProducts.length > 0) { %>
+        <div class="aspect-square w-full bg-white rounded-[2.5rem] overflow-hidden mb-10 shadow-[0_15px_35px_rgba(200,169,126,0.12)] flex items-center justify-center p-8 border border-[#C8A97E]/10 relative">
+            <img src="<%= topProducts[0].imageUrl %>"
+                 class="max-w-full max-h-full object-contain scale-95 group-hover:scale-105 transition-transform duration-700"
+                 alt="Best Seller">
+            <div class="absolute inset-0 shadow-[inset_0_0_40px_rgba(255,255,255,0.8)] pointer-events-none"></div>
+        </div>
 
-                    <h4 class="text-3xl font-black text-stone-800 uppercase tracking-tight mb-2 leading-none">
-                        <%= topProducts[0].name %>
-                    </h4>
-                    <div class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#C8A97E] animate-pulse"></span>
-                        <p class="text-stone-400 text-[10px] font-bold uppercase tracking-widest italic">Premier
-                            Collection</p>
-                    </div>
-                    <% } %>
-            </div>
+        <h4 class="text-3xl font-black text-stone-800 uppercase tracking-tight mb-2 leading-none">
+            <%= topProducts[0].name %>
+        </h4>
+        <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#C8A97E] animate-pulse"></span>
+            <p class="text-stone-400 text-[10px] font-bold uppercase tracking-widest italic">Premier Collection</p>
+        </div>
+    <% } else { %>
+        <div class="aspect-square w-full bg-stone-50 rounded-[2.5rem] flex items-center justify-center mb-10 border border-dashed border-stone-200">
+             <p class="text-stone-400 text-[10px] font-bold uppercase">No Sales Data</p>
+        </div>
+        <h4 class="text-2xl font-black text-stone-300 uppercase">N/A</h4>
+    <% } %>
+</div>
 
-            <div class="mt-10 pt-8 border-t border-stone-100 flex justify-between items-end relative z-10">
-                <div>
-                    <p class="text-[9px] font-black text-stone-300 uppercase tracking-[0.2em] mb-2">Market Volume</p>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-2xl font-black text-stone-800">
-                            <%= topProducts[0].totalSolds %>
-                        </span>
-                        <span class="text-[10px] font-bold text-stone-400 uppercase">Units</span>
-                    </div>
-                </div>
-
-                <div class="text-right">
-                    <div class="inline-flex flex-col items-end">
-                        <p class="text-[9px] font-black text-[#C8A97E] uppercase mb-1 tracking-wider">Growth</p>
-                        <div
-                            class="flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100/50">
-                            <svg class="w-2.5 h-2.5 text-emerald-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                    d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                            <span class="text-[10px] font-black text-emerald-600 uppercase">Trending</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="mt-10 pt-8 border-t border-stone-100 flex justify-between items-end relative z-10">
+    <div>
+        <p class="text-[9px] font-black text-stone-300 uppercase tracking-[0.2em] mb-2">Market Volume</p>
+        <div class="flex items-baseline gap-1">
+            <span class="text-2xl font-black text-stone-800">
+                <%= (topProducts && topProducts.length > 0) ? topProducts[0].totalSolds : 0 %>
+            </span>
+            <span class="text-[10px] font-bold text-stone-400 uppercase">Units</span>
+        </div>
+    </div>
+    </div>
 
             <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-[#C8A97E]/5 rounded-full blur-[60px]"></div>
         </div>

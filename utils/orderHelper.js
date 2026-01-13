@@ -46,6 +46,7 @@ export const finalizeOrder = async ({ userId, cart, address, appliedCoupon, paym
     const subtotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const shipping = subtotal > 500 ? 0 : 50;
     const finalTotal = (subtotal - appliedCoupon.discountValue) + shipping;
+    console.log("finalTotal",finalTotal)
     
     const priceData = await calculateOrderPrices(cart, appliedCoupon);
     const productOfferOnly = priceData.totalSavings - (appliedCoupon?.discountValue || 0);
