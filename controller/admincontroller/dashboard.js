@@ -1,6 +1,7 @@
 import userModel from "../../models/usermodel.js";
 import orderModel from "../../models/ordermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+// import products from "razorpay/dist/types/products.js";
 
 export const load_dashboard = asyncHandler(async (req, res) => {
     const totalUsers = await userModel.countDocuments({ isBlocked: false });
@@ -50,11 +51,19 @@ export const load_dashboard = asyncHandler(async (req, res) => {
         { $sort: { "_id": 1 } }
     ]);
 
+    const order = await orderModel.find();
+    order.forEach((order)=>{
+        order.items.forEach((item)=>{
+            console.log(`name:${item.productName},status:${item.status},price:${item.price}`)
+        })
+    })
+
     const revenueData = await orderModel.aggregate([
         { $unwind: "$items" },
         { $match: { "items.status": "Delivered" } },
-        { $group: { _id: null, totalRevenue: { $sum: "$total" } } }
+        { $group: { _id: null,totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } } } }
     ]);
+    
     const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
 
     res.render("admin/layout", {
@@ -79,9 +88,10 @@ export const getChartData = asyncHandler(async (req, res) => {
         { $match: { "items.status": "Delivered" } }
     ];
 
+    const revenueCalculation = { $sum: { $multiply: ["$items.price", "$items.quantity"] } };
     if (filter === 'yearly') {
         aggregationPipeline.push(
-            { $group: { _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } }, total: { $sum: "$total" } } },
+            { $group: { _id: { month: { $month: "$createdAt" }, year: { $year: "$createdAt" } }, total: revenueCalculation } },
             { $sort: { "_id.year": 1, "_id.month": 1 } },
             {
                 $project: {
@@ -102,12 +112,12 @@ export const getChartData = asyncHandler(async (req, res) => {
 
         aggregationPipeline.push(
             { $match: { createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
-            { $group: { _id: { $dayOfMonth: "$createdAt" }, total: { $sum: "$total" } } },
+            { $group: { _id: { $dayOfMonth: "$createdAt" }, total: revenueCalculation } },
             { $sort: { "_id": 1 } }
         );
     } else {
         aggregationPipeline.push(
-            { $group: { _id: { $dateToString: { format: "%d %b", date: "$createdAt" } }, total: { $sum: "$total" } } },
+            { $group: { _id: { $dateToString: { format: "%d %b", date: "$createdAt" } }, total:revenueCalculation } },
             { $sort: { "_id": 1 } }
         );
     }
