@@ -1,5 +1,4 @@
 
-      /* --- NEW CSS STRUCTURE (ADAPTED) --- */
       * {
         margin: 0;
         padding: 0;
@@ -59,7 +58,7 @@
       .main-content {
         display: flex;
         width: 100%;
-        margin-top: 80px; /* Offset for the fixed header */
+        margin-top: 80px; 
       }
 
       /* Left Side - Image */

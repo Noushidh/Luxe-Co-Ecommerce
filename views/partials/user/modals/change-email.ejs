@@ -8,7 +8,7 @@
         <label class="text-sm font-medium">New Email Address</label>
         <input id="emailInput" type="email" class="w-full mt-1 p-2 border rounded-lg" placeholder="Enter new email" />
 
-        <button onclick="sendVerificationLink()"
+        <button onclick="sendVerificationLink(event)"
             class="w-full mt-4 bg-[#C8A97E] hover:bg-[#b6916a] text-white py-2 rounded-lg transition">
             Send Verification Link
         </button>
@@ -32,7 +32,10 @@
 
     async function sendVerificationLink() {
         const newEmail = document.getElementById("emailInput").value;
-        
+            const btn = event.currentTarget; 
+            btn.disabled = true;
+            const originalText = btn.innerText; 
+            btn.innerText = "Processing...";
         if (!newEmail) {
             notyf.error("Please enter an email address");
             return;
@@ -47,6 +50,8 @@
             }
         } catch (err) {
             notyf.error(err.response?.data?.message || "Something went wrong");
+                 btn.disabled = false;
+                 btn.innerText = originalText; 
         }
     }
 

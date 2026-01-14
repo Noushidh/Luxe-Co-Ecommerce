@@ -11,12 +11,12 @@ window.togglePassword = function togglePassword() {
   }
 }
 
-
 import { validateEmail, validatePassword, showError, clearError } from "/js/utils/validation.js"
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("loginForm");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
+  const loginBtn = loginForm.querySelector('button[type="submit"]');
 
   loginForm.addEventListener("submit", function (e) {
     let valid = true;
@@ -34,6 +34,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (!valid) {
       e.preventDefault();
+    }else{
+      loginBtn.disabled = true;
+      loginBtn.innerText = "Logging in...";
+      loginBtn.style.opacity = "0.7";
+      loginBtn.style.cursor = "not-allowed";
     }
   });
 

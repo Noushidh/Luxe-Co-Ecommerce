@@ -283,7 +283,7 @@
                              </div>
                             </div>
 
-                      <button onclick="processPayment()" class="<%= primaryBtnClass %> mt-8 bg-[#C8A97E] shadow-lg">
+                      <button onclick="processPayment(event)" class="<%= primaryBtnClass %> mt-8 bg-[#C8A97E] shadow-lg">
                         Continue to Payment
                       </button>
 
@@ -311,8 +311,14 @@
   </style>
   <script>
 
-    async function processPayment() {
+    async function processPayment(event) {
       try {
+
+            const btn = event.currentTarget; 
+            btn.disabled = true;
+            const originalText = btn.innerText; 
+            btn.innerText = "Processing...";
+
         const selected = document.querySelector('input[name="selectedAddress"]:checked');
         if (!selected) {
           return notyf.error("Please select an address");
@@ -340,6 +346,8 @@
       } catch (error) {
         console.error("Payment Error:", error);
         notyf.error(error.message);
+          btn.disabled = false;
+          btn.innerText = originalText;
       }
     }
 

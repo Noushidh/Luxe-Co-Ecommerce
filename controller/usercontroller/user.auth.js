@@ -126,6 +126,10 @@ export const Verifyotp = asyncHandler(async (req, res) => {
     if (String(otp) !== String(storedOtp)) {
         return res.status(400).json({ success: false, message: "Invalid OTP , please try again" });
     }
+    // Forgot password flow
+    if (req.session.forgotEmail && !req.session.userData) {
+        return res.json({ success: true, redirect: "/user/reset-password" });
+    }
 
     // Registration flow
     if (req.session.userData) {
@@ -193,11 +197,6 @@ export const Verifyotp = asyncHandler(async (req, res) => {
 
         req.flash('success', 'User created Successfully');
         return res.json({ success: true, redirect: "/user/login" });
-    }
-
-    // Forgot password flow
-    if (req.session.forgotEmail) {
-        return res.json({ success: true, redirect: "/user/reset-password" });
     }
 
     return res.status(400).json({ success: false, message: "Invalid OTP, please try again" });

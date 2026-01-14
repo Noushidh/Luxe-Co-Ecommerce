@@ -110,7 +110,7 @@
                         <span class="text-xl font-bold text-[#C8A97E]">₹<%= total.toFixed(2) %></span>
                     </div>
 
-                    <button id="placeOrderBtn" onclick="handlePlaceOrder()"
+                    <button id="placeOrderBtn" onclick="handlePlaceOrder(event)"
                         class="w-full bg-[#4B3621] hover:bg-stone-700 text-white font-bold py-3 rounded-lg transition">
                         Place Order
                     </button>
@@ -126,8 +126,13 @@
 </div>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    async function handlePlaceOrder() {
+    async function handlePlaceOrder(event) {
         const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' } });
+
+            const btn = event.currentTarget; 
+            btn.disabled = true;
+            const originalText = btn.innerText; 
+            btn.innerText = "Processing...";
 
         const paymentMethodElement = document.querySelector('input[name="paymentMethod"]:checked');
         if (!paymentMethodElement) {
@@ -179,6 +184,9 @@
             console.error("Order Placement Error:", err);
             const errorMessage = err.response?.data?.message || "Order placement failed.";
             notyf.error(errorMessage);
+
+                  btn.disabled = false;
+                 btn.innerText = originalText;           
 
             if (err.response?.data?.redirect) {
                 setTimeout(() => {

@@ -128,7 +128,7 @@
                                     </span>
                                 </div><br>
 
-                                <button onclick="handleCheckout()" class=" bg-[#C8A97E] <%= primaryBtnClass %>">
+                                <button onclick="handleCheckout(event)" class=" bg-[#C8A97E] <%= primaryBtnClass %>">
                                     Proceed to Checkout
                                 </button>
                             </div>
@@ -138,7 +138,7 @@
             </div>
         </div>
     </div>
-
+<script src="/js/utils.js"></script>
     <script>
         async function updateQuantity(variantId, newQty) {
             const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
@@ -178,18 +178,26 @@
             }
         }
 
-        async function handleCheckout() {
+        async function handleCheckout(event) {
             const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+            const btn = event.currentTarget; 
+            btn.disabled = true;
+            const originalText = btn.innerText; 
+            btn.innerText = "Processing...";
             try {
                 const response = await axios.get('/user/cart/check-stock')
                 if (response.data.success) {
                     window.location.href = response.data.redirect;
                 } else {
-                    notyf.error(response.data.message)
+                notyf.error(response.data.message);
+                 btn.disabled = false;
+                 btn.innerText = originalText;
                 }
             } catch (error) {
                 const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
                 notyf.error(errorMessage);
+            btn.disabled = false;
+            btn.innerText = originalText;
             }
         }
     </script>
