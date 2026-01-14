@@ -50,9 +50,7 @@
         <div class="bg-white p-8 rounded-[2rem] border border-stone-100 shadow-sm">
             <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Avg. Order Value</p>
             <h3 class="text-3xl font-black tracking-tighter">
-                <% const currentTotal=data.reduce((acc, curr)=> acc + curr.total, 0);
-                    const avg = totalOrders > 0 ? Math.round(currentTotal / totalOrders) : 0;
-                    %>
+                <% const avg = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;%>
                     ₹<%= avg.toLocaleString() %>
             </h3>
         </div>

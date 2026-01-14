@@ -1,7 +1,6 @@
 import userModel from "../../models/usermodel.js";
 import orderModel from "../../models/ordermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
-// import products from "razorpay/dist/types/products.js";
 
 export const load_dashboard = asyncHandler(async (req, res) => {
     const totalUsers = await userModel.countDocuments({ isBlocked: false });
@@ -11,13 +10,13 @@ export const load_dashboard = asyncHandler(async (req, res) => {
 
     const topProducts = await orderModel.aggregate([
         { $unwind: "$items" },
-        { $match: { "items.status": "Delivered" } },
+        { $match: {"items.status": { $in: ["Delivered", "Return Requested" , "Rejected"] } } },
         { $group: { _id: "$items.productId", name: { $first: "$items.productName" }, totalSolds: { $sum: "$items.quantity" }, imageUrl: { $first: "$items.image" } } }, { $sort: { totalSolds: -1 } }, { $limit: 10 }
     ])
 
     const topCategories = await orderModel.aggregate([
         { $unwind: "$items" },
-        { $match: { "items.status": "Delivered" } },
+        { $match: {"items.status": { $in: ["Delivered", "Return Requested" , "Rejected"] } } },
         { $lookup: { from: "products", localField: "items.productId", foreignField: "_id", as: "productInfo" } },
         { $unwind: "$productInfo" },
         { $lookup: { from: "subcategories", localField: "productInfo.subCategory_id", foreignField: "_id", as: "subCategoryData" } },
@@ -28,7 +27,7 @@ export const load_dashboard = asyncHandler(async (req, res) => {
 
     const topSubcategories = await orderModel.aggregate([
         { $unwind: "$items" },
-        { $match: { "items.status": "Delivered" } },
+        { $match: {"items.status": { $in: ["Delivered", "Return Requested" , "Rejected"] } } },
         { $lookup: { from: "products", localField: "items.productId", foreignField: "_id", as: "productInfo" } },
         { $unwind: "$productInfo" },
         { $lookup: { from: "subcategories", localField: "productInfo.subCategory_id", foreignField: "_id", as: "subCategoryDetails" } },
@@ -39,7 +38,7 @@ export const load_dashboard = asyncHandler(async (req, res) => {
 
     const data = await orderModel.aggregate([
         { $unwind: "$items" },
-        { $match: { "items.status": "Delivered" } },
+        { $match: {"items.status": { $in: ["Delivered", "Return Requested" , "Rejected"] } } },
         {
             $group: {
                 _id: { $dateToString: { format: format, date: "$createdAt" } },
@@ -51,16 +50,9 @@ export const load_dashboard = asyncHandler(async (req, res) => {
         { $sort: { "_id": 1 } }
     ]);
 
-    const order = await orderModel.find();
-    order.forEach((order)=>{
-        order.items.forEach((item)=>{
-            console.log(`name:${item.productName},status:${item.status},price:${item.price}`)
-        })
-    })
-
     const revenueData = await orderModel.aggregate([
         { $unwind: "$items" },
-        { $match: { "items.status": "Delivered" } },
+        { $match: {"items.status": { $in: ["Delivered", "Return Requested" , "Rejected"] } } },
         { $group: { _id: null,totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } } } }
     ]);
     
@@ -85,7 +77,7 @@ export const getChartData = asyncHandler(async (req, res) => {
 
     let aggregationPipeline = [
         { $unwind: "$items" },
-        { $match: { "items.status": "Delivered" } }
+        { $match: {"items.status": { $in: ["Delivered", "Return Requested" , "Rejected"] } } },
     ];
 
     const revenueCalculation = { $sum: { $multiply: ["$items.price", "$items.quantity"] } };
