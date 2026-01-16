@@ -69,7 +69,6 @@ export const load_edit_product = asyncHandler(async (req, res) => {
 
 
 export const addProduct = asyncHandler(async (req, res) => {
-  console.log("REQ BODY:", req.body);
   const { name, description, price, discount, subCategory_id, material, highlights, specifications } = req.body;
 
   await ProductModel.create({
@@ -95,7 +94,6 @@ export const editProduct = asyncHandler(async (req, res) => {
 export const blockProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const product = await ProductModel.findById(req.params.id);
-  console.log(id)
   if (!product) {
     return res.status(400).json({ success: false, message: "Product not found" })
   }
@@ -257,7 +255,6 @@ export const updateSingleVariants = asyncHandler(async (req, res) => {
 //block and unblock the varients
 export const blockVariants = asyncHandler(async (req, res) => {
   const { variantId } = req.params;
-  console.log(variantId)
   const product = await ProductModel.findOne({ "variants._id": variantId });
 
   if (!product) {
