@@ -116,7 +116,8 @@ router.get('/orders/invoice/:id',userAuth.isAuthenticated,Invoice.load_Download_
 
 //wislist
 router.get('/wishlist', userAuth.isAuthenticated, Wishlist.load_wishlist);
-router.post('/wishlist/add', userAuth.isAuthenticated, Wishlist.product_add_wishlist)
+router.post('/wishlist/toggle', userAuth.isAuthenticated, Wishlist.toggle_wishlist)
+
 router.patch('/wishlist/remove', userAuth.isAuthenticated, Wishlist.removeFromWishlist)
 router.delete('/wishlist/clear', userAuth.isAuthenticated, Wishlist.clearWishlist);
 

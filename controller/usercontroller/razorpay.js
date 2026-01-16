@@ -2,6 +2,7 @@ import asyncHandler from '../../utils/asynHandler.js';
 import CartModel from '../../models/cartmodel.js';
 import { finalizeOrder } from "../../utils/orderHelper.js"
 import { calculateOrderPrices } from "../../utils/orderHelper.js"
+import { validateStock } from "../../utils/stockHelper.js";
 import Razorpay from 'razorpay';
 import crypto from "crypto";
 
@@ -21,6 +22,11 @@ export const razorpayPayment = asyncHandler(async (req, res) => {
     if (!cart || cart.items.length === 0) {
         return res.status(400).json({ success: false, message: "Cart is empty" });
     }
+        try {
+            validateStock(cart.items);
+        } catch (error) {
+            return res.status(400).json({ success: false, message: error.message, redirect: "/user/cart" });
+        }
 
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
 

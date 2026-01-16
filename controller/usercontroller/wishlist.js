@@ -3,23 +3,39 @@ import wishlistModel from "../../models/wishlistmodel.js";
 import CartModel from "../../models/cartmodel.js";
 import { getBestOfferForProduct } from '../../utils/offerHelper.js';
 
-export const product_add_wishlist = asyncHandler(async (req, res) => {
-    const { variantId, productId } = req.body
-    console.log("variantId", variantId, "productId", productId)
+export const toggle_wishlist = asyncHandler(async (req, res) => {
+    const { variantId, productId } = req.body;
     const userId = req.session.user._id;
+
     let wishlist = await wishlistModel.findOne({ userId });
+    
     if (!wishlist) {
-        wishlist = new wishlistModel({ userId, items: [] })
-    }
-    const isAlreadyPresent = wishlist.items.some((item) => item.variantId.toString() === variantId);
-    if (isAlreadyPresent) {
-        return res.status(400).json({ success: false, message: "Already in wishlist" });
+        wishlist = new wishlistModel({ userId, items: [] });
     }
 
-    wishlist.items.push({ productId, variantId });
-    await wishlist.save();
+    const itemIndex = wishlist.items.findIndex(
+        (item) => item.variantId.toString() === variantId
+    );
 
-    return res.status(200).json({ success: true, message: "Added to wishlist" });
+    if (itemIndex > -1) {
+        wishlist.items.splice(itemIndex, 1);
+        await wishlist.save();
+        
+        return res.status(200).json({ 
+            success: true, 
+            status: "removed", 
+            message: "Removed from wishlist" 
+        });
+    } else {
+        wishlist.items.push({ productId, variantId });
+        await wishlist.save();
+        
+        return res.status(200).json({ 
+            success: true, 
+            status: "added", 
+            message: "Added to wishlist" 
+        });
+    }
 });
 
 export const load_wishlist = asyncHandler(async (req, res) => {

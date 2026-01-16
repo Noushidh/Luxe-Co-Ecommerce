@@ -1,8 +1,8 @@
 import ProductModel from "../../models/productmodel.js";
 import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
-import offerModal from "../../models/offermodel.js"
-import reviewModel from "../../models/reviewmodal.js"
+import reviewModel from "../../models/reviewmodal.js";
+import wishlistModel from "../../models/wishlistmodel.js";
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 import { getReadyProductFilter } from "../../utils/productVisibility.js";
 
@@ -33,24 +33,24 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
         ];
     }
 
-    const fixedCategory = mapCategory(category);
-    const allSubcategories = await SubCategory.find({ isBlocked: false }).lean();
+const allSubcategories = await SubCategory.find({ isBlocked: false }).lean();
+const activeSubCatIds = allSubcategories.map(sc => sc._id);
 
+filter.subCategory_id = { $in: activeSubCatIds };
 
-    if (subcategory) {
+const fixedCategory = mapCategory(category);
+
+if (subcategory) {
+    if (activeSubCatIds.map(id => id.toString()).includes(subcategory)) {
         filter.subCategory_id = subcategory;
-
-    } else if (fixedCategory) {
-
-        const filteredSubCats = allSubcategories.filter(sc => mapCategory(sc.category) === fixedCategory);
-        const allowedCatIds = filteredSubCats.map(sc => sc._id);
-
-        if (allowedCatIds.length > 0) {
-            filter.subCategory_id = { $in: allowedCatIds };
-        } else {
-            filter.subCategory_id = { $in: [] };
-        }
+    } else {
+        filter.subCategory_id = { $in: [] }; 
     }
+} else if (fixedCategory) {
+    const filteredSubCats = allSubcategories.filter(sc => mapCategory(sc.category) === fixedCategory);
+    const allowedCatIds = filteredSubCats.map(sc => sc._id);
+    filter.subCategory_id = { $in: allowedCatIds };
+}
 
     const selectedSize = size || '';
     if (selectedSize) {
@@ -148,33 +148,41 @@ export const loadFiltersPage = asyncHandler(async (req, res) => {
 
 export const ProductDetails = asyncHandler(async (req, res) => {
     const productId = req.params.id;
-
+    const userId = req.session?.user?._id;
     const product = await ProductModel.findById(productId).populate('subCategory_id').lean();
 
-    const isReady = product && !product.isBlocked &&
+    const isReady = product && !product.isBlocked && 
+        product.subCategory_id && product.subCategory_id.isBlocked === false && 
         product.variants?.length > 0 && product.variants.some(v => v.images && v.images.length > 0);
 
     if (!isReady) {
         return res.status(404).render("user/layout", {
-            title: "Not Found",
-            body: "user/error-404"
+            title: "Not Found", body:"user/pages/page-404"
         });
     }
 
-    const reviews = await reviewModel.find({productId:productId}).populate('userId','fullname').sort({createdAt:-1}).lean();
-
+    const selectedVariantId = req.query.variantId || product.variants[0]?._id.toString();
+    
+    let isInWishlist = false;
+    if (userId && selectedVariantId) {
+        const wishlist = await wishlistModel.findOne({ userId });
+        if (wishlist) {
+            isInWishlist = wishlist.items.some(item => 
+                item.variantId.toString() === selectedVariantId.toString()
+            );
+        }
+    }
+    const reviews = await reviewModel.find({ productId }).populate('userId', 'fullname').sort({ createdAt: -1 }).lean();
     const totalReviews = reviews.length;
-
     const averageRating = totalReviews > 0 ? (reviews.reduce((sum, rev) => sum + rev.rating, 0) / totalReviews).toFixed(1) : 0;
-
-    const { finalPrice, discountPercentage } = await getBestOfferForProduct(product);
-
-    const relProdsFilter = getReadyProductFilter({ subCategory_id: product.subCategory_id?._id, _id: { $ne: product._id } });
-
+    const offerData = await getBestOfferForProduct(product) || {};
+    const finalPrice = offerData.finalPrice ?? product.price; 
+    const discountPercentage = offerData.discountPercentage ?? 0;
+    const relProdsFilter = getReadyProductFilter({ 
+        subCategory_id: product.subCategory_id._id, 
+        _id: { $ne: product._id } 
+    });
     const relProds = await ProductModel.find(relProdsFilter).limit(4).lean();
-
-    const selectedVariantId = req.query.variantId;
-
 
     res.render("user/layout", {
         title: product.name,
@@ -188,6 +196,7 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         initialVariantId: selectedVariantId || null,
         reviews,
         averageRating,
-        totalReviews
+        totalReviews,
+        isInWishlist 
     });
 });

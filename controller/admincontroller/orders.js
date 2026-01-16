@@ -66,21 +66,48 @@ export const cancelOrder = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: "Order not found" });
     }
 
-    if (["Shipped", "Delivered", "Cancelled"].includes(order.status)) {
+    if (["Shipped", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected"].includes(order.status)) {
         return res.status(400).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
     }
+const refundAmount = order.total||0;
 
     for (const item of order.items) {
-        const product = await productModel.findById(item.productId);
-
-        if (product) {
-            const variant = product.variants.find(v => v.size === item.size && v.color === item.color);
-
-            if (variant) {
-                await productModel.updateOne({ _id: item.productId, "variants._id": variant._id }, { $inc: { "variants.$.stock": item.quantity } })
+        if (item.status !== "Cancelled") {
+            const product = await productModel.findById(item.productId);
+            if (product) {
+                const variant = product.variants.find(v => v.size === item.size && v.color === item.color);
+                if (variant) {
+                    await productModel.updateOne(
+                        { _id: item.productId, "variants._id": variant._id },
+                        { $inc: { "variants.$.stock": item.quantity } }
+                    );
+                }
             }
+            item.status = "Cancelled"; 
         }
     }
+
+    if (order.paymentStatus === 'Paid' && order.paymentMethod !== 'cashOnDelivery') {
+        await walletModel.findOneAndUpdate(
+            { userId: order.userId },
+            {
+                $inc: { balance: refundAmount },
+                $push: {
+                    transactions: {
+                        transactionId: `lux-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+                        amount: refundAmount,
+                        type: "Credit",
+                        description: `Refund for cancellation of Order: ${order.orderId}`,
+                        status: "Success",
+                        date: new Date()
+                    }
+                }
+            }, { upsert: true, new: true }
+        );
+        order.paymentStatus = 'Refunded';
+        order.refundedAmount = refundAmount;
+    }
+
     order.status = "Cancelled";
     await order.save();
     res.status(200).json({ success: true, message: "Order cancelled and stock restored!" });
@@ -93,12 +120,20 @@ export const updateStatus = asyncHandler(async (req, res) => {
     const order = await orderModel.findById(id);
     order.status = status;
 
+    order.status = status;
+
     order.items.forEach(item => {
-        item.status = status;
+        const restrictedStatuses = ["Cancelled", "Returned", "Return Requested"];
+        if (!restrictedStatuses.includes(item.status)) {
+            item.status = status;
+        }
     });
+
     if (status === "Delivered") {
         order.deliveryDate = new Date();
-        order.paymentStatus = "Paid";
+        if (order.paymentMethod === 'cashOnDelivery') {
+            order.paymentStatus = "Paid";
+        }
     }
     await order.save();
     res.status(200).json({ success: true, message: "Order Status Updatd Successfully" })

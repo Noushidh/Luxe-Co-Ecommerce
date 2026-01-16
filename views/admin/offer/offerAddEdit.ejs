@@ -77,12 +77,14 @@
                             <option value="all_in_category">-- Apply to All Subcategories --</option>
                             <% if (typeof subcategories !== 'undefined' && subcategories.length > 0) { %>
                                 <% subcategories.forEach(sc => { %>
+                                    <% if (!sc.isBlocked) { %>
                                     <option class="subcat-option"
                                         data-category="<%= (sc.category || '').toString().toLowerCase() %>"
                                         value="<%= sc._id %>"
                                         <%= offer && offer.targetId == sc._id.toString() ? 'selected' : '' %>>
                                         <%= sc.subcategory %>
                                     </option>
+                                    <% } %>
                                 <% }) %>
                             <% } %>
                         </select>
@@ -158,22 +160,21 @@
 <script>
     const notyf = new Notyf({ duration: 3000, position: { x: 'right', y: 'top' }, });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const offerId = document.getElementById('offerId').value;
-        
-        if (!offerId) {
-            const today = new Date().toISOString().split('T')[0];
-            const startDateInput = document.getElementById('startDate');
-            if (startDateInput && !startDateInput.value) {
-                startDateInput.value = today;
-            }
+document.addEventListener('DOMContentLoaded', () => {
+    const offerId = document.getElementById('offerId').value;
+    
+    if (!offerId) {
+        const today = new Date().toISOString().split('T')[0];
+        const startDateInput = document.getElementById('startDate');
+        if (startDateInput && !startDateInput.value) {
+            startDateInput.value = today;
         }
-        
-        updateDiscountLabels();
-        if (document.getElementById('appliesTo').value === 'category') {
-            fetchSubCategories();
-        }
-    });
+    }
+        toggleScopeFields();
+    if (document.getElementById('appliesTo').value === 'category') {
+        fetchSubCategories();
+    }
+});
 
 
     function toggleScopeFields() {
@@ -198,33 +199,37 @@
         }
     }
 
-    function fetchSubCategories() {
-        const mainCat = document.getElementById('categoryScope').value.toLowerCase();
-        const subDiv = document.getElementById('subCategoryDiv');
-        const subSelect = document.getElementById('subCategorySelect');
-        const options = subSelect.querySelectorAll('.subcat-option');
-        const targetIdInput = document.getElementById('targetId');
+function fetchSubCategories() {
+    const mainCatSelect = document.getElementById('categoryScope');
+    const mainCat = mainCatSelect.value.toLowerCase();
+    const subDiv = document.getElementById('subCategoryDiv');
+    const subSelect = document.getElementById('subCategorySelect');
+    const options = subSelect.querySelectorAll('.subcat-option');
+    const targetIdInput = document.getElementById('targetId');
 
-        if (mainCat === "none" || mainCat === "") {
-            subDiv.classList.add('hidden');
-            targetIdInput.value = "";
-            return;
-        }
-
-        subDiv.classList.remove('hidden');
-        
-        let visibleCount = 0;
-        options.forEach(opt => {
-            const isMatch = opt.getAttribute('data-category') === mainCat;
-            opt.style.display = isMatch ? 'block' : 'none';
-            if (isMatch) visibleCount++;
-        });
-
-        if (!subSelect.value || subSelect.value === "") {
-            subSelect.value = "all_in_category";
-            targetIdInput.value = "category_" + mainCat;
-        }
+    if (mainCat === "none" || mainCat === "") {
+        subDiv.classList.add('hidden');
+        targetIdInput.value = "";
+        return;
     }
+
+    subDiv.classList.remove('hidden');
+    
+    let currentMatchFound = false;
+    options.forEach(opt => {
+        const isMatch = opt.getAttribute('data-category') === mainCat;
+        opt.style.display = isMatch ? 'block' : 'none';
+        
+        if (isMatch && subSelect.value === opt.value) {
+            currentMatchFound = true;
+        }
+    });
+
+    if (!currentMatchFound && subSelect.value !== "all_in_category") {
+        subSelect.value = "all_in_category";
+        targetIdInput.value = "category_" + mainCat;
+    }
+}
 
     function setTargetId(val) {
         const targetIdInput = document.getElementById('targetId');

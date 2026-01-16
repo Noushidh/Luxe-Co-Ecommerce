@@ -312,12 +312,11 @@
   <script>
 
     async function processPayment(event) {
+      const btn = event.currentTarget;
+     const originalText = btn.innerText;
       try {
-
-            const btn = event.currentTarget; 
-            btn.disabled = true;
-            const originalText = btn.innerText; 
-            btn.innerText = "Processing...";
+        btn.disabled = true;
+        btn.innerText = "Processing...";
 
         const selected = document.querySelector('input[name="selectedAddress"]:checked');
         if (!selected) {
@@ -344,7 +343,6 @@
         window.location.href = `/user/payment?addressId=${addressId}`;
 
       } catch (error) {
-        console.error("Payment Error:", error);
         notyf.error(error.message);
           btn.disabled = false;
           btn.innerText = originalText;

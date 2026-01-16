@@ -2,6 +2,7 @@ import CartModel from "../../models/cartmodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import addressmodel from "../../models/addressmodel.js";
 import couponModel from "../../models/couponmodel.js";
+import { validateStock } from "../../utils/stockHelper.js";
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 
 // 1. Load Checkout Page
@@ -26,7 +27,7 @@ export const load_checkout = asyncHandler(async (req, res) => {
     const updatedItems = await Promise.all(cart.items.map(async (item) => {
         const product = item.productId;
         const { finalPrice } = await getBestOfferForProduct(product);
-        
+
         const itemOriginalTotal = product.price * item.quantity;
         const itemOfferTotal = finalPrice * item.quantity;
 
@@ -36,7 +37,27 @@ export const load_checkout = asyncHandler(async (req, res) => {
         return { ...item.toObject(), currentOfferPrice: finalPrice, itemTotal: itemOfferTotal };
     }));
 
+
     const payableAfterOffers = originalTotal - totalOfferDiscount;
+
+    if (req.session.appliedCoupon) {
+        const coupon = await couponModel.findById(req.session.appliedCoupon._id);
+
+        if (!coupon || !coupon.isActive || payableAfterOffers < coupon.minPurchase) {
+            delete req.session.appliedCoupon;
+        } else {
+            let newDiscount = 0;
+            if (coupon.discountType === 'percentage') {
+                newDiscount = (payableAfterOffers * coupon.discountValue) / 100;
+                if (coupon.maxDiscountAmount && newDiscount > coupon.maxDiscountAmount) {
+                    newDiscount = coupon.maxDiscountAmount;
+                }
+            } else {
+                newDiscount = coupon.discountValue;
+            }
+            req.session.appliedCoupon.discountValue = Math.round(Math.min(newDiscount, payableAfterOffers));
+        }
+    }
 
     const appliedCoupon = req.session.appliedCoupon || { discountValue: 0, code: null };
     const couponDiscount = appliedCoupon.discountValue;
@@ -47,7 +68,7 @@ export const load_checkout = asyncHandler(async (req, res) => {
 
     const addresses = await addressmodel.find({ userId: userId });
     const now = new Date();
-    
+
     const AvailableCoupens = await couponModel.find({
         isActive: true,
         startDate: { $lte: now },
@@ -79,18 +100,13 @@ export const checkStockBeforeCheckout = asyncHandler(async (req, res) => {
     if (!cart || !cart.items || cart.items.length === 0) {
         return res.status(400).json({ success: false, message: "Your cart is empty" });
     }
+    try {
+        validateStock(cart.items);
+        return res.status(200).json({ success: true, redirect: "/user/checkout" });
 
-    for (let item of cart.items) {
-        const product = item.productId;
-        if (item.quantity > product.stock) {
-            return res.status(400).json({ success: false, message: `${product.name} only has limited stock.` });
-        }
-        if (product.isBlocked) {
-            return res.status(400).json({ success: false, message: `${product.name} is currently unavailable.` });
-        }
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
     }
-
-    return res.status(200).json({ success: true, redirect: "/user/checkout" });
 });
 
 export const applyCoupen = asyncHandler(async (req, res) => {
@@ -123,7 +139,7 @@ export const applyCoupen = asyncHandler(async (req, res) => {
 
     if (coupon.discountType === 'percentage') {
         finalDiscountValue = (subTotal * coupon.discountValue) / 100;
-        
+
         if (coupon.maxDiscountAmount && finalDiscountValue > coupon.maxDiscountAmount) {
             finalDiscountValue = coupon.maxDiscountAmount;
         }
@@ -141,19 +157,15 @@ export const applyCoupen = asyncHandler(async (req, res) => {
         discountValue: Math.round(finalDiscountValue)
     };
 
-    res.status(200).json({ 
-        success: true, 
-        message: "Coupon applied successfully!", 
-        discount: req.session.appliedCoupon.discountValue 
-    });
+    res.status(200).json({ success: true, message: "Coupon applied successfully!", discount: req.session.appliedCoupon.discountValue });
 });
 
-export const removeCoupen = asyncHandler(async(req,res)=>{
-       if (req.session.appliedCoupon) {
-            delete req.session.appliedCoupon;
-        }
-        if (req.session.appliedCouponCode) {
-            delete req.session.appliedCouponCode;
-        }
-        return res.status(200).json({ success: true});
+export const removeCoupen = asyncHandler(async (req, res) => {
+    if (req.session.appliedCoupon) {
+        delete req.session.appliedCoupon;
+    }
+    if (req.session.appliedCouponCode) {
+        delete req.session.appliedCouponCode;
+    }
+    return res.status(200).json({ success: true });
 })

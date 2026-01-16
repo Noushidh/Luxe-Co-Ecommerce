@@ -138,7 +138,6 @@
             </div>
         </div>
     </div>
-<script src="/js/utils.js"></script>
     <script>
         async function updateQuantity(variantId, newQty) {
             const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
@@ -173,7 +172,7 @@
                     setTimeout(() => { window.location.reload(); }, 800);
                 }
             } catch (err) {
-                const errorMessage=error.response?.data?.message || "Something went wrong. Please try again.";
+                const errorMessage=err.response?.data?.message || "Something went wrong. Please try again.";
                notyf.error(errorMessage);
             }
         }

@@ -142,37 +142,41 @@ const formatPrice=(amount)=> {
             <p class="text-sm font-bold text-[#C8A97E] mt-1">₹<%= item.price.toLocaleString() %></p>
         </div>
 
-        <div class="flex flex-col gap-2">
-          <% 
-    const isItemCancelled = item.status === 'Cancelled';
-    const isItemReturned = ['Returned', 'Return Requested'].includes(item.status); // NEW CHECK
-    const isOrderDelivered = order.status === 'Delivered';
-    const isOrderCancelled = order.status === 'Cancelled';
-    const isOrderShipped = order.status === 'Shipped';
-%>
+<div class="flex flex-col gap-2">
+    <% 
+        // We only care about the specific status of THIS item
+        const currentItemStatus = item.status; 
+        
+        // Define specific item states
+        const isCancelled = currentItemStatus === 'Cancelled';
+        const isDelivered = currentItemStatus === 'Delivered';
+        const isReturned = ['Return Requested', 'Returned', 'Rejected'].includes(currentItemStatus);
+        
+        // Order-level checks only for shipping stage
+        const isOrderShipped = order.status === 'Shipped';
+    %>
 
-     
-         <% if (!isOrderDelivered && !isOrderShipped && !isItemCancelled && !isOrderCancelled && !isItemReturned) { %>
-              <button onclick="cancelSingleItem('<%= order._id %>', '<%= item._id %>')" 
-            class="text-[10px] px-4 py-1.5 bg-white border border-rose-300 text-rose-600 rounded font-black hover:bg-rose-50 transition-all uppercase tracking-wider">
-               Cancel Item
-              </button>
-          <% } %>
+    <% if (currentItemStatus === 'Placed' && !isOrderShipped && !isDelivered) { %>
+        <button onclick="cancelSingleItem('<%= order._id %>', '<%= item._id %>')" 
+                class="text-[10px] px-4 py-1.5 bg-white border border-rose-300 text-rose-600 rounded font-black hover:bg-rose-50 transition-all uppercase tracking-wider">
+            Cancel Item
+        </button>
+    <% } %>
 
-            <% if (isOrderDelivered && !isItemCancelled && !['Return Requested', 'Returned'].includes(item.status)) { %>
-                 <a href="/user/order-return/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
-                   class="text-[10px] text-center px-4 py-1.5 bg-[#C8A97E] text-white rounded font-black hover:brightness-110 transition-all uppercase tracking-wider">
-                    Return Item
-                </a>
-            <% } %>
+    <% if (isDelivered && !isReturned && !isCancelled) { %>
+        <a href="/user/order-return/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
+           class="text-[10px] text-center px-4 py-1.5 bg-[#C8A97E] text-white rounded font-black hover:brightness-110 transition-all uppercase tracking-wider">
+            Return Item
+        </a>
+    <% } %>
 
-            <% if (isOrderDelivered && !isItemCancelled) { %>
-                <a href="/user/review/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
-                  class="text-[10px] text-center px-4 py-1.5 bg-stone-200 text-stone-500 rounded font-black uppercase tracking-wider cursor-default">
-                    write review
-                </a>
-            <% } %>
-        </div>
+    <% if (isDelivered || isReturned) { %>
+        <a href="/user/review/<%= order._id %>?productId=<%= item.productId._id || item.productId %>" 
+           class="text-[10px] text-center px-4 py-1.5 bg-stone-100 text-stone-600 border border-stone-200 rounded font-black hover:bg-stone-200 transition-all uppercase tracking-wider">
+            Write Review
+        </a>
+    <% } %>
+</div>
     </div>
     <% }) %>
 </div>
@@ -248,6 +252,16 @@ const formatPrice=(amount)=> {
     }
 }
         async function confirmCancel(id) {
+        const result = await Swal.fire({
+        title: 'Cancel this order?',
+        text: "The proportional refund will be added to your wallet.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#be123c', 
+        cancelButtonColor: '#57534e', 
+        confirmButtonText: 'Yes, cancel it'
+        });
+            if (result.isConfirmed) {
             try {
                 const response = await axios.patch(`/user/order-cancelled/${id}`);
                 if (response.data.success) {
@@ -261,4 +275,5 @@ const formatPrice=(amount)=> {
                 notyf.error(errorMsg);
             }
         }
+    }
     </script>

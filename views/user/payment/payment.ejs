@@ -176,7 +176,7 @@
                     }
                     setTimeout(() => {
                         window.location.href = `/user/order-confirmed/${orderId}`;
-                    }, 1000);
+                    }, 500);
                 }
             }
 
@@ -185,7 +185,7 @@
             const errorMessage = err.response?.data?.message || "Order placement failed.";
             notyf.error(errorMessage);
 
-                  btn.disabled = false;
+                 btn.disabled = false;
                  btn.innerText = originalText;           
 
             if (err.response?.data?.redirect) {

@@ -4,6 +4,7 @@ import asyncHandler from "../../utils/asynHandler.js";
 import userModal from "../../models/usermodel.js"
 import walletModel from "../../models/walletmodel.js"
 import CartModel from "../../models/cartmodel.js";
+import { validateStock } from "../../utils/stockHelper.js";
 import { calculateOrderPrices, finalizeOrder } from "../../utils/orderHelper.js";
 
 const razorpay = new Razorpay({
@@ -20,7 +21,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
         wallet = await walletModel.create({ userId, balance: 0, transactions: [] });
     }
 
-    const userData = await userModal.findById(userId).select("referralCode");
+    const userData = await userModal.findById(userId).select("referralCode googleId");
 
     res.render("user/layout", {
         title: "My Wallet",
@@ -35,10 +36,13 @@ export const load_wallet = asyncHandler(async (req, res) => {
 export const walletPayment = asyncHandler(async (req, res) => {
     const { address } = req.body;
     const userId = req.session.user._id;
-    const cart = await CartModel.findOne({ user: userId }).populate({
-        path: "items.productId",
-        populate: { path: "subCategory_id", model: "SubCategory" }
-    }); console.log("wallet user cart", cart)
+    const cart = await CartModel.findOne({ user: userId }).populate({ path: "items.productId", populate: { path: "subCategory_id", model: "SubCategory" } });
+    console.log("wallet user cart", cart);
+    try {
+        await validateStock(cart.items)
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message, redirect: "/user/cart" });
+    }
     const wallet = await walletModel.findOne({ userId });
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
 

@@ -6,6 +6,7 @@ import asyncHandler from "../../utils/asynHandler.js";
 import walletModel from "../../models/walletmodel.js"
 import mongoose from "mongoose";
 import { finalizeOrder } from "../../utils/orderHelper.js"
+import { validateStock } from "../../utils/stockHelper.js";
 import { calculateOrderPrices } from "../../utils/orderHelper.js";
 
 export const load_payment = asyncHandler(async (req, res) => {
@@ -17,14 +18,18 @@ export const load_payment = asyncHandler(async (req, res) => {
         return res.redirect('/user/cart');
     }
 
-    const cart = await CartModel.findOne({ user: userId }).populate({
-        path: 'items.productId',
-        populate: { path: 'subCategory_id', model: 'SubCategory' }
-    });
+    const cart = await CartModel.findOne({ user: userId }).populate({ path: 'items.productId', populate: { path: 'subCategory_id', model: 'SubCategory' } });
 
     if (!cart || cart.items.length === 0) {
         return res.redirect('/user/cart');
     }
+
+    try {
+        await validateStock(cart.items)
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    }
+
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
     const wallet = await walletModel.findOne({ userId });
 
@@ -49,25 +54,21 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: "Please select a shipping address" });
     }
 
-    const cart = await CartModel.findOne({ user: userId }).populate({
-        path: 'items.productId',
-        populate: { path: 'subCategory_id' }
-    });
+    const cart = await CartModel.findOne({ user: userId }).populate({ path: 'items.productId', populate: { path: 'subCategory_id' } });
     if (!cart || cart.items.length === 0) {
         return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
+
+    try {
+        validateStock(cart.items);
+    } catch (error) {
+        return res.status(400).json({ success: false, message: error.message, redirect: "/user/cart" });
     }
 
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
 
     if (prices.finalTotal > 1000) {
         return res.status(400).json({ success: false, message: "Cash on Delivery is only available for orders below Rs 1000. Please use online payment." });
-    }
-
-    for (const item of cart.items) {
-        const variant = item.productId.variants.find(v => v.size === item.size && v.color === item.color);
-        if (!variant || variant.stock < item.quantity) {
-            return res.status(400).json({ success: false, message: `Stock unavailable for ${item.productId.name}` });
-        }
     }
 
     const appliedCoupon = req.session.appliedCoupon || { discountValue: 0, _id: null };

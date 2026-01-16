@@ -80,6 +80,16 @@ export const saveCoupon = asyncHandler(async (req, res) => {
     if (!name || !code || !discountValue || !expiryDate) {
         return res.status(400).json({ success: false, message: "Mandatory fields are missing" });
     }
+     
+    if(discountType==="percentage" && ( discountValue <0 || discountValue > 100)){
+        return res.status(400).json({ success: false, message: "percentage must be between 0 and 100" });
+    }
+
+    if (discountType === "fixedAmount") {
+        if (Number(minPurchase) <= Number(discountValue)) {
+            return res.status(400).json({ success: false, message: "Minimum purchase amount must be greater than the discount value for fixed coupons" });
+        }
+    }
 
     if (Number(discountValue) <= 0 || Number(maxDiscountAmount) < 0 || Number(minPurchase) < 0 || (limit !== null && Number(limit) < 0)) {
         return res.status(400).json({ success: false, message: "Numbers must be greater than or equal to 0" });
