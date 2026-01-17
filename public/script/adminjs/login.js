@@ -13,13 +13,12 @@
     }
 
 
-import { validateEmail,validatePassword,showError,clearError} from "/utils/validation.js"
+import { validateEmail,validatePassword,showError,clearError} from "/js/utils/validation.js"
 
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("loginForm");
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
-   console.log("form submission")
   loginForm.addEventListener("submit",function(e){
     let valid = true;
     if(!validateEmail(emailInput.value.trim())){

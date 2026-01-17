@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Luxe & Co | Admin Login</title>
   <link rel="stylesheet" href="/css/admincss/login.css" />
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
   </style>
@@ -23,10 +24,7 @@
       </div>
       <% if (error && error.length> 0) { %>
         <script>
-          const notyf = new Notyf({
-            position: { x: 'center', y: 'top' },
-            duration: 2500
-          });
+          const notyf = new Notyf({ position: { x: 'center', y: 'top' }, duration: 2500 });
           notyf.error("<%= error[0] %>");
         </script>
         <% } %>
@@ -34,12 +32,12 @@
           <form id="loginForm" class="loginForm" method="post" action="/admin/login" autocomplete="off">
             <div class="form-group">
               <label for="email" class="label">Email Address</label>
-              <input id="email" name="email" type="email" value="admin@gmail.com" placeholder="your.email@example.com" class="input">
+              <input id="email" name="email" type="email" placeholder="your.email@example.com" class="input">
             </div>
             <div class="form-group password-group">
               <label for="password" class="label">Password</label>
               <div class="password-wrapper">
-                <input id="password" name="password" value="admin@123" type="password" placeholder="••••••••" class="input">
+                <input id="password" name="password" type="password" placeholder="••••••••" class="input">
                 <button type="button" class="toggle-password" onclick="togglePassword()">
                   <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
