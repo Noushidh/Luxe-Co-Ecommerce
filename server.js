@@ -89,10 +89,6 @@ app.use((req, res) => {
   res.redirect("/user/page-404");
 });
 
-// app.listen(port, () => {
-//   console.log(`http://localhost:${port}`);
-// });
-
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
 });

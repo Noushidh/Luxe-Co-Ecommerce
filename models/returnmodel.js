@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-
+import mongoose from 'mongoose';
 const returnSchema = new mongoose.Schema({
     order_items_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,4 +48,4 @@ const returnSchema = new mongoose.Schema({
 
 const Return = mongoose.model('Return', returnSchema);
 
-module.exports = Return;
+export default Return;

@@ -16,4 +16,3 @@ const adminschema = new mongoose.Schema({
 
 const Admin = mongoose.model('Admin', adminschema)
 export default Admin;
-//export to admin controller
