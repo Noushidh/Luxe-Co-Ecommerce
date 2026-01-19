@@ -13,28 +13,32 @@
 
 <main class="w-full">
 
-    <section class="py-24 md:py-32 px-6" style="background-color: #F1E7D6;">
-        <div class="max-w-4xl mx-auto text-center">
-            
-            <h1 class="text-neutral-900 text-5xl md:text-6xl font-normal leading-tight mb-6 slow-load"
-                style="animation-delay: 0.4s;">
-                Step Into Timeless Elegance
-            </h1>
-            
-            <p class="text-neutral-700 text-lg font-light mb-10 max-w-2xl mx-auto slow-load"
-                style="animation-delay: 0.8s;">
-                Premium handcrafted leather shoes for every occasion.
-            </p>
-            
-      <a href="/user/products">
-    <button class="bg-custom-tan hover:bg-custom-dark-tan text-white text-base font-medium py-3 px-8 rounded-full transition duration-300 ease-in-out slow-load"
-        style="animation-delay: 1.2s;">
-        Shop Now
-    </button>
-</a>
+<section class="relative py-24 md:py-32 px-6 overflow-hidden min-h-[500px]">
+    <video 
+        autoplay 
+        muted 
+        loop 
+        playsinline 
+        class="absolute top-0 left-0 w-full h-full object-cover z-0">
+        <source src="/assets/videos/public/assets/luxeandcovedio.mp4" type="video/mp4">
+    </video>
 
-        </div>
-    </section>
+    <div class="absolute top-0 left-0 w-full h-full bg-black/30 z-10"></div>
+
+    <div class="relative z-20 max-w-4xl mx-auto text-center">
+        <h1 class="text-white text-5xl md:text-6xl font-normal leading-tight mb-6">
+            Step Into Timeless Elegance
+        </h1>
+        <p class="text-white/90 text-lg font-light mb-10 max-w-2xl mx-auto">
+            Premium handcrafted leather shoes for every occasion.
+        </p>
+        <a href="/user/products">
+            <button class="bg-custom-tan hover:bg-custom-dark-tan text-white py-3 px-8 rounded-full transition">
+                Shop Now
+            </button>
+        </a>
+    </div>
+</section>
 
     <hr>
 
