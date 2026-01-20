@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "easyinvoice": "^3.0.47",
     "ejs": "^3.1.10",
     "exceljs": "^4.4.0",
-    "express": "^5.2.1",
+    "express": "^4.19.2",
     "express-session": "^1.18.2",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
