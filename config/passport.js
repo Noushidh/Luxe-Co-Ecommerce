@@ -4,6 +4,7 @@ dotenv.config();
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/usermodel.js";
+import { generateReferralCode } from "../utils/referal.js";
 
 passport.use(
   new GoogleStrategy(
@@ -32,9 +33,11 @@ passport.use(
             email,
             googleId,
             profilePic,
+            referralCode:generateReferralCode(fullname),
             isVerified: true,
           });
         } else {
+          if (!user.referralCode) user.referralCode = generateReferralCode(user.fullname || fullname);
           if (!user.googleId) user.googleId = googleId;
           if (!user.profilePic) user.profilePic = profilePic;
           if (!user.fullname) user.fullname = fullname;
