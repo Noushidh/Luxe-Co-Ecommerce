@@ -6,9 +6,16 @@
     if (typeof amount !== "number") amount = parseFloat(amount) || 0;
     return formatter.format(amount);
     };
-    // -----------------------------------------
     %>
-
+<% 
+   // Validate if all items are in stock and have quantity > 0
+   let canCheckout = cart.length > 0; 
+   cart.forEach(item => {
+       if (item.availableStock <= 0 || item.quantity <= 0) {
+           canCheckout = false;
+       }
+   });
+%>
     <div class="w-full min-h-screen bg-[#F5E9DA]">
         <div class="container mx-auto px-4 py-8 max-w-7xl">
 
@@ -40,9 +47,19 @@
 
                                         <div class="flex-grow flex flex-col justify-between">
                                             <div>
-                                                <h3 class="text-lg font-semibold">
-                                                    <%= item.productId.name %>
-                                                </h3>
+                        <h3 class="text-lg font-semibold">
+    <%= item.productId.name %>
+    
+    <% 
+        // Find the specific variant inside the populated product
+        const currentVariant = item.productId.variants.find(v => v._id.toString() === item.variantId.toString());
+        if (currentVariant && currentVariant.stock <= 0) { 
+    %>
+        <span class="ml-2 text-xs font-bold text-white bg-red-600 px-2 py-1 rounded-full uppercase tracking-wider">
+            Sold Out
+        </span>
+    <% } %>
+</h3>
                                                 <p class="text-sm text-gray-500">
                                                     Size: <strong>
                                                         <%= item.size %>
@@ -59,7 +76,7 @@
                                                 <button id="minus-btn-<%= item.variantId %>"
                                                     class="w-6 h-6 bg-gray-100 rounded-full hover:bg-gray-200 disabled:opacity-50"
                                                     onclick="updateQuantity('<%= item.variantId %>', <%= item.quantity - 1 %>)"
-                                                    <%=item.quantity <=1 ? 'disabled' : '' %>>−</button>
+                                                    <%=item.quantity <=1 ? 'disabled' : '' %>>-</button>
 
                                                 <input id="input-<%= item.variantId %>" type="number"
                                                     value="<%= item.quantity %>"
@@ -128,9 +145,19 @@
                                     </span>
                                 </div><br>
 
-                                <button onclick="handleCheckout(event)" class=" bg-[#C8A97E] <%= primaryBtnClass %>">
-                                    Proceed to Checkout
-                                </button>
+<button onclick="handleCheckout(event)" 
+    class="w-full py-3 rounded-lg font-bold transition duration-200 
+    <%= !canCheckout ? 'bg-gray-400 cursor-not-allowed text-gray-200' : 'bg-[#C8A97E] hover:bg-[#b8996e] text-white' %>"
+    <%= !canCheckout ? 'disabled' : '' %>>
+    
+    <% if (cart.length === 0) { %>
+        Cart is Empty
+    <% } else if (!canCheckout) { %>
+        Fix items to Checkout
+    <% } else { %>
+        Proceed to Checkout
+    <% } %>
+</button>
                             </div>
 
                         </div>
@@ -140,7 +167,7 @@
     </div>
     <script>
         async function updateQuantity(variantId, newQty) {
-            const notyf = new Notyf({ duration: 2000, position: { x: 'right', y: 'top' } });
+            const notyf = new Notyf({ duration: 1000, position: { x: 'right', y: 'top' } });
 
             if (newQty < 1 || newQty > 4) return;
 
@@ -158,8 +185,20 @@
                     notyf.error(res.data.message);
                 }
             } catch (err) {
-                console.error(err);
-                notyf.error("Failed to update cart");
+        const errorResponse = err.response && err.response.data;
+        const errorData = err.response?.data;
+        const serverStock = errorData?.actualStock; 
+
+        notyf.error(errorData?.message || "Failed to update cart");
+
+        if (serverStock !== undefined) {
+            const inputField = document.getElementById(`input-${variantId}`);
+            if (inputField) {
+                inputField.value = serverStock;
+                setTimeout(() => window.location.reload(), 1000);
+            }
+            
+              }
             }
         }
 

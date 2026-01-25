@@ -84,7 +84,7 @@ app.get("/", (req, res) => {
 app.use((req, res) => {
   const url = req.originalUrl || req.url || "";
   if (url.startsWith("/admin")) {
-    return res.redirect("/admin/page-404");
+    return res.redirect("/admin/login");
   }
   res.redirect("/user/page-404");
 });

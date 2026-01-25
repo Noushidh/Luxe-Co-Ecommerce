@@ -116,7 +116,6 @@ const refundAmount = order.total||0;
 export const updateStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
-    console.log(id, status)
     const order = await orderModel.findById(id);
     order.status = status;
 

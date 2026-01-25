@@ -226,31 +226,53 @@ const formatPrice=(amount)=> {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    async function cancelSingleItem(orderId, itemId) {
-    const result = await Swal.fire({
-        title: 'Cancel this item?',
-        text: "The proportional refund will be added to your wallet.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#be123c', 
-        cancelButtonColor: '#57534e', 
-        confirmButtonText: 'Yes, cancel it'
-    });
+async function cancelSingleItem(orderId, itemId) {
+  const result = await Swal.fire({
+    title: 'Cancel this item?',
+    text: 'Please tell us why you are cancelling this item',
+    icon: 'warning',
 
-    if (result.isConfirmed) {
-        try {
-            const response = await axios.patch('/user/orders/cancel-item',{orderId,itemId});
-            if (response.data.success) {
-                notyf.success(response.data.message)
-               setTimeout(()=> location.reload(),1000)
-            } else {
-                notyf.error(response.data.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            notyf.error(error.response?.data?.message || 'Error cancelling item');        }
+    input: 'textarea',
+    inputPlaceholder: 'Enter cancellation reason...',
+    inputAttributes: {
+      maxlength: 200
+    },
+
+    showCancelButton: true,
+    confirmButtonColor: '#be123c',
+    cancelButtonColor: '#57534e',
+    confirmButtonText: 'Yes, cancel it',
+
+    preConfirm: (reason) => {
+      if (!reason || reason.trim().length < 5) {
+        Swal.showValidationMessage(
+          'Please enter a valid reason (minimum 5 characters)'
+        );
+        return false;
+      }
+      return reason.trim();
     }
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await axios.patch('/user/orders/cancel-item', { orderId, itemId, reason: result.value});
+
+      if (response.data.success) {
+        notyf.success(response.data.message);
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        notyf.error(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      notyf.error(
+        error.response?.data?.message || 'Error cancelling item'
+      );
+    }
+  }
 }
+
         async function confirmCancel(id) {
         const result = await Swal.fire({
         title: 'Cancel this order?',

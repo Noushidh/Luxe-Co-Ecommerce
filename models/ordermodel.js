@@ -22,7 +22,9 @@ const orderSchema = new mongoose.Schema({
             type: String, 
             enum: ["Placed", "Delivered", "Cancelled", "Return Requested", "Returned","Rejected"],
             default: "Placed"
-        }
+        },
+        cancelReason: {type: String,trim: true},
+        cancelledAt: { type: Date }
     }],
     total: {type: Number,required: true},
     refundedAmount: {type: Number,default: 0,min: 0},

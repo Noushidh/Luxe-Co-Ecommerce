@@ -118,7 +118,7 @@ export const returnOrder_details = asyncHandler(async (req, res) => {
 
 
 export const cancel_individualItem = asyncHandler(async (req, res) => {
-    const { orderId, itemId } = req.body;
+    const { orderId, itemId , reason} = req.body;
     
     const order = await orderModel.findById(orderId);
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
@@ -135,7 +135,7 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
     const itemSubtotal = item.price * item.quantity;
     const refundAmount = Math.round((itemSubtotal / totalOriginalPrice) * order.total);
 
-
+    
     await productModel.findOneAndUpdate(
         { _id: item.productId },
         { $inc: { "variants.$[elem].stock": item.quantity } },
@@ -143,6 +143,8 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
     );
 
     item.status = "Cancelled";
+    item.cancelReason = reason;
+    item.cancelledAt = new Date();
 
     if (order.paymentMethod !== 'cashOnDelivery' && order.paymentStatus === 'Paid') {
         await walletModel.findOneAndUpdate(

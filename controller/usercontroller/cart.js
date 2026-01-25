@@ -19,8 +19,11 @@ export const load_cart = asyncHandler(async (req, res) => {
       const currentVariant = product.variants.find((v) => v._id.toString() === item.variantId.toString());
 
       if (currentVariant) {
+        if (item.quantity > currentVariant.stock) {
+          item.quantity = currentVariant.stock;
+          isModified = true;
+        }
         const { finalPrice } = await getBestOfferForProduct(product);
-        console.log("finalPrice", finalPrice)
         if (item.price !== finalPrice) { item.price = finalPrice; isModified = true; }
         if (item.color !== currentVariant.color) { item.color = currentVariant.color; isModified = true; }
         if (item.size !== currentVariant.size) { item.size = currentVariant.size; isModified = true; }
@@ -28,7 +31,7 @@ export const load_cart = asyncHandler(async (req, res) => {
         grossSubTotal += (product.price * item.quantity);
         subTotal += (finalPrice * item.quantity);
 
-        return { ...item.toObject(), offerPrice: finalPrice, rowTotal: finalPrice * item.quantity };
+        return { ...item.toObject(), offerPrice: finalPrice, rowTotal: finalPrice * item.quantity ,availableStock: currentVariant.stock};
       }
       return item.toObject();
     }));
@@ -153,7 +156,7 @@ export const updateCartquantity = asyncHandler(async (req, res) => {
   }
 
   if (numQty > variant.stock) {
-    return res.status(409).json({ success: false, message: `Only ${variant.stock} units available` });
+    return res.status(400).json({ success: false, message: `Only ${variant.stock} units available` ,actualStock:variant.stock});
   }
 
   item.quantity = numQty;

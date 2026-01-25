@@ -13,13 +13,21 @@ const razorpay = new Razorpay({
 });
 
 export const load_wallet = asyncHandler(async (req, res) => {
+    const { page = 1 } = req.query;
     const userId = req.session.user._id;
+
+    const limit = 5;
+    const skip = (parseInt(page) - 1) * limit;
 
     let wallet = await walletModel.findOne({ userId });
 
     if (!wallet) {
         wallet = await walletModel.create({ userId, balance: 0, transactions: [] });
     }
+
+    const totaltransactions = wallet.transactions.length;
+    const totalPages = Math.ceil(totaltransactions/limit);
+    const paginatedTransactions = wallet.transactions.slice().reverse().slice(skip, skip + limit);
 
     const userData = await userModal.findById(userId).select("referralCode googleId");
 
@@ -29,7 +37,10 @@ export const load_wallet = asyncHandler(async (req, res) => {
         walletData: wallet,
         userData,
         razorpayKey: process.env.RAZORPAY_KEY_ID,
-        currentPath: '/user/wallet'
+        currentPath: '/user/wallet',
+        currentPage: parseInt(page),
+        totalPages,
+        payment:paginatedTransactions
     });
 });
 

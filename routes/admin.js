@@ -20,7 +20,7 @@ router.post('/login', adminAuth.isLoggin, adminAuthController.login)
 
 //dashboard
 router.get('/dashboard', adminAuth.checkSession, admindashboard.load_dashboard)
-router.get('/chart-data',adminAuth.checkSession,admindashboard.getChartData)
+router.get('/chart-data', adminAuth.checkSession, admindashboard.getChartData)
 
 router.get('/customers', adminAuth.checkSession, admincustomers.load_customers)
 router.patch('/user/:id/toggle-block', adminAuth.checkSession, admincustomers.blockUser)
@@ -49,33 +49,33 @@ router.patch("/products/variants/toggle-block/:variantId", adminAuth.checkSessio
 //orders
 router.get('/orders', adminAuth.checkSession, Orders.load_orders)
 router.get('/order-details/:id', adminAuth.checkSession, Orders.load_orders_Details)
-router.patch('/order-cancel/:id',adminAuth.checkSession,Orders.cancelOrder);
-router.patch('/orders/update-status/:id',Orders.updateStatus)
+router.patch('/order-cancel/:id', adminAuth.checkSession, Orders.cancelOrder);
+router.patch('/orders/update-status/:id', Orders.updateStatus)
 //orders return and reject
-router.patch('/orders/return-approve',Orders.approveReturn)
-router.patch('/orders/return-reject',adminAuth.checkSession,Orders.rejectReturn)
+router.patch('/orders/return-approve', Orders.approveReturn)
+router.patch('/orders/return-reject', adminAuth.checkSession, Orders.rejectReturn)
 
 //coupen management
-router.get('/coupons',Coupon.load_coupons)
-router.get('/coupons/add',adminAuth.checkSession,Coupon.load_couponAdd)
-router.post('/coupons/add',adminAuth.checkSession,Coupon.saveCoupon)
-router.get('/coupons/edit/:id',adminAuth.checkSession,Coupon.load_couponEdit)
-router.patch('/coupons/edit/:id',adminAuth.checkSession,Coupon.saveCoupon)
-router.delete('/coupons/delete/:id',adminAuth.checkSession,Coupon.deleteCoupen);
+router.get('/coupons', Coupon.load_coupons)
+router.get('/coupons/add', adminAuth.checkSession, Coupon.load_couponAdd)
+router.post('/coupons/add', adminAuth.checkSession, Coupon.saveCoupon)
+router.get('/coupons/edit/:id', adminAuth.checkSession, Coupon.load_couponEdit)
+router.patch('/coupons/edit/:id', adminAuth.checkSession, Coupon.saveCoupon)
+router.delete('/coupons/delete/:id', adminAuth.checkSession, Coupon.deleteCoupen);
 
 //offer
-router.get('/offers',adminAuth.checkSession,Offer.load_offer)
-router.get('/offers/add',adminAuth.checkSession,Offer.load_addOffer)
-router.get('/offers/api/search-products',Offer.searchSpecificProduct)
-router.get('/offers/edit/:id',adminAuth.checkSession,Offer.load_editOffer)
-router.post('/offers/add',adminAuth.checkSession,Offer.addOrUpdateOffer)
-router.patch('/offers/edit/:id',adminAuth.checkSession,Offer.addOrUpdateOffer)
-router.delete('/offers/delete/:id',adminAuth.checkSession,Offer.deleteOffer)
+router.get('/offers', adminAuth.checkSession, Offer.load_offer)
+router.get('/offers/add', adminAuth.checkSession, Offer.load_addOffer)
+router.get('/offers/api/search-products', Offer.searchSpecificProduct)
+router.get('/offers/edit/:id', adminAuth.checkSession, Offer.load_editOffer)
+router.post('/offers/add', adminAuth.checkSession, Offer.addOrUpdateOffer)
+router.patch('/offers/edit/:id', adminAuth.checkSession, Offer.addOrUpdateOffer)
+router.delete('/offers/delete/:id', adminAuth.checkSession, Offer.deleteOffer)
 
 
 //sales report
-router.get('/sales-report',adminAuth.checkSession,Sales.load_sales_report)
-router.get('/sales-report/download/:format',adminAuth.checkSession,Sales.download_sales_report);
+router.get('/sales-report', adminAuth.checkSession, Sales.load_sales_report)
+router.get('/sales-report/download/:format', adminAuth.checkSession, Sales.download_sales_report);
 
 router.get('/logout', adminAuth.checkSession, adminAuthController.isLogout)
 

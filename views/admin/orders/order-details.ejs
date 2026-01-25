@@ -64,50 +64,52 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
-    <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50 flex justify-between items-center">
-        <h2 class="text-base font-semibold text-stone-800">Items Summary</h2>
-        <span class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-bold">
-            <%= order.items.length %> <%= order.items.length > 1 ? 'PRODUCTS' : 'PRODUCT' %>
-        </span>
-    </div>
-    
-    <div class="p-4 max-h-[300px] overflow-y-auto">
-        <div class="space-y-3">
-            <% order.items.forEach(item => { %>
-                <div class="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-stone-50 transition-colors border border-transparent hover:border-stone-100">
-                    <div class="flex items-center gap-3 min-w-0">
-                        <img src="<%= item.image %>" class="w-10 h-10 rounded object-cover border border-stone-200 shrink-0">
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold text-stone-800 truncate">
-                                <%= item.productName %>
-                            </p>
-                            <p class="text-[10px] text-stone-500 font-medium uppercase">
-                                Qty: <%= item.quantity %> • ₹<%= item.price.toLocaleString() %>
-                            </p>
-                        </div>
-                    </div>
+        <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50 flex justify-between items-center">
+                <h2 class="text-base font-semibold text-stone-800">Items Summary</h2>
+                <span class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-bold">
+                    <%= order.items.length %>
+                        <%= order.items.length> 1 ? 'PRODUCTS' : 'PRODUCT' %>
+                </span>
+            </div>
 
-                    <% 
-                        let dotColor = 'bg-stone-400';
-                        if (item.status === 'Return Requested') dotColor = 'bg-orange-500';
-                        if (item.status === 'Delivered' || item.status === 'Returned') dotColor = 'bg-emerald-500';
-                        if (item.status === 'Cancelled' || item.status === 'Return Rejected') dotColor = 'bg-red-500';
-                    %>
+            <div class="p-4 max-h-[300px] overflow-y-auto">
+                <div class="space-y-3">
+                    <% order.items.forEach(item=> { %>
+                        <div
+                            class="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-stone-50 transition-colors border border-transparent hover:border-stone-100">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <img src="<%= item.image %>"
+                                    class="w-10 h-10 rounded object-cover border border-stone-200 shrink-0">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-stone-800 truncate">
+                                        <%= item.productName %>
+                                    </p>
+                                    <p class="text-[10px] text-stone-500 font-medium uppercase">
+                                        Qty: <%= item.quantity %> • ₹<%= item.price.toLocaleString() %>
+                                    </p>
+                                </div>
+                            </div>
 
-                    <div class="flex flex-col items-end shrink-0">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full <%= dotColor %> <%= item.status === 'Return Requested' ? 'animate-pulse' : '' %>"></span>
-                            <span class="text-[9px] font-black text-stone-600 uppercase tracking-tighter">
-                                <%= item.status %>
-                            </span>
+                            <% let dotColor='bg-stone-400' ; if (item.status==='Return Requested' )
+                                dotColor='bg-orange-500' ; if (item.status==='Delivered' || item.status==='Returned' )
+                                dotColor='bg-emerald-500' ; if (item.status==='Cancelled' ||
+                                item.status==='Return Rejected' ) dotColor='bg-red-500' ; %>
+
+                                <div class="flex flex-col items-end shrink-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full <%= dotColor %> <%= item.status === 'Return Requested' ? 'animate-pulse' : '' %>"></span>
+                                        <span class="text-[9px] font-black text-stone-600 uppercase tracking-tighter">
+                                            <%= item.status %>
+                                        </span>
+                                    </div>
+                                </div>
                         </div>
-                    </div>
+                        <% }) %>
                 </div>
-            <% }) %>
+            </div>
         </div>
-    </div>
-</div>
 
         <div class="bg-white rounded-lg shadow-sm border border-stone-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
@@ -141,99 +143,136 @@
             <h2 class="text-base font-semibold">Product Details</h2>
         </div>
 
-<table class="w-full text-left border-collapse">
-    <thead class="bg-stone-100">
-        <tr>
-            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase tracking-widest">Product</th>
-            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase tracking-widest">Fulfillment Address</th>
-            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-center tracking-widest">Qty</th>
-            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-right tracking-widest">Price</th>
-            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-right tracking-widest">Status</th>
-            <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-center tracking-widest">Action</th>
-        </tr>
-    </thead>
-    <tbody class="divide-y divide-stone-100 bg-white">
-        <% order.items.forEach(item => { %>
-            <% 
-                const itemReturn = (Array.isArray(returnInfo) ? returnInfo : []).find(r => {
-                    const rProdId = r.product_id?.toString();
-                    const iProdId = (item.productId?._id || item.productId)?.toString();
-                    return rProdId === iProdId;
-                });
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-stone-100">
+                <tr>
+                    <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase tracking-widest">Product</th>
+                    <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase tracking-widest">Fulfillment
+                        Address</th>
+                    <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-center tracking-widest">Qty
+                    </th>
+                    <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-right tracking-widest">
+                        Price</th>
+                    <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-right tracking-widest">
+                        Status</th>
+                    <th class="px-6 py-3 text-[10px] font-bold text-stone-600 uppercase text-center tracking-widest">
+                        Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100 bg-white">
+                <% order.items.forEach(item=> { %>
+                    <% const itemReturn=(Array.isArray(returnInfo) ? returnInfo : []).find(r=> {
+                        const rProdId = r.product_id?.toString();
+                        const iProdId = (item.productId?._id || item.productId)?.toString();
+                        return rProdId === iProdId;
+                        });
 
-                let itemBadgeStyle = ''; 
-                switch (item.status) { 
-                    case 'Pending' : itemBadgeStyle='bg-stone-50 text-stone-500 border-stone-200'; break; 
-                    case 'Confirmed' : itemBadgeStyle='bg-emerald-50 text-emerald-600 border-emerald-200'; break; 
-                    case 'Return Requested' : itemBadgeStyle='bg-orange-50 text-orange-600 border-orange-200'; break; 
-                    case 'Returned' : itemBadgeStyle='bg-blue-50 text-blue-600 border-blue-200'; break; 
-                    case 'Return Rejected' : itemBadgeStyle='bg-red-50 text-red-600 border-red-200'; break;
-                    default: itemBadgeStyle='bg-stone-50 text-stone-400 border-stone-100';
-                } 
-            %>
-            <tr class="<%= item.status === 'Return Requested' ? 'bg-orange-50/20' : 'hover:bg-stone-50/50' %> transition-all group">
-                <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                        <img src="<%= item.image %>" class="w-10 h-10 rounded-md object-cover border border-stone-100 shadow-sm">
-                        <span class="text-xs font-semibold text-stone-700 truncate max-w-[120px]"><%= item.productName %></span>
-                    </div>
-                </td>
+                        let itemBadgeStyle = '';
+                        switch (item.status) {
+                        case 'Pending' : itemBadgeStyle='bg-stone-50 text-stone-500 border-stone-200'; break;
+                        case 'Confirmed' : itemBadgeStyle='bg-emerald-50 text-emerald-600 border-emerald-200'; break;
+                        case 'Return Requested' : itemBadgeStyle='bg-orange-50 text-orange-600 border-orange-200';
+                        break;
+                        case 'Returned' : itemBadgeStyle='bg-blue-50 text-blue-600 border-blue-200'; break;
+                        case 'Return Rejected' : itemBadgeStyle='bg-red-50 text-red-600 border-red-200'; break;
+                        default: itemBadgeStyle='bg-stone-50 text-stone-400 border-stone-100';
+                        }
+                        %>
+                        <tr
+                            class="<%= item.status === 'Return Requested' ? 'bg-orange-50/20' : 'hover:bg-stone-50/50' %> transition-all group">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <img src="<%= item.image %>"
+                                        class="w-10 h-10 rounded-md object-cover border border-stone-100 shadow-sm">
+                                    <span class="text-xs font-semibold text-stone-700 truncate max-w-[120px]">
+                                        <%= item.productName %>
+                                    </span>
+                                </div>
+                            </td>
 
-                <td class="px-6 py-4">
-                    <div class="max-w-[220px]">
-                        <% if (item.status === 'Return Requested' && itemReturn) { %>
-                            <div class="flex flex-col gap-0.5 border-l-2 border-orange-300 pl-3">
-                                <span class="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Pickup Location</span>
-                                <p class="text-[11px] text-stone-600 leading-tight italic font-medium">
-                                    <%= itemReturn.pickup_address %>
-                                </p>
-                            </div>
-                        <% } else { %>
-                            <div class="flex flex-col gap-0.5 border-l-2 border-stone-200 pl-3">
-                                <span class="text-[11px] font-bold text-stone-800"><%= order.address.name %></span>
-                                <p class="text-[10px] text-stone-500 leading-snug">
-                                    <%= order.address.houseName %>, <%= order.address.city %>, <%= order.address.pincode %><br>
-                                    <span class="text-stone-400 font-medium">Ph: <%= order.address.phone %></span>
-                                </p>
-                            </div>
-                        <% } %>
-                    </div>
-                </td>
+                            <td class="px-6 py-4">
+                                <div class="max-w-[220px]">
+                                    <% if (item.status==='Cancelled' && item.cancelReason) { %>
 
-                <td class="px-6 py-4 text-[11px] font-medium text-stone-600 text-center"><%= item.quantity %></td>
-                <td class="px-6 py-4 text-[11px] font-bold text-stone-800 text-right">₹<%= item.price.toLocaleString() %></td>
-                
-                <td class="px-6 py-4 text-right">
-                    <span class="inline-flex items-center justify-center text-center px-3 py-2 min-h-[32px] min-w-[100px] rounded text-[9px] font-bold border <%= itemBadgeStyle %> uppercase tracking-tight leading-tight">
-                        <%= item.status %>
-                    </span>
-                </td>
+                                        <% } else if (item.status==='Return Requested' && itemReturn) { %>
+                                            <div class="flex flex-col gap-0.5 border-l-2 border-orange-300 pl-3">
+                                                <span
+                                                    class="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Pickup
+                                                    Location</span>
+                                                <p class="text-[11px] text-stone-600 leading-tight italic font-medium">
+                                                    <%= itemReturn.pickup_address %>
+                                                </p>
+                                            </div>
+                                            <% } else { %>
+                                                <div class="flex flex-col gap-0.5 border-l-2 border-stone-200 pl-3">
+                                                    <span class="text-[11px] font-bold text-stone-800">
+                                                        <%= order.address.name %>
+                                                    </span>
+                                                    <p class="text-[10px] text-stone-500 leading-snug">
+                                                        <%= order.address.houseName %>, <%= order.address.city %>, <%=
+                                                                    order.address.pincode %><br>
+                                                                    <span class="text-stone-400 font-medium">Ph: <%=
+                                                                            order.address.phone %></span>
+                                                    </p>
+                                                </div>
+                                                <% } %>
+                                </div>
+                            </td>
 
-                <td class="px-6 py-4 text-center">
-                    <% if (item.status === 'Return Requested' && itemReturn && itemReturn.status === 'Pending') { %>
-                        <div class="flex flex-col items-center gap-1.5">
-                            <div class="flex items-center gap-1">
-                                <span class="flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                <span class="text-[8px] font-bold text-orange-600 uppercase">Review</span>
-                            </div>
-                            <button onclick="openVerifyModal('<%= order._id %>', '<%= itemReturn._id %>', '<%= item.productName %>', '<%= itemReturn.reason %>', '<%= itemReturn.comments %>')"
-                                class="px-4 py-1.5 bg-orange-500 text-white text-[9px] font-black rounded hover:bg-stone-900 transition-colors shadow-sm uppercase tracking-widest">
-                                Verify
-                            </button>
-                        </div>
-                    <% } else { %>
-                        <div class="flex flex-col items-center opacity-60 group-hover:opacity-100 transition-opacity">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span class="text-[8px] font-bold text-emerald-600 uppercase tracking-tighter mt-0.5">Processed</span>
-                        </div>
-                    <% } %>
-                </td>
-            </tr>
-        <% }) %>
-    </tbody>
-</table>
+                            <td class="px-6 py-4 text-[11px] font-medium text-stone-600 text-center">
+                                <%= item.quantity %>
+                            </td>
+                            <td class="px-6 py-4 text-[11px] font-bold text-stone-800 text-right">₹<%=
+                                    item.price.toLocaleString() %>
+                            </td>
+
+                            <td class="px-6 py-4 text-right">
+                                <span
+                                    class="inline-flex items-center justify-center text-center px-3 py-2 min-h-[32px] min-w-[100px] rounded text-[9px] font-bold border <%= itemBadgeStyle %> uppercase tracking-tight leading-tight">
+                                    <%= item.status %>
+                                </span>
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <% if (item.status==='Return Requested' && itemReturn && itemReturn.status==='Pending' )
+                                    { %>
+                                    <div class="flex flex-col items-center gap-1.5">
+                                        <div class="flex items-center gap-1">
+                                            <span
+                                                class="flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                            <span class="text-[8px] font-bold text-orange-600 uppercase">Review</span>
+                                        </div>
+                                        <button
+                                            onclick="openVerifyModal('<%= order._id %>', '<%= itemReturn._id %>', '<%= item.productName %>', '<%= itemReturn.reason %>', '<%= itemReturn.comments %>')"
+                                            class="px-4 py-1.5 bg-orange-500 text-white text-[9px] font-black rounded hover:bg-stone-900 transition-colors shadow-sm uppercase tracking-widest">
+                                            Verify
+                                        </button>
+                                    </div>
+                                    <% } else if (item.status==='Cancelled' && item.cancelReason) { %>
+                                        <div class="flex flex-col items-center gap-1.5">
+                                            <button
+                                                onclick="showCancelReason('<%= item.productName %>', '<%= item.cancelReason %>')"
+                                                class="px-4 py-1.5 bg-[#4c0519] text-[#fff1f2] text-[9px] font-bold uppercase tracking-widest hover:bg-[#881337] transition-all shadow-sm">
+                                                View Reason
+                                            </button>
+                                        </div>
+                                        <% } else { %>
+                                            <div
+                                                class="flex flex-col items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="3" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span
+                                                    class="text-[8px] font-bold text-emerald-600 uppercase tracking-tighter mt-0.5">Processed</span>
+                                            </div>
+                                            <% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+            </tbody>
+        </table>
     </div>
 
     <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
@@ -356,257 +395,273 @@
             </button>
 
             <% } %>
-</div>
+    </div>
 
-<!-- Cancel Order Modal -->
-<div id="cancelOrderModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <!-- Cancel Order Modal -->
+    <div id="cancelOrderModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
 
-    <div class="bg-white w-full max-w-sm rounded-xl shadow-lg p-6">
+        <div class="bg-white w-full max-w-sm rounded-xl shadow-lg p-6">
 
-        <h3 class="text-lg font-bold text-stone-800 mb-2">
-            Cancel Order
-        </h3>
+            <h3 class="text-lg font-bold text-stone-800 mb-2">
+                Cancel Order
+            </h3>
 
-        <p class="text-sm text-stone-600 mb-6">
-            Are you sure you want to cancel this order? This action cannot be undone.
-        </p>
+            <p class="text-sm text-stone-600 mb-6">
+                Are you sure you want to cancel this order? This action cannot be undone.
+            </p>
 
-        <div class="flex justify-end gap-3">
-            <button onclick="closeCancelModal()" class="px-4 py-2 text-sm font-semibold rounded-md
+            <div class="flex justify-end gap-3">
+                <button onclick="closeCancelModal()" class="px-4 py-2 text-sm font-semibold rounded-md
                bg-stone-200 text-stone-700 hover:bg-stone-300 transition">
-                No
-            </button>
+                    No
+                </button>
 
-            <button onclick="confirmCancelOrder()" class="px-4 py-2 text-sm font-semibold rounded-md
+                <button onclick="confirmCancelOrder()" class="px-4 py-2 text-sm font-semibold rounded-md
                bg-red-500 text-white hover:bg-red-600 transition">
-                Yes, Cancel
-            </button>
-        </div>
-
-    </div>
-</div>
-
-<!-- Status change Modal -->
-<div id="statusModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div
-        class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 border border-stone-200">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-black text-stone-800 tracking-tight">Update Status</h3>
-            <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 transition-colors">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <form id="statusForm">
-            <input type="hidden" id="modalOrderId">
-            <div class="space-y-4">
-                <label class="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-1">Choose New
-                    Status</label>
-                <select id="statusSelect"
-                    class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-[#C8A97E] focus:outline-none appearance-none cursor-pointer">
-
-                    <option value="Pending">Pending</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                </select>
-                <p class="text-[10px] text-stone-400 font-medium px-1">Note: Changing to 'Delivered' will finalize the
-                    order process.</p>
-            </div>
-
-            <div class="mt-8 flex gap-3">
-                <button type="button" onclick="closeModal()"
-                    class="flex-1 px-4 py-3 bg-stone-100 text-stone-600 text-xs font-bold rounded-xl hover:bg-stone-200 transition-all uppercase tracking-widest">
-                    Cancel
-                </button>
-                <button type="submit"
-                    class="flex-1 px-4 py-3 bg-[#C8A97E] text-white text-xs font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg shadow-stone-200 uppercase tracking-widest">
-                    Save Changes
+                    Yes, Cancel
                 </button>
             </div>
-        </form>
-    </div>
-</div>
 
-<!-- return verify modal -->
-
-<div id="verifyModal" class="fixed inset-0 bg-stone-900/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
-    <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200 transform transition-all">
-        
-        <div class="bg-stone-800 px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="p-1.5 bg-orange-500 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 class="font-bold text-white text-sm tracking-widest uppercase">Verify Return Request</h3>
-            </div>
-            <button onclick="closeModal()" class="text-stone-400 hover:text-white transition-colors text-2xl">&times;</button>
-        </div>
-        
-        <div class="p-8 space-y-6">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1">
-                    <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Product</p>
-                    <p id="modalProduct" class="text-sm font-bold text-stone-800 truncate"></p>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Reason</p>
-                    <p id="modalReason" class="text-sm font-bold text-orange-600"></p>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">User Explanation</p>
-                <div class="bg-stone-50 border border-stone-100 rounded-xl p-4">
-                    <p id="modalComments" class="text-sm text-stone-600 leading-relaxed italic"></p>
-                </div>
-            </div>
-
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-3">
-                <p class="text-[11px] text-blue-700 leading-tight">
-                    <strong>Note:</strong> Approving this will automatically refund the item amount to the user's wallet and update stock.
-                </p>
-            </div>
-        </div>
-
-        <div class="px-8 py-6 bg-stone-50 flex gap-3">
-            <button onclick="rejectReturn()" 
-                class="flex-1 px-4 py-3 border border-stone-300 text-stone-600 text-[11px] font-bold rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all uppercase tracking-widest">
-                Reject
-            </button>
-            <button onclick="approveReturn()" 
-                class="flex-2 px-8 py-3 bg-stone-800 text-white text-[11px] font-bold rounded-xl hover:bg-black shadow-lg shadow-stone-200 transition-all uppercase tracking-widest">
-                Approve & Refund
-            </button>
         </div>
     </div>
-</div>
 
-<script>
-    const notyf = new Notyf({ duration: 2000, position: { x: "right", y: "top" } });
+    <!-- Status change Modal -->
+    <div id="statusModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-95 border border-stone-200">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-stone-800 tracking-tight">Update Status</h3>
+                <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
 
-    let cancelOrderId = null;
-    let currentOrderId = '';
-    let currentReturnId = ''; 
+            <form id="statusForm">
+                <input type="hidden" id="modalOrderId">
+                <div class="space-y-4">
+                    <label class="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-1">Choose New
+                        Status</label>
+                    <select id="statusSelect"
+                        class="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-stone-700 focus:ring-2 focus:ring-[#C8A97E] focus:outline-none appearance-none cursor-pointer">
 
-    // --- CANCEL ORDER MODAL ---
-    function cancelOrder(orderId) {
-        cancelOrderId = orderId;
-        const modal = document.getElementById("cancelOrderModal");
-        modal.classList.replace("hidden", "flex");
-    }
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                    </select>
+                    <p class="text-[10px] text-stone-400 font-medium px-1">Note: Changing to 'Delivered' will finalize
+                        the
+                        order process.</p>
+                </div>
 
-    function closeCancelModal() {
-        const modal = document.getElementById("cancelOrderModal");
-        modal.classList.replace("flex", "hidden");
-        cancelOrderId = null;
-    }
+                <div class="mt-8 flex gap-3">
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 px-4 py-3 bg-stone-100 text-stone-600 text-xs font-bold rounded-xl hover:bg-stone-200 transition-all uppercase tracking-widest">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="flex-1 px-4 py-3 bg-[#C8A97E] text-white text-xs font-bold rounded-xl hover:bg-stone-800 transition-all shadow-lg shadow-stone-200 uppercase tracking-widest">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    async function confirmCancelOrder() {
-        if (!cancelOrderId) return;
-        try {
-            const response = await axios.patch(`/admin/order-cancel/${cancelOrderId}`);
-            if (response.data.success) {
-                notyf.success(response.data.message);
-                closeCancelModal();
-                setTimeout(() => location.reload(), 1200);
-            }
-        } catch (error) {
-            notyf.error(error.response?.data?.message || "Failed to cancel order");
+    <!-- return verify modal -->
+
+    <div id="verifyModal"
+        class="fixed inset-0 bg-stone-900/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+        <div
+            class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-stone-200 transform transition-all">
+
+            <div class="bg-stone-800 px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 bg-orange-500 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-white text-sm tracking-widest uppercase">Verify Return Request</h3>
+                </div>
+                <button onclick="closeModal()"
+                    class="text-stone-400 hover:text-white transition-colors text-2xl">&times;</button>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Product</p>
+                        <p id="modalProduct" class="text-sm font-bold text-stone-800 truncate"></p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Reason</p>
+                        <p id="modalReason" class="text-sm font-bold text-orange-600"></p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">User Explanation</p>
+                    <div class="bg-stone-50 border border-stone-100 rounded-xl p-4">
+                        <p id="modalComments" class="text-sm text-stone-600 leading-relaxed italic"></p>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-3">
+                    <p class="text-[11px] text-blue-700 leading-tight">
+                        <strong>Note:</strong> Approving this will automatically refund the item amount to the user's
+                        wallet and update stock.
+                    </p>
+                </div>
+            </div>
+
+            <div class="px-8 py-6 bg-stone-50 flex gap-3">
+                <button onclick="rejectReturn()"
+                    class="flex-1 px-4 py-3 border border-stone-300 text-stone-600 text-[11px] font-bold rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all uppercase tracking-widest">
+                    Reject
+                </button>
+                <button onclick="approveReturn()"
+                    class="flex-2 px-8 py-3 bg-stone-800 text-white text-[11px] font-bold rounded-xl hover:bg-black shadow-lg shadow-stone-200 transition-all uppercase tracking-widest">
+                    Approve & Refund
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const notyf = new Notyf({ duration: 2000, position: { x: "right", y: "top" } });
+
+        let cancelOrderId = null;
+        let currentOrderId = '';
+        let currentReturnId = '';
+
+        // --- CANCEL ORDER MODAL ---
+        function cancelOrder(orderId) {
+            cancelOrderId = orderId;
+            const modal = document.getElementById("cancelOrderModal");
+            modal.classList.replace("hidden", "flex");
         }
-    }
 
-    // --- STATUS UPDATE MODAL ---
-    function updateStatusModal(orderId) {
-        document.getElementById("modalOrderId").value = orderId;
-        const modal = document.getElementById("statusModal");
-        modal.classList.replace("hidden", "flex");
-    }
-
-    function closeStatusModal() {
-        const modal = document.getElementById("statusModal");
-        modal.classList.replace("flex", "hidden");
-    }
-
-    async function submitStatusUpdate(event) {
-        event.preventDefault();
-        const orderId = document.getElementById("modalOrderId").value;
-        const newStatus = document.getElementById("statusSelect").value;
-
-        try {
-            const response = await axios.patch(`/admin/orders/update-status/${orderId}`, { status: newStatus });
-            if (response.data.success) {
-                notyf.success(response.data.message);
-                closeStatusModal();
-                setTimeout(() => location.reload(), 1000);
-            }
-        } catch (error) {
-            notyf.error(error.response?.data?.message || "Failed to update order status");
+        function closeCancelModal() {
+            const modal = document.getElementById("cancelOrderModal");
+            modal.classList.replace("flex", "hidden");
+            cancelOrderId = null;
         }
-    }
-    document.getElementById("statusForm").addEventListener("submit", submitStatusUpdate);
 
-    function openVerifyModal(orderId, returnId, product, reason, comments) {
-        currentOrderId = orderId;
-        currentReturnId = returnId; 
-        
-        document.getElementById('modalProduct').innerText = product;
-        document.getElementById('modalReason').innerText = reason;
-        document.getElementById('modalComments').innerText = comments || "No specific comments provided by user.";
-        
-        const modal = document.getElementById('verifyModal');
-        modal.classList.replace("hidden", "flex");
-        document.body.style.overflow = 'hidden'; 
-    }
-
-    function closeVerifyModal() {
-        const modal = document.getElementById('verifyModal');
-        modal.classList.replace("flex", "hidden");
-        document.body.style.overflow = 'auto'; 
-    }
-
-    function closeModal() {
-        closeStatusModal();
-        closeVerifyModal();
-        closeCancelModal();
-    }
-
-    window.onclick = function(event) {
-        const vModal = document.getElementById('verifyModal');
-        const sModal = document.getElementById('statusModal');
-        const cModal = document.getElementById('cancelOrderModal');
-        
-        if (event.target == vModal) closeVerifyModal();
-        if (event.target == sModal) closeStatusModal();
-        if (event.target == cModal) closeCancelModal();
-    }
-
-    async function approveReturn() {
-        try {
-            if (!currentOrderId || !currentReturnId) return notyf.error("Missing IDs");
-            const response = await axios.patch('/admin/orders/return-approve', {orderId: currentOrderId, returnId: currentReturnId });
-            if (response.data.success) {
-                notyf.success(response.data.message || 'Return Approved');
-                setTimeout(() => window.location.reload(), 1000);
+        async function confirmCancelOrder() {
+            if (!cancelOrderId) return;
+            try {
+                const response = await axios.patch(`/admin/order-cancel/${cancelOrderId}`);
+                if (response.data.success) {
+                    notyf.success(response.data.message);
+                    closeCancelModal();
+                    setTimeout(() => location.reload(), 1200);
+                }
+            } catch (error) {
+                notyf.error(error.response?.data?.message || "Failed to cancel order");
             }
-        } catch (error) {
-            notyf.error(error.response?.data?.message || "Something went wrong");
         }
-    }
 
-    async function rejectReturn() {
-        try {
-            if (!currentOrderId || !currentReturnId) return notyf.error("Missing IDs");
-            const result = await axios.patch('/admin/orders/return-reject', {orderId: currentOrderId, returnId: currentReturnId });
-            if (result.data.success) {
-                notyf.error(result.data.message); 
-                setTimeout(() => location.reload(), 1500);
-            }
-        } catch (error) {
-            notyf.error(error.response?.data?.message || "Something went wrong");
+        // --- STATUS UPDATE MODAL ---
+        function updateStatusModal(orderId) {
+            document.getElementById("modalOrderId").value = orderId;
+            const modal = document.getElementById("statusModal");
+            modal.classList.replace("hidden", "flex");
         }
-    }
-</script>
+
+        function closeStatusModal() {
+            const modal = document.getElementById("statusModal");
+            modal.classList.replace("flex", "hidden");
+        }
+
+        async function submitStatusUpdate(event) {
+            event.preventDefault();
+            const orderId = document.getElementById("modalOrderId").value;
+            const newStatus = document.getElementById("statusSelect").value;
+
+            try {
+                const response = await axios.patch(`/admin/orders/update-status/${orderId}`, { status: newStatus });
+                if (response.data.success) {
+                    notyf.success(response.data.message);
+                    closeStatusModal();
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } catch (error) {
+                notyf.error(error.response?.data?.message || "Failed to update order status");
+            }
+        }
+        document.getElementById("statusForm").addEventListener("submit", submitStatusUpdate);
+
+        function openVerifyModal(orderId, returnId, product, reason, comments) {
+            currentOrderId = orderId;
+            currentReturnId = returnId;
+
+            document.getElementById('modalProduct').innerText = product;
+            document.getElementById('modalReason').innerText = reason;
+            document.getElementById('modalComments').innerText = comments || "No specific comments provided by user.";
+
+            const modal = document.getElementById('verifyModal');
+            modal.classList.replace("hidden", "flex");
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVerifyModal() {
+            const modal = document.getElementById('verifyModal');
+            modal.classList.replace("flex", "hidden");
+            document.body.style.overflow = 'auto';
+        }
+
+        function closeModal() {
+            closeStatusModal();
+            closeVerifyModal();
+            closeCancelModal();
+        }
+
+        window.onclick = function (event) {
+            const vModal = document.getElementById('verifyModal');
+            const sModal = document.getElementById('statusModal');
+            const cModal = document.getElementById('cancelOrderModal');
+
+            if (event.target == vModal) closeVerifyModal();
+            if (event.target == sModal) closeStatusModal();
+            if (event.target == cModal) closeCancelModal();
+        }
+
+        async function approveReturn() {
+            try {
+                if (!currentOrderId || !currentReturnId) return notyf.error("Missing IDs");
+                const response = await axios.patch('/admin/orders/return-approve', { orderId: currentOrderId, returnId: currentReturnId });
+                if (response.data.success) {
+                    notyf.success(response.data.message || 'Return Approved');
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            } catch (error) {
+                notyf.error(error.response?.data?.message || "Something went wrong");
+            }
+        }
+
+        async function rejectReturn() {
+            try {
+                if (!currentOrderId || !currentReturnId) return notyf.error("Missing IDs");
+                const result = await axios.patch('/admin/orders/return-reject', { orderId: currentOrderId, returnId: currentReturnId });
+                if (result.data.success) {
+                    notyf.error(result.data.message);
+                    setTimeout(() => location.reload(), 1500);
+                }
+            } catch (error) {
+                notyf.error(error.response?.data?.message || "Something went wrong");
+            }
+        }
+        function showCancelReason(product, reason) {
+            Swal.fire({
+                title: 'Cancellation Details',
+                html: `<strong>Product:</strong> ${product}<br><br><strong>Reason:</strong> ${reason}`,
+                icon: 'info',
+                confirmButtonColor: '#44403c'
+            });
+        }
+
+    </script>
