@@ -2,13 +2,14 @@ import asyncHandler from "../../utils/asynHandler.js";
 import wishlistModel from "../../models/wishlistmodel.js";
 import CartModel from "../../models/cartmodel.js";
 import { getBestOfferForProduct } from '../../utils/offerHelper.js';
+import AppError from '../../utils/appError.js';
 
 export const toggle_wishlist = asyncHandler(async (req, res) => {
     const { variantId, productId } = req.body;
     const userId = req.session.user._id;
 
     let wishlist = await wishlistModel.findOne({ userId });
-    
+
     if (!wishlist) {
         wishlist = new wishlistModel({ userId, items: [] });
     }
@@ -20,31 +21,20 @@ export const toggle_wishlist = asyncHandler(async (req, res) => {
     if (itemIndex > -1) {
         wishlist.items.splice(itemIndex, 1);
         await wishlist.save();
-        
-        return res.status(200).json({ 
-            success: true, 
-            status: "removed", 
-            message: "Removed from wishlist" 
-        });
+
+        return res.status(200).json({ success: true, status: "removed", message: "Removed from wishlist" });
     } else {
         wishlist.items.push({ productId, variantId });
         await wishlist.save();
-        
-        return res.status(200).json({ 
-            success: true, 
-            status: "added", 
-            message: "Added to wishlist" 
-        });
+
+        return res.status(200).json({ success: true, status: "added", message: "Added to wishlist" });
     }
 });
 
 export const load_wishlist = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
     const userWishlist = await wishlistModel.findOne({ userId })
-        .populate({
-            path: "items.productId",
-            populate: { path: "subCategory_id" }
-        });
+        .populate({ path: "items.productId", populate: { path: "subCategory_id" } });
     const cartData = await CartModel.findOne({ user: userId });
 
     let processedWishlist = [];
@@ -90,7 +80,7 @@ export const removeFromWishlist = asyncHandler(async (req, res) => {
     );
 
     if (!updatedWishlist) {
-        return res.status(404).json({ success: false, message: "Wishlist not found" });
+        throw new AppError("Wishlist not found", 404);
     }
 
     res.status(200).json({ success: true, message: "Item removed from wishlist", wishlistCount: updatedWishlist.items.length });
@@ -100,7 +90,7 @@ export const clearWishlist = asyncHandler(async (req, res) => {
     const userId = req.session.user?._id;
 
     if (!userId) {
-        return res.status(401).json({ success: false, message: "Please log in" });
+        throw new AppError("Please log in to clear your wishlist", 401);
     }
     await wishlistModel.findOneAndUpdate({ userId: userId }, { $set: { items: [] } }, { new: true });
 

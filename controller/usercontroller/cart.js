@@ -1,7 +1,8 @@
 import asyncHandler from "../../utils/asynHandler.js";
 import CartModel from "../../models/cartmodel.js";
 import ProductModel from "../../models/productmodel.js";
-import { getBestOfferForProduct } from "../../utils/offerHelper.js"
+import { getBestOfferForProduct } from "../../utils/offerHelper.js";
+import AppError from '../../utils/appError.js';
 
 export const load_cart = asyncHandler(async (req, res) => {
   const userId = req.session.user?._id;
@@ -31,7 +32,7 @@ export const load_cart = asyncHandler(async (req, res) => {
         grossSubTotal += (product.price * item.quantity);
         subTotal += (finalPrice * item.quantity);
 
-        return { ...item.toObject(), offerPrice: finalPrice, rowTotal: finalPrice * item.quantity ,availableStock: currentVariant.stock};
+        return { ...item.toObject(), offerPrice: finalPrice, rowTotal: finalPrice * item.quantity, availableStock: currentVariant.stock };
       }
       return item.toObject();
     }));
@@ -67,15 +68,16 @@ export const addtocart = asyncHandler(async (req, res) => {
   const userId = req.session.user?._id;
 
   if (!userId) {
-    return res.status(401).json({ success: false, message: "Please log in to add items to your cart." });
+    throw new Error("Please log in to add items to your cart.", 401)
   }
   const hasVariantIdentifier = variantId || (size && color);
   if (!productId || !hasVariantIdentifier || !Number.isInteger(quantity) || quantity < 1) {
-    return res.status(400).json({ success: false, message: "Invalid product data or quantity" });
+    throw new AppError("Invalid product data or quantity", 400);
   }
 
-  const product = await ProductModel.findById(productId).populate('subCategory_id'); if (!product || product.isBlocked) {
-    return res.status(404).json({ success: false, message: "Product not available" });
+  const product = await ProductModel.findById(productId).populate('subCategory_id');
+  if (!product || product.isBlocked) {
+    throw new AppError("Product not available", 404);
   }
 
   let variant;
@@ -87,7 +89,7 @@ export const addtocart = asyncHandler(async (req, res) => {
   }
 
   if (!variant || variant.isBlocked) {
-    return res.status(400).json({ success: false, message: "Invalid or blocked variant" });
+    throw new AppError("Invalid or blocked variant", 400);
   }
 
   const { finalPrice } = await getBestOfferForProduct(product);
@@ -102,11 +104,11 @@ export const addtocart = asyncHandler(async (req, res) => {
   const newQty = existingQty + quantity;
 
   if (variant.stock < newQty) {
-    return res.status(409).json({ success: false, message: `Only ${variant.stock} items available. You already have ${existingQty} in cart.` });
+    throw new AppError(`Only ${variant.stock} items available. You have ${existingQty} in cart.`, 409);
   }
 
   if (newQty > 4) {
-    return res.status(409).json({ success: false, message: "maximun 4 items allowed per product" })
+    throw new AppError("Maximum 4 items allowed per product", 400);
   }
 
   let action = "added";
@@ -129,34 +131,31 @@ export const updateCartquantity = asyncHandler(async (req, res) => {
   const { variantId, quantity } = req.body;
   const userId = req.session.user?._id;
 
-  if (!userId) {
-    return res.status(401).json({ success: false, message: "Login required" });
-  }
+  if (!userId) throw new AppError("Login required", 401);
+
 
   const numQty = Number(quantity);
-  if (!Number.isInteger(numQty) || numQty < 1) {
-    return res.status(400).json({ success: false, message: "Invalid quantity" });
-  }
+  if (!Number.isInteger(numQty) || numQty < 1) return res.status(400).json({ success: false, message: "Invalid quantity" });
 
-  if (numQty > 4) {
-    return res.status(400).json({ success: false, message: "Maximum 4 items allowed per product" });
-  }
+
+  if (numQty > 4) return res.status(400).json({ success: false, message: "Maximum 4 items allowed per product" });
+
 
   const cart = await CartModel.findOne({ user: userId });
-  if (!cart) return res.status(404).json({ success: false, message: "Cart not found" });
+  if (!cart) throw new AppError("Cart not found", 404);
 
   const item = cart.items.find(i => i.variantId.toString() === variantId);
-  if (!item) return res.status(404).json({ success: false, message: "Item not in cart" });
+  if (!item) throw new AppError("Item not in cart", 404);
 
   const product = await ProductModel.findById(item.productId);
   const variant = product?.variants.id(variantId);
 
   if (!product || product.isBlocked || !variant || variant.isBlocked) {
-    return res.status(404).json({ success: false, message: "Product/Variant unavailable" });
+    throw new AppError("Product/Variant unavailable", 404)
   }
 
   if (numQty > variant.stock) {
-    return res.status(400).json({ success: false, message: `Only ${variant.stock} units available` ,actualStock:variant.stock});
+    return res.status(400).json({ success: false, message: `Only ${variant.stock} units available`, actualStock: variant.stock });
   }
 
   item.quantity = numQty;
@@ -179,12 +178,12 @@ export const deletCart = asyncHandler(async (req, res) => {
 
   const userId = req.session.user._id;
 
-  if (!userId) {
-    return res.status(401).json({ success: false, message: "loggin required" })
-  }
+  if (!userId) throw new AppError("Login required", 401);
+
   const cart = await CartModel.findOneAndUpdate({ user: userId }, { $pull: { items: { variantId: variantId } } }, { new: true })
 
-  cart.subTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0); res.status(200).json({ success: true, message: "item deleted Cart" })
+  cart.subTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  res.status(200).json({ success: true, message: "item deleted Cart" })
 
   const shipping = (cart.subTotal > 500 || cart.items.length === 0) ? 0 : 50;
 

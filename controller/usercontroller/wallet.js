@@ -26,7 +26,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
     }
 
     const totaltransactions = wallet.transactions.length;
-    const totalPages = Math.ceil(totaltransactions/limit);
+    const totalPages = Math.ceil(totaltransactions / limit);
     const paginatedTransactions = wallet.transactions.slice().reverse().slice(skip, skip + limit);
 
     const userData = await userModal.findById(userId).select("referralCode googleId");
@@ -40,7 +40,7 @@ export const load_wallet = asyncHandler(async (req, res) => {
         currentPath: '/user/wallet',
         currentPage: parseInt(page),
         totalPages,
-        payment:paginatedTransactions
+        payment: paginatedTransactions
     });
 });
 

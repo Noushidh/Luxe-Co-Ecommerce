@@ -89,6 +89,15 @@ app.use((req, res) => {
   res.redirect("/user/page-404");
 });
 
+import { globalErrorHandler } from './middleware/errorHandling.js';
+import AppError from './utils/appError.js';
+
+app.all('*', (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+app.use(globalErrorHandler);
+
 app.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
 });
