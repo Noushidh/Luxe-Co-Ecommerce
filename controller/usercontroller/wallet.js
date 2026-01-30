@@ -6,6 +6,8 @@ import walletModel from "../../models/walletmodel.js"
 import CartModel from "../../models/cartmodel.js";
 import { validateStock } from "../../utils/stockHelper.js";
 import { calculateOrderPrices, finalizeOrder } from "../../utils/orderHelper.js";
+import AppError from '../../utils/appError.js';
+import { HTTP_STATUS } from '../../utils/httpStatus.js';
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -52,23 +54,23 @@ export const walletPayment = asyncHandler(async (req, res) => {
     try {
         await validateStock(cart.items)
     } catch (error) {
-        return res.status(400).json({ success: false, message: error.message, redirect: "/user/cart" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message, redirect: "/user/cart" });
     }
     const wallet = await walletModel.findOne({ userId });
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
 
     if (!wallet) {
-        return res.status(400).json({ success: false, message: "Wallet not found" });
+        throw new AppError("Wallet not found", HTTP_STATUS.NOT_FOUND);
     }
 
     for (const item of cart.items) {
         const variant = item.productId.variants.find(v => v.size === item.size && v.color === item.color);
         if (!variant || variant.stock < item.quantity) {
-            return res.status(400).json({ success: false, message: `Stock unavailable for ${item.productId.name}` });
+            throw new AppError(`Stock unavailable for ${item.productId.name}`, HTTP_STATUS.BAD_REQUEST);
         }
     }
     if (wallet.balance < prices.finalTotal) {
-        return res.status(400).json({ success: false, message: "Insufficient wallet balance" })
+        throw new AppError("Insufficient wallet balance", HTTP_STATUS.BAD_REQUEST);
     }
 
     wallet.balance -= prices.finalTotal;
@@ -96,7 +98,7 @@ export const walletPayment = asyncHandler(async (req, res) => {
         });
 
         delete req.session.appliedCoupon;
-        res.status(200).json({ success: true, message: "Order placed successfully", orderId: savedOrder._id });
+        res.status(HTTP_STATUS.OK).json({ success: true, message: "Order placed successfully", orderId: savedOrder._id });
     } catch (error) {
         wallet.balance += prices.finalTotal;
         wallet.transactions.push({
@@ -108,7 +110,7 @@ export const walletPayment = asyncHandler(async (req, res) => {
         });
         await wallet.save();
 
-        res.status(500).json({ success: false, message: "Order failed. Money refunded to wallet" });
+        throw new AppError("Order failed. Amount refunded to wallet", HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
 })
 
@@ -136,13 +138,13 @@ export const verifyWalletPayment = asyncHandler(async (req, res) => {
     const generated_signature = hmac.digest("hex");
 
     if (generated_signature !== razorpay_signature) {
-        return res.status(400).json({ success: false, message: "Payment verification failed" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Payment verification failed" });
     }
 
     const wallet = await walletModel.findOne({ userId });
 
     if (!wallet) {
-        return res.status(404).json({ success: false, message: "Wallet not found" });
+        throw new AppError("Wallet not found", HTTP_STATUS.NOT_FOUND);
     }
 
     wallet.balance += Number(amount);

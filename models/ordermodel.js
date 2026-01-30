@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-    orderId: {
-        type: String,
-        unique: true
-    },
+    orderId: { type: String, unique: true, sparse: true},
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -18,22 +15,21 @@ const orderSchema = new mongoose.Schema({
         quantity: Number,
         size: String,
         color: String,
-        status: { 
-            type: String, 
-            enum: ["Placed", "Delivered", "Cancelled", "Return Requested", "Returned","Rejected"],
+        status: {
+            type: String,
+            enum: ["Placed", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected", "Failed"],
             default: "Placed"
         },
-        cancelReason: {type: String,trim: true},
+        cancelReason: { type: String, trim: true },
         cancelledAt: { type: Date }
     }],
-    total: {type: Number,required: true},
-    refundedAmount: {type: Number,default: 0,min: 0},
-    discount: { type: Number,default: 0},
+    total: { type: Number, required: true },
+    refundedAmount: { type: Number, default: 0, min: 0 },
+    discount: { type: Number, default: 0 },
     offerDiscount: { type: Number, default: 0 },
-    couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     status: {
         type: String,
-        enum: ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled","Return Requested","Returned","Rejected"],
+        enum: ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected", "Failed"],
         default: "Pending"
     },
     paymentMethod: {
@@ -52,18 +48,50 @@ const orderSchema = new mongoose.Schema({
         default: 0
     },
     address: {
-        name: { type: String, required: true },
-        phone: { type: String, required: true },
-        street: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        pincode: { type: String, required: true }
-    },
+        name: {
+            type: String,
+            required: function () {
+                return this.status !== "Failed";
+            }
+        },
+        phone: {
+            type: String,
+            required: function () {
+                return this.status !== "Failed";
+            }
+        },
+        street: {
+            type: String,
+            required: function () {
+                return this.status !== "Failed";
+            }
+        },
+        city: {
+            type: String,
+            required: function () {
+                return this.status !== "Failed";
+            }
+        },
+        state: {
+            type: String,
+            required: function () {
+                return this.status !== "Failed";
+            }
+        },
+        pincode: {
+            type: String,
+            required: function () {
+                return this.status !== "Failed";
+            }
+        }
+    }
+    ,
     couponId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Coupon',
         default: null
     },
+    razorpayOrderId: { type: String, unique: true, sparse: true },
     deliveryDate: {
         type: Date
     }

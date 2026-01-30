@@ -3,6 +3,7 @@ import ProductModel from "../../models/productmodel.js";
 import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import fs from "fs/promises";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_Products = asyncHandler(async (req, res) => {
   let { page = 1, search = "", status = "", stock = "", category = "", alpha = "" } = req.query;
@@ -70,22 +71,27 @@ export const load_edit_product = asyncHandler(async (req, res) => {
 
 export const addProduct = asyncHandler(async (req, res) => {
   const { name, description, price, discount, subCategory_id, material, highlights, specifications } = req.body;
-
+  if(!name.trim()||!description.trim()||!material.trim()||!highlights.trim()||!specifications.trim()){
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({success:false,message:"Validation Error: Datas are required and cannot be empty spaces."})
+  }
   await ProductModel.create({
     name, description, price, discount, subCategory_id, material,
     highlights: highlights ? highlights.split(",").map(h => h.trim()).filter(Boolean) : [],
     specifications,
   });
 
-  res.status(200).json({ success: true, message: "Product added successfully!", redirect: "/admin/products" });
+   res.status(HTTP_STATUS.OK).json({ success: true, message: "Product added successfully!", redirect: "/admin/products" });
 });
 
 export const editProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, description, price, discount, subCategory_id, material, highlights, specifications } = req.body;
+    if(!name.trim()||!description.trim()||!material.trim()||!highlights.trim()||!specifications.trim()){
+     return res.status(HTTP_STATUS.BAD_REQUEST).json({success:false,message:"Validation Error: Datas are required and cannot be empty spaces."})
+  }
   const product = await ProductModel.findById(id);
   if (!product) {
-    return res.status(404).json({ success: false, message: "Product not found" })
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Product not found" })
   }
   await ProductModel.findByIdAndUpdate(id, { name, description, price, discount, subCategory_id, material, highlights: highlights ? highlights.split(",").map(h => h.trim()).filter(Boolean) : [], specifications }, { new: true, runValidators: true })
   return res.json({ success: true, message: "Product updated successfully", redirect: "/admin/products" })
@@ -95,7 +101,7 @@ export const blockProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const product = await ProductModel.findById(req.params.id);
   if (!product) {
-    return res.status(400).json({ success: false, message: "Product not found" })
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Product not found" })
   }
   const newStatus = !product.isBlocked;
 
@@ -120,13 +126,13 @@ export const saveVarients = asyncHandler(async (req, res) => {
   const productId = req.body.productId;
 
   if (!productId) {
-    return res.status(400).json({ success: true, message: "Product ID is missing" })
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: true, message: "Product ID is missing" })
   }
   const variantsData = JSON.parse(req.body.variants);
 
   for (const v of variantsData) {
     if (Number(v.size) <= 0 || Number(v.stock) <= 0) {
-      return res.status(400).json({ success: false, message: "Size and Stock must be greater than 0" });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Size and Stock must be greater than 0" });
     }
   }
 
@@ -154,11 +160,11 @@ export const saveVarients = asyncHandler(async (req, res) => {
 export const load_edit_variants = asyncHandler(async (req, res) => {
   const productId = req.params.id;
   if (!productId) {
-    return res.status(400).send("Product ID missing");
+    return res.status(HTTP_STATUS.BAD_REQUEST).send("Product ID missing");
   }
   const product = await ProductModel.findById(productId).lean()
   if (!product) {
-    return res.status(404).send("Product not found");
+    return res.status(HTTP_STATUS.NOT_FOUND).send("Product not found");
   }
   res.render("admin/layout", {
     title: "Edit Variants",
@@ -188,12 +194,12 @@ export const updateSingleVariants = asyncHandler(async (req, res) => {
 
   if (Number(size) < 0 || Number(stock) < 0) {
     await cleanupTempFiles()
-    return res.status(400).json({ success: false, message: "Size and stock must be positive numbers." });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Size and stock must be positive numbers." });
   }
   const product = await ProductModel.findOne({ "variants._id": variantId });
   if (!product) {
     await cleanupTempFiles()
-    return res.status(404).json({ success: false, message: "Variant not found" });
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Variant not found" });
   }
 
   const variant = product.variants.id(variantId);
@@ -220,7 +226,7 @@ export const updateSingleVariants = asyncHandler(async (req, res) => {
   const finalImages = [...oldImages, ...newImages];
 
   if (finalImages.length < 3) {
-    return res.status(400).json({ success: false, message: "Please upload at least 3 images" });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Please upload at least 3 images" });
   }
 
   await ProductModel.updateOne(
@@ -258,13 +264,13 @@ export const blockVariants = asyncHandler(async (req, res) => {
   const product = await ProductModel.findOne({ "variants._id": variantId });
 
   if (!product) {
-    return res.status(404).json({ success: false, message: "Variant not found" });
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Variant not found" });
   }
 
   const variant = product.variants.id(variantId);
 
   if (!variant) {
-    return res.status(404).json({ success: false, message: "Variant not found in product" });
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Variant not found in product" });
   }
 
   const newStatus = !variant.isBlocked;

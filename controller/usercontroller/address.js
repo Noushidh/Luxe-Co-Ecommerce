@@ -1,6 +1,8 @@
 import userModal from "../../models/usermodel.js"
 import asyncHandler from "../../utils/asynHandler.js";
 import addressModel from "../../models/addressmodel.js"
+import AppError from "../../utils/appError.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_address = asyncHandler(async (req, res) => {
     const from = req.query.from || "address";
@@ -29,18 +31,18 @@ export const addAddress = asyncHandler(async (req, res) => {
     const phoneRegex = /^(?:\+91|0)?[6-9]\d{9}$/;
 
     if (!phone || !phoneRegex.test(phone)) {
-        return res.status(400).json({ success: false, message: "Invalid phone number" });
+    throw new AppError("Invalid phone number", HTTP_STATUS.BAD_REQUEST);
     }
 
     const normalizedPhone = phone.replace(/^\+91|^0/, "");
 
     if (!name || !street || !city || !state || !pincode) {
-        return res.status(400).json({ success: false, message: "All required fields must be filled" });
+    throw new AppError("All required fields must be filled", HTTP_STATUS.BAD_REQUEST);
     }
 
     const pincodeRegex = /^\d{6}$/;
     if (!pincodeRegex.test(pincode)) {
-        return res.status(400).json({ success: false, message: "Pincode must be exactly 6 digits" });
+    throw new AppError("Pincode must be exactly 6 digits", HTTP_STATUS.BAD_REQUEST);
     }
 
     const userId = req.session.user._id;
@@ -50,7 +52,7 @@ export const addAddress = asyncHandler(async (req, res) => {
     await addressModel.create(newAddress);
 
 
-    return res.status(201).json({ success: true, message: "Address added successfully", redirectTo: from === "checkout" ? "/user/checkout" : null });
+    return res.status(HTTP_STATUS.CREATED).json({ success: true, message: "Address added successfully", redirectTo: from === "checkout" ? "/user/checkout" : null });
 })
 
 export const editAddress = asyncHandler(async (req, res) => {
@@ -59,18 +61,18 @@ export const editAddress = asyncHandler(async (req, res) => {
     const phoneRegex = /^(?:\+91|0)?[6-9]\d{9}$/;
 
     if (!phone || !phoneRegex.test(phone)) {
-        return res.status(400).json({ success: false, message: "Invalid phone number" });
+    throw new AppError("Invalid phone number", HTTP_STATUS.BAD_REQUEST);
     }
 
     const normalizedPhone = phone.replace(/^\+91|^0/, "");
 
     if (!name || !street || !city || !state || !pincode) {
-        return res.status(400).json({ success: false, message: "All required fields must be filled" });
+    throw new AppError("All required fields must be filled", HTTP_STATUS.BAD_REQUEST);
     }
 
     const pincodeRegex = /^\d{6}$/;
     if (!pincodeRegex.test(pincode)) {
-        return res.status(400).json({ success: false, message: "Pincode must be exactly 6 digits" });
+    throw new AppError("Pincode must be exactly 6 digits", HTTP_STATUS.BAD_REQUEST);
     }
 
     const userId = req.session.user._id;
@@ -86,7 +88,7 @@ export const editAddress = asyncHandler(async (req, res) => {
         redirectTo ="/user/orders";
     }
 
-    return res.status(200).json({ success: true, message: "Address updated successfully", redirectTo: redirectTo })
+    return res.status(HTTP_STATUS.OK).json({ success: true, message: "Address updated successfully", redirectTo: redirectTo })
 })
 
 //update default address
@@ -95,7 +97,7 @@ export const setDefaultAddress = asyncHandler(async (req, res) => {
     const { addressId } = req.params;
     await addressModel.updateMany({ userId }, { $set: { isDefault: false } });
     await addressModel.findByIdAndUpdate(addressId, { isDefault: true })
-    return res.status(200).json({ success: true })
+    return res.status(HTTP_STATUS.OK).json({ success: true })
 })
 
 export const deleteAddress = asyncHandler(async (req, res) => {
@@ -104,7 +106,7 @@ export const deleteAddress = asyncHandler(async (req, res) => {
 
     await addressModel.findOneAndDelete({ _id: id, userId: userId })
 
-    return res.status(200).json({ success: true, message: "Address deleted successfully." })
+    return res.status(HTTP_STATUS.OK).json({ success: true, message: "Address deleted successfully." })
 })
 
 

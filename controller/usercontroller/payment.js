@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { finalizeOrder } from "../../utils/orderHelper.js"
 import { validateStock } from "../../utils/stockHelper.js";
 import { calculateOrderPrices } from "../../utils/orderHelper.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_payment = asyncHandler(async (req, res) => {
     const { addressId } = req.query;
@@ -27,7 +28,7 @@ export const load_payment = asyncHandler(async (req, res) => {
     try {
         await validateStock(cart.items)
     } catch (error) {
-        return res.status(400).json({ success: false, message: error.message });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message });
     }
 
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
@@ -51,24 +52,24 @@ export const cashOnDeliveryChecking = asyncHandler(async (req, res) => {
     const { address } = req.body;
 
     if (!address) {
-        return res.status(400).json({ success: false, message: "Please select a shipping address" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Please select a shipping address" });
     }
 
     const cart = await CartModel.findOne({ user: userId }).populate({ path: 'items.productId', populate: { path: 'subCategory_id' } });
     if (!cart || cart.items.length === 0) {
-        return res.status(400).json({ success: false, message: "Cart is empty" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Cart is empty" });
     }
 
     try {
         validateStock(cart.items);
     } catch (error) {
-        return res.status(400).json({ success: false, message: error.message, redirect: "/user/cart" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: error.message, redirect: "/user/cart" });
     }
 
     const prices = await calculateOrderPrices(cart, req.session.appliedCoupon);
 
     if (prices.finalTotal > 1000) {
-        return res.status(400).json({ success: false, message: "Cash on Delivery is only available for orders below Rs 1000. Please use online payment." });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Cash on Delivery is only available for orders below Rs 1000. Please use online payment." });
     }
 
     const appliedCoupon = req.session.appliedCoupon || { discountValue: 0, _id: null };
@@ -140,11 +141,11 @@ export const orderCancel = asyncHandler(async (req, res) => {
     const order = await OrderModel.findOne({ _id: id, userId });
 
     if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found" });
     }
 
     if (["Shipped", "Delivered", "Cancelled"].includes(order.status)) {
-        return res.status(400).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
     }
 
     for (const item of order.items) {
@@ -187,7 +188,6 @@ export const orderCancel = asyncHandler(async (req, res) => {
     order.items.forEach(item => item.status = "Cancelled");
     await order.save();
 
-    res.status(200).json({ success: true, message: "Order cancelled and and refund processed if applicable" });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Order cancelled and and refund processed if applicable" });
 });
-
 

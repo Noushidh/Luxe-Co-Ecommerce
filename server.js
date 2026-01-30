@@ -74,6 +74,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  res.locals.razorpayKey = process.env.RAZORPAY_KEY_ID;
+  next();
+});
+
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);
 
@@ -89,12 +94,15 @@ app.use((req, res) => {
   res.redirect("/user/page-404");
 });
 
-import { globalErrorHandler } from './middleware/errorHandling.js';
-import AppError from './utils/appError.js';
-
 app.all('*', (req, res, next) => {
+  const url = req.originalUrl || req.url || "";
+    if (url.startsWith("/admin")) {
+    return res.redirect("/admin/login");
+  }
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
+import { globalErrorHandler } from './middleware/errorHandling.js';
+import AppError from './utils/appError.js';
 
 app.use(globalErrorHandler);
 

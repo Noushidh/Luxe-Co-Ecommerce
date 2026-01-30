@@ -193,7 +193,7 @@
                             <td class="px-6 py-4">
                                 <div class="max-w-[220px]">
                                     <% if (item.status==='Cancelled' && item.cancelReason) { %>
-
+                                           
                                         <% } else if (item.status==='Return Requested' && itemReturn) { %>
                                             <div class="flex flex-col gap-0.5 border-l-2 border-orange-300 pl-3">
                                                 <span
@@ -234,8 +234,7 @@
                             </td>
 
                             <td class="px-6 py-4 text-center">
-                                <% if (item.status==='Return Requested' && itemReturn && itemReturn.status==='Pending' )
-                                    { %>
+                                <% if (item.status==='Return Requested' && itemReturn && itemReturn.status==='Pending' ) { %>
                                     <div class="flex flex-col items-center gap-1.5">
                                         <div class="flex items-center gap-1">
                                             <span
@@ -243,7 +242,7 @@
                                             <span class="text-[8px] font-bold text-orange-600 uppercase">Review</span>
                                         </div>
                                         <button
-                                            onclick="openVerifyModal('<%= order._id %>', '<%= itemReturn._id %>', '<%= item.productName %>', '<%= itemReturn.reason %>', '<%= itemReturn.comments %>')"
+                                            onclick="openVerifyModal('<%= order._id %>', '<%= itemReturn._id %>', `<%= item.productName %>`, '<%= itemReturn.reason %>', '<%= itemReturn.comments %>')"
                                             class="px-4 py-1.5 bg-orange-500 text-white text-[9px] font-black rounded hover:bg-stone-900 transition-colors shadow-sm uppercase tracking-widest">
                                             Verify
                                         </button>
@@ -251,7 +250,7 @@
                                     <% } else if (item.status==='Cancelled' && item.cancelReason) { %>
                                         <div class="flex flex-col items-center gap-1.5">
                                             <button
-                                                onclick="showCancelReason('<%= item.productName %>', '<%= item.cancelReason %>')"
+                                                onclick="showCancelReason(`<%= item.productName %>`, '<%= item.cancelReason %>')"
                                                 class="px-4 py-1.5 bg-[#4c0519] text-[#fff1f2] text-[9px] font-bold uppercase tracking-widest hover:bg-[#881337] transition-all shadow-sm">
                                                 View Reason
                                             </button>
@@ -389,8 +388,7 @@
 
 
         <% if(order.status !=='Cancelled' && order.status !=='Delivered' ) { %>
-            <button onclick="cancelOrder('<%= order._id %>')" class="px-6 py-2 bg-red-500 text-white font-bold rounded-md text-sm
-         hover:bg-red-600 transition-colors">
+            <button onclick="cancelOrder('<%= order._id %>')" class="px-6 py-2 bg-red-500 text-white font-bold rounded-md text-sm hover:bg-red-600 transition-colors">
                 Cancel Order
             </button>
 
@@ -487,7 +485,7 @@
                     </div>
                     <h3 class="font-bold text-white text-sm tracking-widest uppercase">Verify Return Request</h3>
                 </div>
-                <button onclick="closeModal()"
+                <button onclick="closeVerifyModal()"
                     class="text-stone-400 hover:text-white transition-colors text-2xl">&times;</button>
             </div>
 
@@ -547,7 +545,9 @@
 
         function closeCancelModal() {
             const modal = document.getElementById("cancelOrderModal");
-            modal.classList.replace("flex", "hidden");
+           modal.classList.remove("hidden");
+           modal.classList.add("flex");
+
             cancelOrderId = null;
         }
 
@@ -610,7 +610,8 @@
 
         function closeVerifyModal() {
             const modal = document.getElementById('verifyModal');
-            modal.classList.replace("flex", "hidden");
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
             document.body.style.overflow = 'auto';
         }
 

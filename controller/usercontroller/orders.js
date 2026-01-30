@@ -3,7 +3,8 @@ import orderModel from "../../models/ordermodel.js"
 import addressModel from "../../models/addressmodel.js";
 import returnModel from "../../models/returnmodel.js"
 import productModel from "../../models/productmodel.js";
-import walletModel from "../../models/walletmodel.js"
+import walletModel from "../../models/walletmodel.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_orders = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -60,7 +61,7 @@ export const load_returnOrder = asyncHandler(async (req, res) => {
     const order = await orderModel.findOne({ _id: id, userId }).populate('items.productId');
     const addresses = await addressModel.find({ userId: userId });
 
-    if (!order) return res.status(404).send("Order not found");
+    if (!order) return res.status(HTTP_STATUS.NOT_FOUND).send("Order not found");
 
     const itemToReturn = order.items.find(item => {
         const idFromItem = item.productId?._id?.toString() ||
@@ -113,7 +114,7 @@ export const returnOrder_details = asyncHandler(async (req, res) => {
     await orderModel.updateOne({ _id: orderId, "items._id": itemId },
         { $set: { "items.$.status": "Return Requested", "status": "Return Requested" } });
 
-    return res.status(200).json({ success: true, message: "Return request submitted" });
+    return res.status(HTTP_STATUS.OK).json({ success: true, message: "Return request submitted" });
 });
 
 
@@ -121,14 +122,14 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
     const { orderId, itemId , reason} = req.body;
     
     const order = await orderModel.findById(orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order) return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found" });
 
     const item = order.items.id(itemId);
-    if (!item) return res.status(404).json({ success: false, message: "Item not found in order" });
+    if (!item) return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Item not found in order" });
 
     const restrictedStatus = ["Shipped", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected"];
     if (restrictedStatus.includes(item.status)) {
-        return res.status(400).json({ success: false, message: "This item cannot be cancelled at the current stage." });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "This item cannot be cancelled at the current stage." });
     }    
 
     const totalOriginalPrice = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
@@ -164,7 +165,7 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
             },{ upsert: true, new: true } );
     }
 
-    order.total -= refundAmount;
+    // order.total -= refundAmount;
 
     const allCancelled = order.items.every(i => i.status === 'Cancelled');
     if (allCancelled) {
@@ -172,5 +173,5 @@ export const cancel_individualItem = asyncHandler(async (req, res) => {
         if (order.paymentStatus === 'Paid') order.paymentStatus = 'Refunded';
     }
     await order.save();
-    res.status(200).json({ success: true, message: `Item cancelled. ₹${refundAmount} has been credited to your wallet.`});
+    res.status(HTTP_STATUS.OK).json({ success: true, message: `Item cancelled. ₹${refundAmount} has been credited to your wallet.`});
 });

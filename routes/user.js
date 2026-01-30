@@ -104,6 +104,7 @@ router.post('/order/razorpay', userAuth.isAuthenticated, Razorpay.razorpayPaymen
 router.post('/order/verify-razorpay', userAuth.isAuthenticated, Razorpay.verifyRazorpayPayment)
 router.get('/payment-failed', userAuth.isAuthenticated, Razorpay.load_paymentFailed);
 router.patch('/order-cancelled/:id', Payment.orderCancel)
+router.post('/order/retry-payment/:id',userAuth.isAuthenticated,Razorpay.RetryPayment)
 
 //Orders
 router.get('/orders',userAuth.isAuthenticated, Orders.load_orders);

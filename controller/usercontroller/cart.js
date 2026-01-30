@@ -3,6 +3,7 @@ import CartModel from "../../models/cartmodel.js";
 import ProductModel from "../../models/productmodel.js";
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 import AppError from '../../utils/appError.js';
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_cart = asyncHandler(async (req, res) => {
   const userId = req.session.user?._id;
@@ -72,12 +73,12 @@ export const addtocart = asyncHandler(async (req, res) => {
   }
   const hasVariantIdentifier = variantId || (size && color);
   if (!productId || !hasVariantIdentifier || !Number.isInteger(quantity) || quantity < 1) {
-    throw new AppError("Invalid product data or quantity", 400);
+    throw new AppError("Invalid product data or quantity", HTTP_STATUS.NOT_FOUND);
   }
 
   const product = await ProductModel.findById(productId).populate('subCategory_id');
   if (!product || product.isBlocked) {
-    throw new AppError("Product not available", 404);
+    throw new AppError("Product not available", HTTP_STATUS.NOT_FOUND);
   }
 
   let variant;
@@ -89,7 +90,7 @@ export const addtocart = asyncHandler(async (req, res) => {
   }
 
   if (!variant || variant.isBlocked) {
-    throw new AppError("Invalid or blocked variant", 400);
+    throw new AppError("Invalid or blocked variant", HTTP_STATUS.NOT_FOUND);
   }
 
   const { finalPrice } = await getBestOfferForProduct(product);
@@ -108,7 +109,7 @@ export const addtocart = asyncHandler(async (req, res) => {
   }
 
   if (newQty > 4) {
-    throw new AppError("Maximum 4 items allowed per product", 400);
+    throw new AppError("Maximum 4 items allowed per product", HTTP_STATUS.NOT_FOUND);
   }
 
   let action = "added";
@@ -123,7 +124,7 @@ export const addtocart = asyncHandler(async (req, res) => {
 
   await cart.save();
 
-  return res.status(200).json({ success: true, action, message: action === "added" ? "Product added to cart" : "Product quantity updated in cart", cartCount: cart.items.length });
+  return res.status(HTTP_STATUS.OK).json({ success: true, action, message: action === "added" ? "Product added to cart" : "Product quantity updated in cart", cartCount: cart.items.length });
 });
 
 
@@ -135,27 +136,27 @@ export const updateCartquantity = asyncHandler(async (req, res) => {
 
 
   const numQty = Number(quantity);
-  if (!Number.isInteger(numQty) || numQty < 1) return res.status(400).json({ success: false, message: "Invalid quantity" });
+  if (!Number.isInteger(numQty) || numQty < 1) return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Invalid quantity" });
 
 
-  if (numQty > 4) return res.status(400).json({ success: false, message: "Maximum 4 items allowed per product" });
+  if (numQty > 4) return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Maximum 4 items allowed per product" });
 
 
   const cart = await CartModel.findOne({ user: userId });
-  if (!cart) throw new AppError("Cart not found", 404);
+  if (!cart) throw new AppError("Cart not found", HTTP_STATUS.NOT_FOUND);
 
   const item = cart.items.find(i => i.variantId.toString() === variantId);
-  if (!item) throw new AppError("Item not in cart", 404);
+  if (!item) throw new AppError("Item not in cart", HTTP_STATUS.NOT_FOUND);
 
   const product = await ProductModel.findById(item.productId);
   const variant = product?.variants.id(variantId);
 
   if (!product || product.isBlocked || !variant || variant.isBlocked) {
-    throw new AppError("Product/Variant unavailable", 404)
+    throw new AppError("Product/Variant unavailable", HTTP_STATUS.NOT_FOUND)
   }
 
   if (numQty > variant.stock) {
-    return res.status(400).json({ success: false, message: `Only ${variant.stock} units available`, actualStock: variant.stock });
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: `Only ${variant.stock} units available`, actualStock: variant.stock });
   }
 
   item.quantity = numQty;
@@ -183,7 +184,7 @@ export const deletCart = asyncHandler(async (req, res) => {
   const cart = await CartModel.findOneAndUpdate({ user: userId }, { $pull: { items: { variantId: variantId } } }, { new: true })
 
   cart.subTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  res.status(200).json({ success: true, message: "item deleted Cart" })
+  res.status(HTTP_STATUS.OK).json({ success: true, message: "item deleted Cart" })
 
   const shipping = (cart.subTotal > 500 || cart.items.length === 0) ? 0 : 50;
 
@@ -191,5 +192,5 @@ export const deletCart = asyncHandler(async (req, res) => {
 
   await cart.save();
 
-  res.status(200).json({ success: true, message: "Item removed from cart", subTotal: cart.subTotal, shipping, total, cartCount: cart.items.length });
+  res.status(HTTP_STATUS.OK).json({ success: true, message: "Item removed from cart", subTotal: cart.subTotal, shipping, total, cartCount: cart.items.length });
 })

@@ -5,6 +5,7 @@ import { generateOtp } from "../../utils/otp.js";
 import { generateReferralCode } from "../../utils/referal.js"
 import asyncHandler from "../../utils/asynHandler.js";
 import walletModel from "../../models/walletmodel.js"
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 const saltround = 10;
 
 export const loadlogin = (req, res) => {
@@ -41,7 +42,7 @@ export const login = asyncHandler(async (req, res, next) => {
 
     if (user.isBlocked) {
         req.flash('error', 'Your account is blocked');
-        res.status(403);
+        res.status(HTTP_STATUS.FORBIDDEN);
         return res.redirect('/user/login');
     }
 
@@ -124,7 +125,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
     }
 
     if (String(otp) !== String(storedOtp)) {
-        return res.status(400).json({ success: false, message: "Invalid OTP , please try again" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Invalid OTP , please try again" });
     }
     // Forgot password flow
     if (req.session.forgotEmail && !req.session.userData) {
@@ -199,7 +200,7 @@ export const Verifyotp = asyncHandler(async (req, res) => {
         return res.json({ success: true, redirect: "/user/login" });
     }
 
-    return res.status(400).json({ success: false, message: "Invalid OTP, please try again" });
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Invalid OTP, please try again" });
 });
 
 // ---------- RESEND OTP ----------
@@ -211,7 +212,7 @@ export const resendOTP = asyncHandler(async (req, res) => {
     } else if (req.session.forgotEmail) {
         email = req.session.forgotEmail;
     } else {
-        return res.status(400).json({ success: false, message: "Session expired. Please enter your email again." });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Session expired. Please enter your email again." });
     }
 
     const otp = generateOtp();
@@ -234,7 +235,7 @@ export const fogotPassword = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-        return res.status(400).json({ success: false, message: "email not found" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "email not found" });
     }
 
     const otp = generateOtp();
@@ -255,12 +256,12 @@ export const reset_Password = asyncHandler(async (req, res) => {
     const forgotEmail = req.session.forgotEmail;
 
     if (!forgotEmail) {
-        return res.status(404).json({ success: false, message: "Session expired. Please restart the process." });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Session expired. Please restart the process." });
     }
 
     const user = await User.findOne({ email: forgotEmail });
     if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "User not found" });
     }
 
     const hashedPassword = await bcrypt.hash(password, saltround);

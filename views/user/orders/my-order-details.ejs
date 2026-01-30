@@ -28,6 +28,8 @@ const formatPrice=(amount)=> {
             mainBadgeStyle = 'bg-orange-50 border-orange-200 border-l-orange-500 text-orange-600';
         } else {
             switch (order.status) { 
+                case 'Failed':
+                    mainBadgeStyle ='bg-rose-50 border-rose-200 border-l-rose-500 text-rose-600';break;
                 case 'Cancelled': 
                     mainBadgeStyle='bg-red-50 border-red-200 border-l-red-500 text-red-600'; break;
                 case 'Confirmed': 
@@ -103,10 +105,12 @@ const formatPrice=(amount)=> {
             <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 space-y-6">
                 <div>
                     <h3 class="font-semibold text-stone-700 mb-4 border-b pb-2">Order Information</h3>
+                    <%if(order.status!=='Failed'){%>
                     <div class="text-sm space-y-2">
                         <p><span class="font-semibold">Order ID:</span> #<%= order.orderId %></p>
                         <p><span class="font-semibold">Order Date:</span> <%= new Date(order.createdAt).toLocaleDateString() %></p>
                     </div>
+                    <%}%>
                 </div>
 
 <div>
@@ -144,15 +148,13 @@ const formatPrice=(amount)=> {
 
 <div class="flex flex-col gap-2">
     <% 
-        // We only care about the specific status of THIS item
+    
         const currentItemStatus = item.status; 
         
-        // Define specific item states
         const isCancelled = currentItemStatus === 'Cancelled';
         const isDelivered = currentItemStatus === 'Delivered';
         const isReturned = ['Return Requested', 'Returned', 'Rejected'].includes(currentItemStatus);
         
-        // Order-level checks only for shipping stage
         const isOrderShipped = order.status === 'Shipped';
     %>
 
@@ -188,15 +190,19 @@ const formatPrice=(amount)=> {
             </div>
         </div>
 
+        <%if(order.status !=='Failed'){%>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-xl border border-stone-200">
                 <h3 class="font-semibold text-stone-700 mb-4">Delivery Address</h3>
                 <div class="text-sm text-stone-600 space-y-1">
-                    <p><%= order.address.street %></p>
-                    <p><%= order.address.city %>, <%= order.address.state %> <%= order.address.zip %></p>
+                    <p class="font-bold text-stone-800"><%= order.address.name %></p>
+                    <p><%= order.address.addressLine %></p>
+                    <p><%= order.address.street %>,<%= order.address.street2 %></p>
+                    <p><%= order.address.city %>, <%= order.address.state %> <%= order.address.pincode %></p>
                     <p class="pt-2"><span class="font-bold">Phone:</span> <%= order.address.phone %></p>
                 </div>
             </div>
+            <%}%>
 
             <div class="bg-white p-6 rounded-xl border border-stone-200">
                 <h3 class="font-semibold text-stone-700 mb-4">Price Summary</h3>
@@ -208,15 +214,29 @@ const formatPrice=(amount)=> {
                     </div>
                 </div>
             </div>
+                        
+  <% if (order.status === 'Failed') { %>
+  <div class="flex justify-center mt-6">
+    <button
+      onclick="retryPayment('<%= order._id %>')"
+      class="px-8 py-3 bg-amber-600 text-white rounded-lg text-sm font-bold
+             hover:bg-amber-700 transition-all shadow-md">
+      Retry Payment
+    </button>
+  </div>
+<% } %>
+
         </div>
 
+        <% if(order.paymentStatus==='Paid') { %>
         <div class="flex flex-col sm:flex-row gap-4 justify-center pt-6">
            <a href="/user/orders/invoice/<%= order._id %>" 
               class="px-8 py-3 bg-stone-800 text-white rounded-lg text-sm font-bold shadow-md hover:bg-black transition-all inline-block">
                DOWNLOAD INVOICE
           </a>
+          <% } %>
 
-            <% if (order.status !== 'Delivered' && order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Return Requested'  && order.status !== 'Shipped') { %>
+            <% if (order.status !== 'Delivered' && order.status !== 'Failed' && order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Return Requested'  && order.status !== 'Shipped') { %>
                 <button onclick="confirmCancel('<%= order._id %>')" class="px-8 py-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-bold hover:bg-red-100 transition-all">
                     CANCEL ORDER
                 </button>
@@ -225,7 +245,8 @@ const formatPrice=(amount)=> {
     </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
 async function cancelSingleItem(orderId, itemId) {
   const result = await Swal.fire({
     title: 'Cancel this item?',
@@ -298,4 +319,59 @@ async function cancelSingleItem(orderId, itemId) {
             }
         }
     }
+    async function retryPayment(id) {
+        try{
+        const response = await axios.post(`/user/order/retry-payment/${id}`);
+        if(response.data.success){
+            openRazorpayRetry(response.data.razorpayOrder,id);
+        }
+        }catch(error){
+        const errorMsg = error.response?.data?.message || "Error cancelling order";
+        notyf.error(errorMsg);
+        }
+    }
+    function openRazorpayRetry(orderData, id) {
+    const options = {
+    key: "<%= razorpayKey %>",
+    amount: orderData.amount,
+    currency: "INR",
+    name: "Luxe & Co",
+    description: "Retry Payment",
+    order_id: orderData.id,
+
+    handler: async function (response) {
+      try {
+        const verifyRes = await axios.post("/user/order/verify-razorpay", {
+          orderId:id, 
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature
+        });
+
+        if (verifyRes.data.success) {
+          window.location.href = `/user/order-confirmed/${verifyRes.data.orderId}`;
+        }
+      } catch (err) {
+window.location.href = `/user/payment-failed?razorpay_order_id=${orderData.id}&mongo_id=${id}&reason=Verification failed`;
+       }
+    },
+
+    modal: {
+      ondismiss: function () {
+window.location.href = `/user/payment-failed?razorpay_order_id=${orderData.id}&mongo_id=${id}&reason=Payment cancelled by user`;
+         }
+    },
+
+    theme: { color: "#C8A97E" }
+  };
+
+  const rzp = new Razorpay(options);
+
+  rzp.on("payment.failed", function (response) {
+   const failedRzpId = response.error.metadata.order_id || orderData.id;
+    window.location.href = `/user/payment-failed?razorpay_order_id=${failedRzpId}&mongo_id=${id}&reason=${encodeURIComponent(response.error.description)}`
+});
+
+  rzp.open();
+ }
     </script>

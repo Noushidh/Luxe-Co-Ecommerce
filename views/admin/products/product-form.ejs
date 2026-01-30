@@ -152,7 +152,8 @@ async function handleProductSubmit(event, productId = null) {
         }
     } catch (error) {
         console.log(error);
-        notyf.error("Error saving product");
+        const errorMessage = error.response?.data?.message || "Something went wrong";
+        notyf.error(errorMessage);
     }
 }
 </script>

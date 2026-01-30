@@ -6,6 +6,7 @@ import cloudinary from "../../config/cloudinary.js";
 import bcrypt from "bcryptjs";
 import { sendEmailChangeVerification } from "../../utils/sendEmail.js";
 import AppError from "../../utils/appError.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_profile = asyncHandler(async (req, res) => {
   let user = await userModal.findById(req.session.user._id)
@@ -22,7 +23,7 @@ export const load_profile = asyncHandler(async (req, res) => {
 
 export const load_editProfile = asyncHandler(async (req, res) => {
   const userData = await userModal.findById(req.session.user._id);
-  if (!userData) throw new AppError("User not found", 404);
+  if (!userData) throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
   res.render("user/layout", {
     title: "Edit Profile",
     body: "user/profile/profile-edit",
@@ -39,15 +40,15 @@ export const editProfile = asyncHandler(async (req, res) => {
   const phoneRegex = /^(0?[6-9]\d{9})$/;
 
   if (!name || !nameRegex.test(name)) {
-    throw new AppError("Invalid name format", 400);
+    throw new AppError("Invalid name format", HTTP_STATUS.BAD_REQUEST);
   }
 
   if (phone && !phoneRegex.test(phone)) {
-    throw new AppError("Invalid phone number", 400);
+    throw new AppError("Invalid phone number", HTTP_STATUS.BAD_REQUEST);
   }
 
   const user = await userModal.findById(userId);
-  if (!user) throw new AppError("User not found", 404);
+  if (!user) throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
 
   let profilePic = user.profilePic;
   let profilePicPublicId = user.profilePicPublicId;
@@ -69,7 +70,7 @@ export const editProfile = asyncHandler(async (req, res) => {
 
   req.session.user = { ...req.session.user, fullname: updatedUser.fullname, phone: updatedUser.phone, profilePic: updatedUser.profilePic, };
 
-  return res.status(200).json({ success: true, message: "Profile updated successfully", redirect: "/user/profile", });
+  return res.status(HTTP_STATUS.OK).json({ success: true, message: "Profile updated successfully", redirect: "/user/profile", });
 });
 
 export const changePassword = asyncHandler(async (req, res) => {
@@ -77,19 +78,19 @@ export const changePassword = asyncHandler(async (req, res) => {
 
   const user = await userModal.findById(req.session.user._id);
 
-  if (!user) throw new AppError("User not found", 404);
+  if (!user) throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
 
   const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
-  if (!isMatch) throw new AppError("Current password is incorrect", 400);
+  if (!isMatch) throw new AppError("Current password is incorrect", HTTP_STATUS.BAD_REQUEST);
 
   const isSame = await bcrypt.compare(newPassword, user.password_hash);
-  if (isSame) throw new AppError("New password must be different from current password", 400);
+  if (isSame) throw new AppError("New password must be different from current password", HTTP_STATUS.BAD_REQUEST);
   user.password_hash = await bcrypt.hash(newPassword, 10);
 
   await user.save();
 
   req.session.destroy(() => {
-    res.status(200).json({ success: true, redirect: "/user/login?reset=success&msg=Password changed. Please login again." });
+    res.status(HTTP_STATUS.OK).json({ success: true, redirect: "/user/login?reset=success&msg=Password changed. Please login again." });
   });
 })
 
@@ -98,15 +99,15 @@ export const sendChangeEmailLink = asyncHandler(async (req, res) => {
   console.log(newEmail)
 
   if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-    throw new AppError("Invalid email address", 400);
+    throw new AppError("Invalid email address", HTTP_STATUS.BAD_REQUEST);
   }
 
   const user = await userModal.findById(req.session.user._id);
-  if (user.googleId) throw new AppError("Google users cannot perform this action", 400);
-  if (user.email === newEmail) throw new AppError("New email must be different from current email", 400);
+  if (user.googleId) throw new AppError("Google users cannot perform this action", HTTP_STATUS.BAD_REQUEST);
+  if (user.email === newEmail) throw new AppError("New email must be different from current email", HTTP_STATUS.BAD_REQUEST);
 
   const existingUser = await userModal.findOne({ email: newEmail });
-  if (existingUser) throw new AppError("This email is already used by another account", 400);
+  if (existingUser) throw new AppError("This email is already used by another account", HTTP_STATUS.BAD_REQUEST);
 
   const token = crypto.randomBytes(32).toString("hex");
 
@@ -117,20 +118,20 @@ export const sendChangeEmailLink = asyncHandler(async (req, res) => {
   const emailSent = await sendEmailChangeVerification(newEmail, verifyLink);
   if (!emailSent) throw new AppError("Failed to send verification email", 500);
 
-  return res.status(200).json({ success: true, message: "Verification link sent to your new email" });
+  return res.status(HTTP_STATUS.OK).json({ success: true, message: "Verification link sent to your new email" });
 })
 
 
 export const verifyChangeEmail = asyncHandler(async (req, res) => {
   const { token } = req.query;
 
-  if (!token) throw new AppError("Invalid verification link", 400);
+  if (!token) throw new AppError("Invalid verification link", HTTP_STATUS.BAD_REQUEST);
 
   const data = req.session.emailChange;
 
-  if (!data) throw new AppError("Verification session expired", 400);
-  if (data.token !== token) throw new AppError("Invalid or expired verification link", 400);
-  if (Date.now() > data.expiresAt) throw new AppError("Verification link expired", 400);
+  if (!data) throw new AppError("Verification session expired", HTTP_STATUS.BAD_REQUEST);
+  if (data.token !== token) throw new AppError("Invalid or expired verification link", HTTP_STATUS.BAD_REQUEST);
+  if (Date.now() > data.expiresAt) throw new AppError("Verification link expired", HTTP_STATUS.BAD_REQUEST);
 
   await userModal.findByIdAndUpdate(req.session.user._id, { email: data.newEmail });
 

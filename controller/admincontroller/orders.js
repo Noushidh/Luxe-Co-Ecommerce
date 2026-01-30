@@ -2,7 +2,8 @@ import asyncHandler from "../../utils/asynHandler.js";
 import orderModel from "../../models/ordermodel.js";
 import productModel from "../../models/productmodel.js"
 import returnModel from "../../models/returnmodel.js";
-import walletModel from "../../models/walletmodel.js"
+import walletModel from "../../models/walletmodel.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_orders = asyncHandler(async (req, res) => {
     const { page = 1, search = "", status = "", payment = "", Date: dateSort = "" } = req.query;
@@ -63,11 +64,11 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     const order = await orderModel.findById(id);
 
     if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found" });
     }
 
     if (["Shipped", "Delivered", "Cancelled", "Return Requested", "Returned", "Rejected"].includes(order.status)) {
-        return res.status(400).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: `Cannot cancel a ${order.status} order.` });
     }
 const refundAmount = order.total||0;
 
@@ -110,7 +111,7 @@ const refundAmount = order.total||0;
 
     order.status = "Cancelled";
     await order.save();
-    res.status(200).json({ success: true, message: "Order cancelled and stock restored!" });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Order cancelled and stock restored!" });
 })
 
 export const updateStatus = asyncHandler(async (req, res) => {
@@ -135,7 +136,7 @@ export const updateStatus = asyncHandler(async (req, res) => {
         }
     }
     await order.save();
-    res.status(200).json({ success: true, message: "Order Status Updatd Successfully" })
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Order Status Updatd Successfully" })
 })
 
 
@@ -144,21 +145,21 @@ export const approveReturn = asyncHandler(async (req, res) => {
 
     const returnDoc = await returnModel.findById(returnId);
     if (!returnDoc) {
-        return res.status(404).json({ success: false, message: "Return record not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Return record not found" });
     }
 
     if (returnDoc.status !== 'Pending') {
-        return res.status(400).json({ success: false, message: "This return request has already been processed." });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "This return request has already been processed." });
     }
     const order = await orderModel.findById(orderId);
     if (!order) {
-        return res.status(404).json({ success: false, message: "Order not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Order not found" });
     }
 
     const item = order.items.find(i => i.productId.toString() === returnDoc.product_id.toString());
 
     if (!item || item.status !== 'Return Requested') {
-        return res.status(400).json({ success: false, message: "Item is not in a returnable state." });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Item is not in a returnable state." });
     }
 
     const totalOriginalPrice = order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
@@ -206,7 +207,7 @@ export const approveReturn = asyncHandler(async (req, res) => {
     }
 
     await returnModel.findByIdAndUpdate(returnId, { status: "Approved" });
-    res.status(200).json({ success: true, message: "Return approved and wallet credited" });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Return approved and wallet credited" });
 });
 
 export const rejectReturn = asyncHandler(async (req, res) => {
@@ -219,5 +220,5 @@ export const rejectReturn = asyncHandler(async (req, res) => {
         { $set: { "items.$.status": "Rejected", "status": "Rejected" } },
         { new: true }
     )
-    return res.status(200).json({ success: true, message: "Return Rejected" })
+    return res.status(HTTP_STATUS.OK).json({ success: true, message: "Return Rejected" })
 })

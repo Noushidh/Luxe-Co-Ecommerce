@@ -3,6 +3,7 @@ import SubCategory from "../../models/subcategory.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import { FIXED_CATEGORIES } from "../../utils/constants.js";
 import { paginate } from "../../utils/paginate.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_Category = asyncHandler(async (req, res) => {
 
@@ -23,7 +24,7 @@ export const load_Category = asyncHandler(async (req, res) => {
         body: "./category",
         currentPath: '/admin/category',
         categories: FIXED_CATEGORIES,
-        subcategories: results,currentPage,totalPages,search
+        subcategories: results, currentPage, totalPages, search
     });
 });
 
@@ -42,35 +43,34 @@ export const addSubCategory = asyncHandler(async (req, res) => {
     return res.json({ success: true, message: "subcategory added successfully" })
 });
 
-export const updateSubcategory = asyncHandler(async (req,res)=>{
+export const updateSubcategory = asyncHandler(async (req, res) => {
 
-    const {id} = req.params;
-    const {subcategory}=req.body;
+    const { id } = req.params;
+    const { subcategory } = req.body;
 
-      console.log("Updating subcategory:", { id, subcategory });
-     
-      if(!subcategory||!subcategory.trim()){
-        return res.status(400).json({success:false,message:"subcategory name is required"})
-      }
-      const trimmedSubcategory = subcategory.trim();
-      const exist = await SubCategory.findOne({_id:{$ne:id},subcategory: { $regex: new RegExp(`^${trimmedSubcategory}$`), $options: "i" }})
+    console.log("Updating subcategory:", { id, subcategory });
 
-      if(exist){
-        return res.status(409).json({success:false,message:"subcategory already exists"})
-      }
+    if (!subcategory || !subcategory.trim()) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "subcategory name is required" })
+    }
+    const trimmedSubcategory = subcategory.trim();
+    const exist = await SubCategory.findOne({ _id: { $ne: id }, subcategory: { $regex: new RegExp(`^${trimmedSubcategory}$`), $options: "i" } })
 
-      await SubCategory.findByIdAndUpdate(id,{subcategory:trimmedSubcategory})
-      return res.status(200).json({success:true,message:"subcategory updated successfully"})
+    if (exist) {
+        return res.status(HTTP_STATUS.CONFLICT).json({ success: false, message: "subcategory already exists" })
+    }
+
+    await SubCategory.findByIdAndUpdate(id, { subcategory: trimmedSubcategory })
+    return res.status(HTTP_STATUS.OK).json({ success: true, message: "subcategory updated successfully" })
 
 })
 
 export const blocksubCategory = asyncHandler(async (req, res) => {
 
     const sub = await SubCategory.findById(req.params.id);
-    console.log("subcategory =", sub)
 
     if (!sub) {
-        return res.status(404).json({ success: false, message: "subcategory not found" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "subcategory not found" });
     }
 
     const neweStatus = !sub.isBlocked;

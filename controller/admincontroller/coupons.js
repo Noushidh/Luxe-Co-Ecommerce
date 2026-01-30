@@ -1,5 +1,6 @@
 import asyncHandler from "../../utils/asynHandler.js";
-import couponModel from "../../models/couponmodel.js"
+import couponModel from "../../models/couponmodel.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_coupons = asyncHandler(async (req, res) => {
     const { search, status, page = 1 } = req.query;
@@ -78,27 +79,27 @@ export const saveCoupon = asyncHandler(async (req, res) => {
     } = req.body;
 
     if (!name || !code || !discountValue || !expiryDate) {
-        return res.status(400).json({ success: false, message: "Mandatory fields are missing" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Mandatory fields are missing" });
     }
      
     if(discountType==="percentage" && ( discountValue <0 || discountValue > 100)){
-        return res.status(400).json({ success: false, message: "percentage must be between 0 and 100" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "percentage must be between 0 and 100" });
     }
 
     if (discountType === "fixedAmount") {
         if (Number(minPurchase) <= Number(discountValue)) {
-            return res.status(400).json({ success: false, message: "Minimum purchase amount must be greater than the discount value for fixed coupons" });
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Minimum purchase amount must be greater than the discount value for fixed coupons" });
         }
     }
 
     if (Number(discountValue) <= 0 || Number(maxDiscountAmount) < 0 || Number(minPurchase) < 0 || (limit !== null && Number(limit) < 0)) {
-        return res.status(400).json({ success: false, message: "Numbers must be greater than or equal to 0" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Numbers must be greater than or equal to 0" });
     }
 
     const stDate = new Date(startDate || Date.now());
     const eDate = new Date(expiryDate);
     if (eDate <= stDate) {
-        return res.status(400).json({ success: false, message: "Expiry date must be after start date" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Expiry date must be after start date" });
     }
 
     let cleanCode = code.toUpperCase().trim();
@@ -108,7 +109,7 @@ export const saveCoupon = asyncHandler(async (req, res) => {
 
     const existingCoupon = await couponModel.findOne(query);
     if (existingCoupon) {
-        return res.status(400).json({ success: false, message: "Coupon code already exists!" });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: "Coupon code already exists!" });
     }
 
     const couponData = {
@@ -126,12 +127,12 @@ export const saveCoupon = asyncHandler(async (req, res) => {
 
     if (id) {
         const updated = await couponModel.findByIdAndUpdate(id, couponData, { new: true });
-        if (!updated) return res.status(404).json({ success: false, message: "Coupon not found" });
-        return res.status(200).json({ success: true, message: "Coupon updated successfully" });
+        if (!updated) return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Coupon not found" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, message: "Coupon updated successfully" });
     } else {
         const newCoupon = new couponModel(couponData);
         await newCoupon.save();
-        return res.status(200).json({ success: true, message: "Coupon created successfully" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, message: "Coupon created successfully" });
     }
 });
 
@@ -143,8 +144,8 @@ export const deleteCoupen = asyncHandler(async(req,res)=>{
     const coupon = await couponModel.findByIdAndDelete(id);
 
     if(!coupon){
-       return res.status(404).json({success:false,message:"Coupon not found"})
+       return res.status(HTTP_STATUS.NOT_FOUND).json({success:false,message:"Coupon not found"})
     }
 
-    res.status(200).json({success:true,message:"Coupen deleted Successfully"})
+    res.status(HTTP_STATUS.OK).json({success:true,message:"Coupen deleted Successfully"})
 })

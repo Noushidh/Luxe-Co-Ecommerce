@@ -2,6 +2,8 @@ import CartModel from "../../models/cartmodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import addressmodel from "../../models/addressmodel.js";
 import couponModel from "../../models/couponmodel.js";
+import AppError from "../../utils/appError.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 import { validateStock } from "../../utils/stockHelper.js";
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 
@@ -98,14 +100,14 @@ export const checkStockBeforeCheckout = asyncHandler(async (req, res) => {
     const cart = await CartModel.findOne({ user: userId }).populate("items.productId");
 
     if (!cart || !cart.items || cart.items.length === 0) {
-        return res.status(400).json({ success: false, message: "Your cart is empty" });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Your cart is empty" });
     }
     try {
         validateStock(cart.items);
-        return res.status(200).json({ success: true, redirect: "/user/checkout" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, redirect: "/user/checkout" });
 
     } catch (error) {
-        return res.status(400).json({ success: false, message: error.message });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: error.message });
     }
 });
 
@@ -114,25 +116,25 @@ export const applyCoupen = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
 
     const cart = await CartModel.findOne({ user: userId }).populate('items.productId');
-    if (!cart) return res.status(400).json({ success: false, message: "Cart not found" });
+    if (!cart) throw new AppError("Cart not found", HTTP_STATUS.BAD_REQUEST);
 
     const subTotal = cart.items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const coupon = await couponModel.findOne({ code: code, isActive: true });
 
     if (!coupon) {
-        return res.status(404).json({ success: false, message: "Invalid or expired coupon code" });
+        throw new AppError("Invalid or expired coupon code", HTTP_STATUS.NOT_FOUND);
     }
 
     if (coupon.usersUsed.includes(userId)) {
-        return res.status(400).json({ success: false, message: "You have already used this coupon!" });
+        throw new AppError("You have already used this coupon", HTTP_STATUS.BAD_REQUEST);
     }
 
     if (subTotal < coupon.minPurchase) {
-        return res.status(400).json({ success: false, message: `Minimum purchase of ₹${coupon.minPurchase} required` });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ success: false, message: `Minimum purchase of ₹${coupon.minPurchase} required` });
     }
 
     if (coupon.limit !== null && coupon.usersUsed.length >= coupon.limit) {
-        return res.status(400).json({ success: false, message: "This coupon has reached its maximum usage limit." });
+        throw new AppError("This coupon has reached its maximum usage limit", HTTP_STATUS.BAD_REQUEST);
     }
 
     let finalDiscountValue = 0;
@@ -157,7 +159,7 @@ export const applyCoupen = asyncHandler(async (req, res) => {
         discountValue: Math.round(finalDiscountValue)
     };
 
-    res.status(200).json({ success: true, message: "Coupon applied successfully!", discount: req.session.appliedCoupon.discountValue });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Coupon applied successfully!", discount: req.session.appliedCoupon.discountValue });
 });
 
 export const removeCoupen = asyncHandler(async (req, res) => {
@@ -167,5 +169,5 @@ export const removeCoupen = asyncHandler(async (req, res) => {
     if (req.session.appliedCouponCode) {
         delete req.session.appliedCouponCode;
     }
-    return res.status(200).json({ success: true });
+    return res.status(HTTP_STATUS.OK).json({ success: true });
 })

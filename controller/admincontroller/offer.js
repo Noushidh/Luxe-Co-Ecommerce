@@ -3,6 +3,7 @@ import SubCategory from "../../models/subcategory.js";
 import ProductModel from "../../models/productmodel.js"
 import offerModal from "../../models/offermodel.js"
 import mongoose from "mongoose";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_offer = asyncHandler(async (req, res) => {
     const { search, status, page = 1 } = req.query;
@@ -18,7 +19,7 @@ export const load_offer = asyncHandler(async (req, res) => {
 
     if (status === 'active') {
         filter.isActive = true;
-        filter.expiryDate = { $gte: now }; 
+        filter.expiryDate = { $gte: now };
     } else if (status === 'blocked') {
         filter.isActive = false;
     } else if (status === 'expired') {
@@ -35,7 +36,7 @@ export const load_offer = asyncHandler(async (req, res) => {
         .limit(limit);
 
     const queryParams = new URLSearchParams(req.query);
-    queryParams.delete('page'); 
+    queryParams.delete('page');
     const qs = queryParams.toString();
 
     res.render("admin/layout", {
@@ -44,7 +45,7 @@ export const load_offer = asyncHandler(async (req, res) => {
         offers: offersList || [],
         currentPage: parseInt(page),
         totalPages,
-        qs, 
+        qs,
         search,
         status
     });
@@ -61,10 +62,10 @@ export const load_addOffer = asyncHandler(async (req, res) => {
 })
 
 export const load_editOffer = asyncHandler(async (req, res) => {
-    const {id}=req.params
+    const { id } = req.params
     const subcategories = await SubCategory.find({ isBlocked: false })
     const offer = await offerModal.findById(id)
-      if (!offer) {
+    if (!offer) {
         return res.redirect("/admin/offers");
     }
     res.render("admin/layout", {
@@ -86,31 +87,31 @@ export const searchSpecificProduct = asyncHandler(async (req, res) => {
 
 export const addOrUpdateOffer = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    
-    const { 
+
+    const {
         offerTitle, discountValue, appliesTo,
-        targetId, startDate, expiryDate, categoryScope, isActive 
+        targetId, startDate, expiryDate, categoryScope, isActive
     } = req.body;
 
     const value = Number(discountValue);
 
     if (isNaN(value) || value <= 0 || value > 100) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Discount Percentage must be between 1 and 100" 
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            success: false,
+            message: "Discount Percentage must be between 1 and 100"
         });
     }
 
     if (new Date(expiryDate) <= new Date(startDate)) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Expiry date must be after start date" 
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            success: false,
+            message: "Expiry date must be after start date"
         });
     }
 
     const offerData = {
         offerTitle,
-        discountType: "percentage", 
+        discountType: "percentage",
         discountValue: value,
         appliesTo,
         categoryScope: appliesTo === 'category' ? categoryScope : 'none',
@@ -133,26 +134,26 @@ export const addOrUpdateOffer = asyncHandler(async (req, res) => {
     if (id) {
         const updated = await offerModal.findByIdAndUpdate(id, offerData, { new: true });
         if (!updated) {
-            return res.status(404).json({ success: false, message: "Offer not found" });
+            return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Offer not found" });
         }
-        return res.status(200).json({ success: true, message: "Offer updated successfully" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, message: "Offer updated successfully" });
     } else {
         const newOffer = new offerModal(offerData);
         await newOffer.save();
-        return res.status(200).json({ success: true, message: "Offer created successfully" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, message: "Offer created successfully" });
     }
 });
 
-export const deleteOffer =  asyncHandler(async(req,res)=>{
-    const {id}=req.params;
+export const deleteOffer = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
     console.log(req.params.id)
 
     const offer = await offerModal.findByIdAndDelete(id);
 
-    if(!offer){
-       return res.status(404).json({success:false,message:"Offer not found"})
+    if (!offer) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "Offer not found" })
     }
 
-    res.status(200).json({success:true,message:"Offer deleted Successfully"})
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Offer deleted Successfully" })
 })

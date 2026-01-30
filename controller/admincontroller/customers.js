@@ -1,6 +1,7 @@
 
 import Usermodel from "../../models/usermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_customers = asyncHandler(async (req, res) => {
 
@@ -46,7 +47,7 @@ export const blockUser = asyncHandler(async (req, res) => {
   const user = await Usermodel.findById(req.params.id);
 
   if (!user) {
-    return res.status(404).json({ success: false, message: "user not found" })
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: "user not found" })
   }
 
   const newStatus = !user.isBlocked;

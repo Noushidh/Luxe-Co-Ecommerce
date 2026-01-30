@@ -3,6 +3,7 @@ import wishlistModel from "../../models/wishlistmodel.js";
 import CartModel from "../../models/cartmodel.js";
 import { getBestOfferForProduct } from '../../utils/offerHelper.js';
 import AppError from '../../utils/appError.js';
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const toggle_wishlist = asyncHandler(async (req, res) => {
     const { variantId, productId } = req.body;
@@ -22,12 +23,12 @@ export const toggle_wishlist = asyncHandler(async (req, res) => {
         wishlist.items.splice(itemIndex, 1);
         await wishlist.save();
 
-        return res.status(200).json({ success: true, status: "removed", message: "Removed from wishlist" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, status: "removed", message: "Removed from wishlist" });
     } else {
         wishlist.items.push({ productId, variantId });
         await wishlist.save();
 
-        return res.status(200).json({ success: true, status: "added", message: "Added to wishlist" });
+        return res.status(HTTP_STATUS.OK).json({ success: true, status: "added", message: "Added to wishlist" });
     }
 });
 
@@ -83,7 +84,7 @@ export const removeFromWishlist = asyncHandler(async (req, res) => {
         throw new AppError("Wishlist not found", 404);
     }
 
-    res.status(200).json({ success: true, message: "Item removed from wishlist", wishlistCount: updatedWishlist.items.length });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Item removed from wishlist", wishlistCount: updatedWishlist.items.length });
 });
 
 export const clearWishlist = asyncHandler(async (req, res) => {
@@ -94,5 +95,5 @@ export const clearWishlist = asyncHandler(async (req, res) => {
     }
     await wishlistModel.findOneAndUpdate({ userId: userId }, { $set: { items: [] } }, { new: true });
 
-    res.status(200).json({ success: true, message: "Wishlist cleared successfully", wishlistCount: 0 });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Wishlist cleared successfully", wishlistCount: 0 });
 });

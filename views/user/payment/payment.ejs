@@ -144,7 +144,8 @@
         const addressDetails = {
             id: "<%= address._id %>",
             name: "<%= address.name %>",
-            addressLine: "<%= address.addressLine || address.street %>",
+            street : "<%= address.street %>",
+            street2 : "<%= address.street2 %>",
             city: "<%= address.city %>",
             state: "<%= address.state %>",
             pincode: "<%= address.pincode %>",
@@ -218,8 +219,8 @@
                     }
                 } catch (err) {
                     console.error("Verification Error:", err);
-                    window.location.href = `/user/payment-failed?reason=Verification failed`;
-                }
+                    window.location.href = `/user/payment-failed?razorpay_order_id=${orderData.id}&reason=Verification failed`;
+                             }
             },
             "prefill": {
                 "name": "<%= user.name %>",
@@ -229,14 +230,14 @@
             "modal": {
                 "ondismiss": function () {
                     console.log("Checkout modal closed by user");
-                    window.location.href = "/user/payment-failed?reason=Payment cancelled by user";
-                }
-            }
+                    window.location.href = `/user/payment-failed?razorpay_order_id=${orderData.id}&reason=Payment cancelled by user`;                               }
+             }
         };
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', function (response) {
-            window.location.href = `/user/payment-failed?reason=${encodeURIComponent(response.error.description)}`;
-        });
+            const rzpId = response.error.metadata.order_id || orderData.id;
+            window.location.href = `/user/payment-failed?razorpay_order_id=${rzpId}&reason=${encodeURIComponent(response.error.description)}`
+    });
 
         rzp.open();
     }

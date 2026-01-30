@@ -3,6 +3,7 @@ import reviewModal from "../../models/reviewmodal.js";
 import orderModal from "../../models/ordermodel.js";
 import ProductModel from "../../models/productmodel.js";
 import AppError from "../../utils/appError.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_Write_review = asyncHandler(async (req, res) => {
     const { orderId } = req.params;
@@ -11,13 +12,13 @@ export const load_Write_review = asyncHandler(async (req, res) => {
 
     const order = await orderModal.findById(orderId).populate('items.productId');
 
-    if (!order) throw new AppError("Order not found", 404);
+    if (!order) throw new AppError("Order not found", HTTP_STATUS.NOT_FOUND);
 
     const item = order.items.find(i =>
         (i.productId._id || i.productId).toString() === productId
     );
 
-    if (!item) throw new AppError("Product not found in this order", 404);
+    if (!item) throw new AppError("Product not found in this order", HTTP_STATUS.NOT_FOUND);
 
     const product = {
         id: item.productId._id,
@@ -43,14 +44,14 @@ export const submit_review = asyncHandler(async (req, res) => {
     const userId = req.session.user._id;
 
     if (!rating || rating < 1 || rating > 5) {
-        throw new AppError("Please select a valid star rating.", 400);
+        throw new AppError("Please select a valid star rating.", HTTP_STATUS.BAD_REQUEST);
     }
     if (!comment || comment.trim().length < 5) {
-        throw new AppError("Please provide a slightly more detailed review.", 400);
+        throw new AppError("Please provide a slightly more detailed review.", HTTP_STATUS.BAD_REQUEST);
     }
     const existingReview = await reviewModal.findOne({ userId, productId, orderId });
     if (existingReview) {
-        throw new AppError("You have already reviewed this product for this order.", 400);
+        throw new AppError("You have already reviewed this product for this order.", HTTP_STATUS.BAD_REQUEST);
     }
     const newReview = new reviewModal({
         productId,
@@ -72,5 +73,5 @@ export const submit_review = asyncHandler(async (req, res) => {
         averageRating: averageRating.toFixed(1),
         reviewCount: totalReviews
     });
-    res.status(200).json({ success: true, message: "Thank you for your elegant feedback.", redirect: "/user/orders" });
+    res.status(HTTP_STATUS.OK).json({ success: true, message: "Thank you for your elegant feedback.", redirect: "/user/orders" });
 });

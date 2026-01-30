@@ -5,6 +5,7 @@ import reviewModel from "../../models/reviewmodal.js";
 import wishlistModel from "../../models/wishlistmodel.js";
 import { getBestOfferForProduct } from "../../utils/offerHelper.js";
 import { getReadyProductFilter } from "../../utils/productVisibility.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 const mapCategory = (cat) => {
     if (!cat) return "";
@@ -156,7 +157,7 @@ export const ProductDetails = asyncHandler(async (req, res) => {
         product.variants?.length > 0 && product.variants.some(v => v.images && v.images.length > 0);
 
     if (!isReady) {
-        return res.status(404).render("user/layout", {
+        return res.status(HTTP_STATUS.NOT_FOUND).render("user/layout", {
             title: "Not Found", body:"user/pages/page-404"
         });
     }

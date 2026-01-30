@@ -1,6 +1,7 @@
 import userModel from "../../models/usermodel.js";
 import orderModel from "../../models/ordermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
+import { HTTP_STATUS } from "../../utils/httpStatus.js";
 
 export const load_dashboard = asyncHandler(async (req, res) => {
     const totalUsers = await userModel.countDocuments({ isBlocked: false });
@@ -108,5 +109,5 @@ export const getChartData = asyncHandler(async (req, res) => {
     }
 
     const data = await orderModel.aggregate(aggregationPipeline);
-    res.status(200).json(data);
+    res.status(HTTP_STATUS.OK).json(data);
 });
