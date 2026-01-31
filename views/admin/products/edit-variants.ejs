@@ -367,13 +367,20 @@
         });
     });
 
-
     document.querySelectorAll(".saveVariantBtn").forEach(btn => {
         btn.onclick = async () => {
 
             const form = btn.closest(".variantForm");
             const variantId = form.dataset.id;
             const originalText = btn.innerHTML;
+
+            const size = form.querySelector("[name='size']").value.trim();
+            const stock = form.querySelector("[name='stock']").value.trim();
+            const color = form.querySelector("[name='color']").value.trim();
+
+        if (!size || !stock || !color) {
+            return notyf.error("All fields (Size, Stock, Color) are required.");
+        }
             
             const oldDisplayedImages = form.querySelectorAll(".imgWrapper.oldImage");
             const newValidCroppedBlobs = currentCroppedBlobs.filter(blob => blob !== null);

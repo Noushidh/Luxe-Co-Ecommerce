@@ -94,220 +94,218 @@
 
 <!-- ================= VARIANT SECTION WRAPPER ================= -->
 <div id="variantSection" class="space-y-8">
-
-    <!-- Where variant cards appear -->
     <div id="variantContainer" class="space-y-6"></div>
-
-    <!-- Submit Button Always Below Last Card -->
     <div id="submitVariantsBox" class="hidden pt-6 pb-4">
         <button id="submitVariantsBtn" onclick="submitVariants()"
             class="w-full py-3 bg-[#C8A97E] text-white rounded-xl font-semibold shadow-md hover:bg-[#b6916a] transition">
             Save Variants
         </button>
     </div>
-
 </div>
 
 
-<!-- ================== HIDDEN TEMPLATE ================== -->
 <div id="variantCardTemplate" class="hidden">
-
     <div class="variantCard bg-[#FFF7EF] border border-[#C8A97E] rounded-xl p-6 shadow-md relative">
-
-        <!-- MAIN VARIANT LABEL (JS will fill this for 1st card) -->
         <div class="mainVariantLabel hidden text-sm font-semibold text-green-700 mb-3"></div>
-
-        <!-- MAIN VARIANT LABEL (will be shown only for first variant via JS) -->
-        <div class="mainVariantLabel hidden text-sm font-semibold text-green-700 mb-2"></div>
-
         <div class="absolute top-4 right-4 flex gap-2">
-
-            <!-- EDIT button (hidden for new variants, shown for existing ones) -->
-            <button type="button" class="editVariantBtn hidden text-blue-600 font-semibold text-sm hover:text-blue-800">
-                Edit
-            </button>
-
-            <!-- REMOVE button (hidden for first card, shown for new variants) -->
-            <button type="button" class="removeVariantBtn text-red-600 font-semibold text-sm hover:text-red-800">
-                Remove
-            </button>
-
+            <button type="button" class="removeVariantBtn text-red-600 font-semibold text-sm hover:text-red-800">Remove</button>
         </div>
-
-
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Variant</h3>
-
+        <p class="text-xs text-red-500 mb-2 font-medium italic">* Minimum 3 images required</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-
-<div>
-    <label class="text-sm font-medium text-gray-700">Size</label>
-
-    <select name="size"
-        class="variantsize w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg 
-               bg-white text-gray-700 cursor-pointer 
-               focus:ring-2 focus:ring-[#C8A97E] focus:border-[#C8A97E]">
-
-        <% for (let s = 1; s <= 11; s++) { %>
-            <option value="<%= s %>">
-                <%= s %>
-            </option>
-        <% } %>
-
-    </select>
-</div>
-
-
-
+            <div>
+                <label class="text-sm font-medium text-gray-700">Size</label>
+                <select name="size" class="variantsize w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg">
+                    <% for (let s = 1; s <= 11; s++) { %>
+                        <option value="<%= s %>"><%= s %></option>
+                    <% } %>
+                </select>
+            </div>
             <div>
                 <label class="text-sm font-medium text-gray-700">Stock</label>
                 <input type="number" class="variantstock w-full mt-1 px-3 py-2 border rounded-lg" min="0">
             </div>
-
             <div>
                 <label class="text-sm font-medium text-gray-700">Color</label>
                 <input type="text" class="variantColor w-full mt-1 px-3 py-2 border rounded-lg">
             </div>
-
         </div>
-
-
-        <!-- IMAGE UPLOAD -->
         <div class="mt-5">
             <label class="text-sm font-medium text-gray-700">Variant Images</label>
-            <p class="text-xs text-red-500 mb-2">Minimum 3 images required</p>
-
             <div class="border-2 border-dashed border-[#C8A97E] p-5 rounded-xl bg-white">
-
-                <button type="button"
-                    class="selectImagesBtn px-4 py-2 bg-[#C8A97E] text-white rounded-lg shadow hover:bg-[#b6916a]">
-                    Select Images
-                </button>
-
+                <button type="button" class="selectImagesBtn px-4 py-2 bg-[#C8A97E] text-white rounded-lg mx-auto block">Select Images</button>
                 <input type="file" class="variantImages hidden" accept="image/*" multiple />
-
                 <div class="variantPreview flex flex-wrap gap-3 mt-4"></div>
-
             </div>
         </div>
-
     </div>
 </div>
 
+<div id="cropModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-75 p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">Crop Image</h3>
+            <button type="button" onclick="closeCropModal()" class="text-gray-500 hover:text-black text-2xl">&times;</button>
+        </div>
+        <div class="p-4 max-h-[60vh] overflow-hidden flex justify-center bg-gray-100">
+            <img id="croppingImage" src="" alt="To Crop" class="max-w-full block">
+        </div>
+        <div class="p-4 border-t flex justify-end gap-3">
+            <button type="button" onclick="closeCropModal()" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button type="button" id="cropSaveBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Crop & Save</button>
+        </div>
+    </div>
+</div>
+    </div>
+    <div id="cropModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">Crop Image</h3>
+            <button onclick="closeCropModal()" class="text-gray-500 hover:text-black">&times;</button>
+        </div>
+        <div class="p-4 max-h-[60vh] overflow-hidden flex justify-center bg-gray-100">
+            <img id="croppingImage" src="" alt="To Crop" class="max-w-full block">
+        </div>
+        <div class="p-4 border-t flex justify-end gap-3">
+            <button onclick="closeCropModal()" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
+            <button id="cropSaveBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Crop & Save</button>
+        </div>
+    </div>
+</div>
+</div>
 
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
 
-    const addVariantBtn = document.getElementById("addVariantBtn");
-    const variantContainer = document.getElementById("variantContainer");
-    const variantTemplate = document.getElementById("variantCardTemplate").children[0];
-    const submitBox = document.getElementById("submitVariantsBox");
+let cropper;
+const cropModal = document.getElementById('cropModal');
+const croppingImage = document.getElementById('croppingImage');
 
-    // 
-    // render image preview
-    function renderPreview(files, imgInput, preview) {
-        preview.innerHTML = "";
-
-        files.forEach((file, index) => {
-            const wrapper = document.createElement("div");
-            wrapper.className = "relative inline-block";
-
-            const img = document.createElement("img");
-            img.className = "w-20 h-20 rounded object-cover border";
-            img.src = URL.createObjectURL(file);
-
-            const removeBtn = document.createElement("button");
-            removeBtn.innerHTML = "&times;";
-            removeBtn.className =
-                "absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow";
-
-            removeBtn.onclick = () => {
-                files.splice(index, 1);
-                const dt = new DataTransfer();
-                files.forEach(f => dt.items.add(f));
-                imgInput.files = dt.files;
-                renderPreview(files, imgInput, preview);
-            };
-
-            wrapper.appendChild(img);
-            wrapper.appendChild(removeBtn);
-            preview.appendChild(wrapper);
-        });
+function closeCropModal() {
+    cropModal.classList.add('hidden');
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
     }
+}
 
-    // Add Variant Card
-    function addVariantCard() {
-        const card = variantTemplate.cloneNode(true);
-        let currentFiles = [];
+function renderPreview(files, imgInput, preview) {
+    preview.innerHTML = "";
+    files.forEach((file, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "relative inline-block";
+        const img = document.createElement("img");
+        img.className = "w-20 h-20 rounded object-cover border";
+        img.src = URL.createObjectURL(file);
 
-        const imgInput = card.querySelector(".variantImages");
-        const preview = card.querySelector(".variantPreview");
-        const selectBtn = card.querySelector(".selectImagesBtn");
-
-        // center the Select Images button
-        selectBtn.classList.add("mx-auto", "block");
-
-        const removeBtn = card.querySelector(".removeVariantBtn");
-        const editBtn = card.querySelector(".editVariantBtn");
-        const mainLabel = card.querySelector(".mainVariantLabel");
-
-        const isFirst = variantContainer.children.length === 0;
-
-        if (isFirst) {
-            mainLabel.innerText = "Main Variant";
-            mainLabel.classList.remove("hidden");
-
-            removeBtn.classList.add("hidden");
-            editBtn.classList.add("hidden");
-        } else {
-            editBtn.classList.add("hidden");
-        }
-
-        // Remove button action
+        const removeBtn = document.createElement("button");
+        removeBtn.innerHTML = "&times;";
+        removeBtn.className = "absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center shadow";
+        
         removeBtn.onclick = () => {
-            card.remove();
-            moveSubmitBelow();
-
-            // always ensure 1 card still
-            if (variantContainer.children.length === 0) {
-                addVariantCard();
-            }
-        };
-
-        // Image selector
-        selectBtn.onclick = () => imgInput.click();
-
-        imgInput.addEventListener("change", () => {
-            const newFiles = Array.from(imgInput.files);
-            currentFiles = [...currentFiles, ...newFiles];
-
-            if (currentFiles.length < 3) {
-                new Notyf().error("Minimum 3 images required");
-                return;
-            }
-
+            files.splice(index, 1);
             const dt = new DataTransfer();
-            currentFiles.forEach(f => dt.items.add(f));
+            files.forEach(f => dt.items.add(f));
             imgInput.files = dt.files;
-
-            renderPreview(currentFiles, imgInput, preview);
-        });
-
-        variantContainer.appendChild(card);
-        moveSubmitBelow();
-    }
-
-    function moveSubmitBelow() {
-        submitBox.classList.remove("hidden");
-        submitBox.remove();
-        document.getElementById("variantSection").appendChild(submitBox);
-    }
-
-
-    document.addEventListener("DOMContentLoaded", () => {
-        addVariantCard();
+            renderPreview(files, imgInput, preview);
+        };
+        wrapper.appendChild(img);
+        wrapper.appendChild(removeBtn);
+        preview.appendChild(wrapper);
     });
+}
 
-    addVariantBtn.addEventListener("click", addVariantCard);
+function handleImageSelection(input, preview, filesArray) {
+    const selectedFiles = Array.from(input.files);
+    if (selectedFiles.length === 0) return;
+    let fileIndex = 0;
+
+    function processNextFile() {
+        if (fileIndex < selectedFiles.length) {
+            const file = selectedFiles[fileIndex];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+croppingImage.src = e.target.result;
+cropModal.classList.remove('hidden');
+
+if (cropper) cropper.destroy();
+
+cropper = new Cropper(croppingImage, {
+    aspectRatio: 1, 
+    viewMode: 1,           
+    dragMode: 'move',     
+    autoCropArea: 1,      
+    responsive: true,
+    checkOrientation: false, 
+    background: false,     
+    modal: true,            
+    guides: true,           
+    center: true,
+    highlight: false,
+    cropBoxMovable: true,   
+    cropBoxResizable: true, 
+});
+
+                document.getElementById('cropSaveBtn').onclick = () => {
+                    const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
+                    canvas.toBlob((blob) => {
+                        const croppedFile = new File([blob], `crop_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        filesArray.push(croppedFile);
+                        
+                        const dt = new DataTransfer();
+                        filesArray.forEach(f => dt.items.add(f));
+                        input.files = dt.files;
+
+                        renderPreview(filesArray, input, preview);
+                        fileIndex++;
+                        if (fileIndex < selectedFiles.length) processNextFile();
+                        else closeCropModal();
+                    }, 'image/jpeg');
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    processNextFile();
+}
+
+function addVariantCard() {
+    const template = document.getElementById("variantCardTemplate").querySelector(".variantCard");
+    const card = template.cloneNode(true);
+    let cardFiles = []; 
+
+    const imgInput = card.querySelector(".variantImages");
+    const preview = card.querySelector(".variantPreview");
+    const selectBtn = card.querySelector(".selectImagesBtn");
+
+    selectBtn.onclick = (e) => { e.preventDefault(); imgInput.click(); };
+    imgInput.onchange = () => {
+        handleImageSelection(imgInput, preview, cardFiles);
+        imgInput.value = ""; 
+    };
+
+    const removeBtn = card.querySelector(".removeVariantBtn");
+    const isFirst = document.getElementById("variantContainer").children.length === 0;
+    if (isFirst) {
+        card.querySelector(".mainVariantLabel").classList.remove("hidden");
+        card.querySelector(".mainVariantLabel").innerText = "Main Variant";
+        removeBtn.classList.add("hidden");
+    }
+
+    removeBtn.onclick = () => {
+        card.remove();
+        if (document.getElementById("variantContainer").children.length === 0) addVariantCard();
+    };
+
+    document.getElementById("variantContainer").appendChild(card);
+    document.getElementById("submitVariantsBox").classList.remove("hidden");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    addVariantCard();
+    document.getElementById("addVariantBtn").addEventListener("click", addVariantCard);
+});
 
     //submit varia
     async function submitVariants() {
@@ -359,8 +357,7 @@
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
                 notyf.error(error.response.data.message)
-            } else {
-                notyf.error("Failed to save variants");
+            
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }

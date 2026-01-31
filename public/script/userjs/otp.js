@@ -82,7 +82,8 @@ async function verifyOTP(event) {
         }
 
     } catch (error) {
-        notyf.error("Something went wrong. Please try again");
+        const errorMessage = error.response?.data?.message || "Something went wrong. Please try again";
+        notyf.error(errorMessage);
         btn.disabled = false;
             btn.innerText = originalText;
             btn.style.opacity = "1";
@@ -109,7 +110,8 @@ async function resendOTP(event) {
             resendBtn.innerText = originalText;
         }
     } catch (error) {
-        notyf.error("An error occured while resending OTP. Please try again");
+        const errorMessage = error.response?.data?.message || "An error occured while resending OTP. Please try again";
+        notyf.error(errorMessage);
         resendBtn.style.pointerEvents = "auto";
         resendBtn.innerText = originalText;
     }
