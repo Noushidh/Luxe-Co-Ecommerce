@@ -2,6 +2,7 @@
 import Usermodel from "../../models/usermodel.js";
 import asyncHandler from "../../utils/asynHandler.js";
 import { HTTP_STATUS } from "../../utils/httpStatus.js";
+import orderModel from "../../models/ordermodel.js";
 
 export const load_customers = asyncHandler(async (req, res) => {
 

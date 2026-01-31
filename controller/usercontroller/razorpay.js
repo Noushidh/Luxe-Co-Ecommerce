@@ -54,10 +54,7 @@ export const razorpayPayment = asyncHandler(async (req, res) => {
         });
     } catch (error) {
         console.error("Razorpay Order Error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Could not initiate (thudakkan kazhiyilla) payment"
-        });
+        res.status(500).json({success: false,message: "Could not initiate payment"});
     }
 });
 
@@ -86,6 +83,8 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
             razorpayPaymentId: razorpay_payment_id,
             "items.$[].status": "Placed"
         }, { new: true });
+        await CartModel.findOneAndUpdate({user:userId},{$set:{items:[]}});
+        console.log("Cart cleared after successful retry payment");
     } else {
         const cart = await CartModel.findOne({ user: userId }).populate("items.productId");
         const appliedCoupon = req.session.appliedCoupon || { discountValue: 0 };
@@ -176,9 +175,14 @@ export const load_paymentFailed = asyncHandler(async (req, res) => {
 //RetryPayment
 export const RetryPayment = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const order = await orderModel.findById(id);
+    const order = await orderModel.findById(id).populate('items.productId');
     if (!order) {
         return res.status(404).json({ success: false, message: "Order not found" })
+    }
+    try{
+        validateStock(order.items);
+    }catch(err){
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({success:false,message:`Stock issues:${err.message}. Please update your cart.`})
     }
     if (order.status !== "Failed" || order.paymentStatus !== "Failed") {
         return res.status(400).json({ success: false, message: "Retry not allowed for this order" });

@@ -5,8 +5,13 @@ export const validateStock = (cartItems) => {
         if (!product || product.isBlocked) {
             throw new Error(`${product?.name || 'A product in your cart'} is currently unavailable.`);
         }
-
-        const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+         
+        let variant;
+        if(item.variantId){
+         variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+        }else{
+         variant = product.variants.find(v=>v.size===item.size&&v.color===item.color)
+        }
         
         if (!variant) {
             throw new Error(`The specific version of ${product.name} is no longer available.`);
