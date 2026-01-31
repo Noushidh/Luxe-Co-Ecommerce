@@ -11,5 +11,5 @@ export const paginate = async (Model, page = 1, limit = 10, query = {}) => {
 
     return {
         results,total,totalPages,currentPage: page
-          };
+     };
 };
